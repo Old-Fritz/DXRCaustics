@@ -391,7 +391,7 @@
   <ItemGroup>
     <None Include="readme.md" />
     <None Include="packages.config" />
-    <None Include="..\..\..\..\..\MiniEngine\ModelViewer\Sponza\sponza.h3d">
+    <None Include="..\..\..\MiniEngine\ModelViewer\Sponza\sponza.h3d">
       <Filter>Resources</Filter>
     </None>
   </ItemGroup>
