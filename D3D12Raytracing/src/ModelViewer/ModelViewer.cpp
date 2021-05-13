@@ -49,8 +49,8 @@
 #include "CompiledShaders/RayGenerationShadowsLib.h"
 #include "CompiledShaders/MissShadowsLib.h"
 
-#include "RaytracingHlslCompat.h"
-#include "ModelViewerRayTracing.h"
+#include "Shaders/RaytracingHlslCompat.h"
+#include "Shaders/ModelViewerRayTracing.h"
 
 using namespace GameCore;
 using namespace Math;

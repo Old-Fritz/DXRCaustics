@@ -5,6 +5,8 @@
 /Samples/Desktop/D3D12Raytracing/src/D3D12RaytracingMiniEngineSample/dxcompiler.dll
 /Libraries/D3D12RaytracingFallback/src/FallbackLayerUnitTests/x64/
 /Packages
+/Bin
+/Temp
 
 **/bin/x64
 **/obj/x64
