@@ -236,6 +236,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="..\..\readme.md" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ModelViewer.cpp">

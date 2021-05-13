@@ -168,11 +168,11 @@ struct MaterialRootConstant
 RaytracingDispatchRayInputs g_RaytracingInputs[RaytracingTypes::NumTypes];
 D3D12_CPU_DESCRIPTOR_HANDLE g_bvh_attributeSrvs[34];
 
-class D3D12RaytracingMiniEngineSample : public GameCore::IGameApp
+class RTModelViewer : public GameCore::IGameApp
 {
 public:
 
-    D3D12RaytracingMiniEngineSample( void ) {}
+    RTModelViewer( void ) {}
 
     virtual void Startup( void ) override;
     virtual void Cleanup( void ) override;
@@ -250,7 +250,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
     //TargetResolution = k720p;
     //g_DisplayWidth = 1280;
     //g_DisplayHeight = 720;
-    GameCore::RunApplication(D3D12RaytracingMiniEngineSample(), L"D3D12RaytracingMiniEngineSample", hInstance, nCmdShow); 
+    GameCore::RunApplication(RTModelViewer(), L"RTModelViewer", hInstance, nCmdShow); 
     return 0;
 }
 
@@ -707,7 +707,7 @@ void InitializeRaytracingStateObjects(const ModelH3D &model, UINT numMeshes)
    }
 }
 
-void D3D12RaytracingMiniEngineSample::Startup( void )
+void RTModelViewer::Startup( void )
 {
     MotionBlur::Enable = false;//true;
     TemporalEffects::EnableTAA = false;//true;
@@ -900,7 +900,7 @@ void D3D12RaytracingMiniEngineSample::Startup( void )
     m_CameraPosArray[4].pitch = 0.0f;
 }
 
-void D3D12RaytracingMiniEngineSample::Cleanup( void )
+void RTModelViewer::Cleanup( void )
 {
     Sponza::Cleanup();
     Renderer::Shutdown();
@@ -911,7 +911,7 @@ namespace Graphics
     extern EnumVar DebugZoom;
 }
 
-void D3D12RaytracingMiniEngineSample::Update( float deltaT )
+void RTModelViewer::Update( float deltaT )
 {
     ScopedTimer _prof(L"Update State");
 
@@ -978,7 +978,7 @@ void D3D12RaytracingMiniEngineSample::Update( float deltaT )
     m_MainScissor.bottom = (LONG)g_SceneColorBuffer.GetHeight();
 }
 
-void D3D12RaytracingMiniEngineSample::SetCameraToPredefinedPosition(int cameraPosition) 
+void RTModelViewer::SetCameraToPredefinedPosition(int cameraPosition) 
 {
     if (cameraPosition < 0 || cameraPosition >= c_NumCameraPositions)
         return;
@@ -989,7 +989,7 @@ void D3D12RaytracingMiniEngineSample::SetCameraToPredefinedPosition(int cameraPo
         m_CameraPosArray[m_CameraPosArrayCurrentPosition].position);
 }
 
-void D3D12RaytracingMiniEngineSample::RenderScene(void)
+void RTModelViewer::RenderScene(void)
 {
     const bool skipDiffusePass = 
         rayTracingMode == RTM_DIFFUSE_WITH_SHADOWMAPS ||
@@ -1132,7 +1132,7 @@ void RaytracebarycentricsSSR(
     pRaytracingCommandList->DispatchRays(&dispatchRaysDesc);
 }
 
-void D3D12RaytracingMiniEngineSample::RaytraceShadows(
+void RTModelViewer::RaytraceShadows(
     GraphicsContext& context,
     const Math::Camera& camera,
     ColorBuffer& colorTarget,
@@ -1189,7 +1189,7 @@ void D3D12RaytracingMiniEngineSample::RaytraceShadows(
     pRaytracingCommandList->DispatchRays(&dispatchRaysDesc);
 }
 
-void D3D12RaytracingMiniEngineSample::RaytraceDiffuse(
+void RTModelViewer::RaytraceDiffuse(
     GraphicsContext& context,
     const Math::Camera& camera,
     ColorBuffer& colorTarget)
@@ -1243,7 +1243,7 @@ void D3D12RaytracingMiniEngineSample::RaytraceDiffuse(
     pRaytracingCommandList->DispatchRays(&dispatchRaysDesc);
 }
 
-void D3D12RaytracingMiniEngineSample::RaytraceReflections(
+void RTModelViewer::RaytraceReflections(
     GraphicsContext& context,
     const Math::Camera& camera,
     ColorBuffer& colorTarget,
@@ -1302,7 +1302,7 @@ void D3D12RaytracingMiniEngineSample::RaytraceReflections(
     pRaytracingCommandList->DispatchRays(&dispatchRaysDesc);
 }
 
-void D3D12RaytracingMiniEngineSample::RenderUI(class GraphicsContext& gfxContext)
+void RTModelViewer::RenderUI(class GraphicsContext& gfxContext)
 {
     const UINT framesToAverage = 20;
     static float frameRates[framesToAverage] = {};
@@ -1320,7 +1320,7 @@ void D3D12RaytracingMiniEngineSample::RenderUI(class GraphicsContext& gfxContext
     text.End();
 }
 
-void D3D12RaytracingMiniEngineSample::Raytrace(class GraphicsContext& gfxContext)
+void RTModelViewer::Raytrace(class GraphicsContext& gfxContext)
 {
     ScopedTimer _prof(L"Raytrace", gfxContext);
 

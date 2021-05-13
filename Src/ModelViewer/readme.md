@@ -1,5 +1,9 @@
 # D3D12 Raytracing MiniEngine Sample
 ![MiniEngine Screenshot](Screenshot.png)
+
+## Getting Started
+* DXR spec/documentation is available at [DirectX Specs site](https://microsoft.github.io/DirectX-Specs/d3d/Raytracing.html).
+
 ## Raytracing Modifications
 
 This is a modified version of MiniEngine that uses the DirectX Raytracing for a series of effects.
@@ -29,6 +33,13 @@ The keys '1'...'7' can also be used to cycle through different modes (or using B
  * Shadow pass is buggy due to incorrect ray generation.
  * Mipmap calculation is incorrect and uses too low of an LOD for distant objects.
  * An incorrect debug layer error message is outputted when run due to an issue in the debug layer on SM 6.0 drivers. This can be ignored. "D3D12 ERROR: ID3D12Device::CopyDescriptors: Source ranges and dest ranges overlap, which results in undefined behavior."
+
+## Known issues
+Depending on your Visual Studio version, some samples may fail to compile with these errors:
+ * The system cannot find the path specified. *.hlsl.h
+ * error MSB6006: "dxc.exe" exited with code 1.
+
+Please see this GitHub issue for details on how to fix it: https://github.com/microsoft/DirectX-Graphics-Samples/issues/657
 
 ## Requirements
 * Consult the main [D3D12 Raytracing readme](../../readme.md) for the requirements.
