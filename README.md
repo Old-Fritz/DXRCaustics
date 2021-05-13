@@ -2,7 +2,11 @@ This repo contains implementation of Caustic Visualization with the DirectX 12
 
 ### DirectX 12 Ultimate sample
 
-[D3D12 Raytracing](D3D12Raytracing/readme.md): This sample demonstrates how DirectX Raytracing (DXR) brings a new level of graphics realism to video games, previously only achievable in the movie industry.
+This sample demonstrates how DirectX Raytracing (DXR) brings a new level of graphics realism to video games, previously only achievable in the movie industry.
+
+[MiniEngine Sample](src/ModelViewer/readme.md)
+This sample demonstrates integration of the DirectX Raytracing in the MiniEngine's Model Viewer and several sample uses of raytracing.
+![D3D12 Raytracing Mini Engine](Src/ModelViewer/Screenshot_small.png)
 
 ## MiniEngine: A DirectX 12 Engine Starter Kit
 
@@ -23,7 +27,7 @@ This repo contains implementation of Caustic Visualization with the DirectX 12
 * Easy-to-use dynamic constant buffers and descriptor tables
 
 ## Requirements
-Require support for DirectX 12 Ultimate, see [this](http://aka.ms/DirectX12UltimateDev) post for details.
+* GPU and driver with support for [DirectX 12 Ultimate](http://aka.ms/DirectX12UltimateDev)
 
 ### Master branch
 This branch is intended for the latest [released](https://docs.microsoft.com/en-us/windows/release-information/) Windows 10 version.
