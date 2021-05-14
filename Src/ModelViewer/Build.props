@@ -8,6 +8,8 @@
     <OutDir>$(SolutionDir)..\Bin\</OutDir>
     <IntDir>$(SolutionDir)..\Temp\$(Configuration)\$(ProjectName)\</IntDir>
     <IncludePath>$(SolutionDir)..\Bin\;$(IncludePath)</IncludePath>
+	<TargetName>$(ProjectName).$(Configuration)</TargetName>
+	<TargetName Condition="'$(Configuration)'=='Release'">$(ProjectName)</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
