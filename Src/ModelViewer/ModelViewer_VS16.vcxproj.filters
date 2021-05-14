@@ -10,6 +10,9 @@
     <ClInclude Include="DXSampleHelper.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="ModelViewer.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CopyFileToFolders Include="Textures\Atrium_diffuseIBL.dds">
@@ -233,6 +236,9 @@
     <Filter Include="Source Files">
       <UniqueIdentifier>{4de42580-a799-4b4c-8d1a-5a0f5082caab}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\RayTracing">
+      <UniqueIdentifier>{ea2fcbb5-f761-4408-a44b-61f541f9bd72}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -240,6 +246,21 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ModelViewer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Startup.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RayTracingTLAS.cpp">
+      <Filter>Source Files\RayTracing</Filter>
+    </ClCompile>
+    <ClCompile Include="RayTracingExecute.cpp">
+      <Filter>Source Files\RayTracing</Filter>
+    </ClCompile>
+    <ClCompile Include="RayTracingInit.cpp">
+      <Filter>Source Files\RayTracing</Filter>
+    </ClCompile>
+    <ClCompile Include="RenderFrame.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

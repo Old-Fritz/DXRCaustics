@@ -78,7 +78,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="RayTracingInit.cpp" />
+    <ClCompile Include="RenderFrame.cpp" />
+    <ClCompile Include="Startup.cpp" />
     <ClCompile Include="ModelViewer.cpp" />
+    <ClCompile Include="RayTracingExecute.cpp" />
+    <ClCompile Include="RayTracingTLAS.cpp" />
   </ItemGroup>
   <ItemGroup>
     <CopyFileToFolders Include="Sponza\default.DDS">
@@ -405,6 +410,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DXSampleHelper.h" />
+    <ClInclude Include="ModelViewer.h" />
     <ClInclude Include="Shaders\ModelViewerRayTracing.h" />
     <ClInclude Include="Shaders\RayTracingHlslCompat.h" />
   </ItemGroup>
