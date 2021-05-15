@@ -9,7 +9,7 @@
 // Developed by Minigraph
 //
 // Author(s):  Alex Nankervis
-//             James Stanard
+//			 James Stanard
 //
 
 #pragma once
@@ -18,15 +18,15 @@
 //  OptimizeFaces
 //-----------------------------------------------------------------------------
 //  Parameters:
-//      indexList
-//          input index list
-//      indexCount
-//          the number of indices in the list
-//      newIndexList
-//          a pointer to a preallocated buffer the same size as indexList to
-//          hold the optimized index list
-//      lruCacheSize
-//          the size of the simulated post-transform cache (max:64)
+//	  indexList
+//		  input index list
+//	  indexCount
+//		  the number of indices in the list
+//	  newIndexList
+//		  a pointer to a preallocated buffer the same size as indexList to
+//		  hold the optimized index list
+//	  lruCacheSize
+//		  the size of the simulated post-transform cache (max:64)
 //-----------------------------------------------------------------------------
 template <typename SrcIndexType, typename DstIndexType>
 void OptimizeFaces(const SrcIndexType* indexList, size_t indexCount, DstIndexType* newIndexList, size_t lruCacheSize);

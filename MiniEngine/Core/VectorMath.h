@@ -20,21 +20,21 @@
 // Note that DirectXMath treats vectors like [1x4] matrices (rows) rather than [4x1] matrices (columns).  Likewise, it
 // treats matrices like they are transposed, so that you would multiply a vector and a matrix like so:
 //
-//    Vector [1x4] = Vector [1x4] * Matrix [4x4]
+//	Vector [1x4] = Vector [1x4] * Matrix [4x4]
 //
 // Applying multiple transforms to a vector involves concatenating on the outside, or right of the previous transform:
 //
-//    ProjectedPosition = ModelPosition * ModelToWorld * WorldToView * ViewToProj
+//	ProjectedPosition = ModelPosition * ModelToWorld * WorldToView * ViewToProj
 //
 // This is *not* how this API works because it is needlessly contrary to Math textbooks.  It's not "wrong", per se,
 // but it's a paradigm I'd like to see changed.  A vector is four floats.  A matrix is four consecutive vectors.  Whether
 // you think of them as row or column vectors of a matrix is just a matter of perspective.  In this library, you will see:
 //
-//    Vector [4x1] = Matrix4 [4x4] * Vector [4x1]
+//	Vector [4x1] = Matrix4 [4x4] * Vector [4x1]
 //
 // and
 //
-//    ProjectedPosition = ViewToProj * WorldToView * ModelToWorld * ModelPosition
+//	ProjectedPosition = ViewToProj * WorldToView * ModelToWorld * ModelPosition
 //
 // One very happy result of this is that you can stop transposing every matrix you set in a shader constant buffer.  They
 // were always in the right format, you were just multiplying them backwards.  In the shader you should have been calling

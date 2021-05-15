@@ -9,7 +9,7 @@
 // Developed by Minigraph
 //
 // Author(s):  Julia Careaga
-//             James Stanard
+//			 James Stanard
 
 #pragma once
 #include "pch.h"
@@ -20,25 +20,25 @@
 class ParticleEffect 
 {
 public:
-    ParticleEffect(ParticleEffectProperties& effectProperties);
-    void LoadDeviceResources(ID3D12Device* device);
-    void Update(ComputeContext& CompContext, float timeDelta);
-    float GetLifetime(){ return m_EffectProperties.TotalActiveLifetime; }
-    float GetElapsedTime(){ return m_ElapsedTime; }
-    void Reset();
+	ParticleEffect(ParticleEffectProperties& effectProperties);
+	void LoadDeviceResources(ID3D12Device* device);
+	void Update(ComputeContext& CompContext, float timeDelta);
+	float GetLifetime(){ return m_EffectProperties.TotalActiveLifetime; }
+	float GetElapsedTime(){ return m_ElapsedTime; }
+	void Reset();
 
 private:
 
-    StructuredBuffer m_StateBuffers[2];
-    uint32_t m_CurrentStateBuffer;
-    StructuredBuffer m_RandomStateBuffer; 
-    IndirectArgsBuffer m_DispatchIndirectArgs;
-    IndirectArgsBuffer m_DrawIndirectArgs;
+	StructuredBuffer m_StateBuffers[2];
+	uint32_t m_CurrentStateBuffer;
+	StructuredBuffer m_RandomStateBuffer; 
+	IndirectArgsBuffer m_DispatchIndirectArgs;
+	IndirectArgsBuffer m_DrawIndirectArgs;
 
-    ParticleEffectProperties m_EffectProperties;
-    ParticleEffectProperties m_OriginalEffectProperties;
-    float m_ElapsedTime;
-    UINT m_effectID;
-    
+	ParticleEffectProperties m_EffectProperties;
+	ParticleEffectProperties m_OriginalEffectProperties;
+	float m_ElapsedTime;
+	UINT m_effectID;
+	
 
 };

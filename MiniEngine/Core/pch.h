@@ -49,12 +49,12 @@
 #include <dxgi1_6.h>
 #include "d3dx12.h"
 #ifdef _DEBUG
-    #include <dxgidebug.h>
+	#include <dxgidebug.h>
 #endif
 
-#define D3D12_GPU_VIRTUAL_ADDRESS_NULL      ((D3D12_GPU_VIRTUAL_ADDRESS)0)
+#define D3D12_GPU_VIRTUAL_ADDRESS_NULL	  ((D3D12_GPU_VIRTUAL_ADDRESS)0)
 #define D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN   ((D3D12_GPU_VIRTUAL_ADDRESS)-1)
-#define MY_IID_PPV_ARGS                     IID_PPV_ARGS
+#define MY_IID_PPV_ARGS					 IID_PPV_ARGS
 
 
 #include <cstdint>

@@ -16,16 +16,16 @@
 [shader("raygeneration")]
 void RayGen()
 {
-    float3 origin, direction;
-    GenerateCameraRay(DispatchRaysIndex().xy, origin, direction);
+	float3 origin, direction;
+	GenerateCameraRay(DispatchRaysIndex().xy, origin, direction);
 
-    RayDesc rayDesc = { origin,
-        0.0f,
-        direction,
-        FLT_MAX };
-    RayPayload payload;
-    payload.SkipShading = false;
-    payload.RayHitT = FLT_MAX;
-    TraceRay(g_accel, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, ~0,0,1,0, rayDesc, payload);
+	RayDesc rayDesc = { origin,
+		0.0f,
+		direction,
+		FLT_MAX };
+	RayPayload payload;
+	payload.SkipShading = false;
+	payload.RayHitT = FLT_MAX;
+	TraceRay(g_accel, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, ~0,0,1,0, rayDesc, payload);
 }
 

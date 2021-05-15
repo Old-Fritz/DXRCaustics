@@ -47,7 +47,7 @@ namespace Math
 	INLINE TYPE ATan( TYPE s ) { return TYPE(XMVectorATan(s)); } \
 	INLINE TYPE ATan2( TYPE y, TYPE x ) { return TYPE(XMVectorATan2(y, x)); } \
 	INLINE TYPE Lerp( TYPE a, TYPE b, TYPE t ) { return TYPE(XMVectorLerpV(a, b, t)); } \
-    INLINE TYPE Lerp( TYPE a, TYPE b, float t ) { return TYPE(XMVectorLerp(a, b, t)); } \
+	INLINE TYPE Lerp( TYPE a, TYPE b, float t ) { return TYPE(XMVectorLerp(a, b, t)); } \
 	INLINE TYPE Max( TYPE a, TYPE b ) { return TYPE(XMVectorMax(a, b)); } \
 	INLINE TYPE Min( TYPE a, TYPE b ) { return TYPE(XMVectorMin(a, b)); } \
 	INLINE TYPE Clamp( TYPE v, TYPE a, TYPE b ) { return Min(Max(v, a), b); } \
@@ -97,20 +97,20 @@ namespace Math
 	INLINE Vector4 Normalize( Vector4 v ) { return Vector4(XMVector4Normalize(v)); }
 
 	INLINE Matrix3 Transpose( const Matrix3& mat ) { return Matrix3(XMMatrixTranspose(mat)); }
-    INLINE Matrix3 InverseTranspose( const Matrix3& mat )
-    {
-        const Vector3 x = mat.GetX();
-        const Vector3 y = mat.GetY();
-        const Vector3 z = mat.GetZ();
+	INLINE Matrix3 InverseTranspose( const Matrix3& mat )
+	{
+		const Vector3 x = mat.GetX();
+		const Vector3 y = mat.GetY();
+		const Vector3 z = mat.GetZ();
 
-        const Vector3 inv0 = Cross(y, z);
-        const Vector3 inv1 = Cross(z, x);
-        const Vector3 inv2 = Cross(x, y);
-        const Scalar  rDet = Recip(Dot(z, inv2));
+		const Vector3 inv0 = Cross(y, z);
+		const Vector3 inv1 = Cross(z, x);
+		const Vector3 inv2 = Cross(x, y);
+		const Scalar  rDet = Recip(Dot(z, inv2));
 
-        // Return the adjoint / determinant
-        return Matrix3(inv0, inv1, inv2) * rDet;
-    }
+		// Return the adjoint / determinant
+		return Matrix3(inv0, inv1, inv2) * rDet;
+	}
 
 	// inline Matrix3 Inverse( const Matrix3& mat ) { TBD }
 	// inline Transform Inverse( const Transform& mat ) { TBD }

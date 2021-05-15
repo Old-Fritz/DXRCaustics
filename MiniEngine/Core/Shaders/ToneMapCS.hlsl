@@ -28,51 +28,51 @@ SamplerState LinearSampler : register( s0 );
 
 cbuffer CB0 : register(b0)
 {
-    float2 g_RcpBufferDim;
-    float g_BloomStrength;
-    float PaperWhiteRatio; // PaperWhite / MaxBrightness
-    float MaxBrightness;
+	float2 g_RcpBufferDim;
+	float g_BloomStrength;
+	float PaperWhiteRatio; // PaperWhite / MaxBrightness
+	float MaxBrightness;
 };
 
 [RootSignature(PostEffects_RootSig)]
 [numthreads( 8, 8, 1 )]
 void main( uint3 DTid : SV_DispatchThreadID )
 {
-    float2 TexCoord = (DTid.xy + 0.5) * g_RcpBufferDim;
+	float2 TexCoord = (DTid.xy + 0.5) * g_RcpBufferDim;
 
-    // Load HDR and bloom
+	// Load HDR and bloom
 #if SUPPORT_TYPED_UAV_LOADS
-    float3 hdrColor = ColorRW[DTid.xy];
+	float3 hdrColor = ColorRW[DTid.xy];
 #else
-    float3 hdrColor = SrcColor[DTid.xy];
+	float3 hdrColor = SrcColor[DTid.xy];
 #endif
 
-    hdrColor += g_BloomStrength * Bloom.SampleLevel(LinearSampler, TexCoord, 0);
-    hdrColor *= Exposure[0];
+	hdrColor += g_BloomStrength * Bloom.SampleLevel(LinearSampler, TexCoord, 0);
+	hdrColor *= Exposure[0];
 
 #if ENABLE_HDR_DISPLAY_MAPPING
 
-    hdrColor = TM_Stanard(REC709toREC2020(hdrColor) * PaperWhiteRatio) * MaxBrightness;
-    // Write the HDR color as-is and defer display mapping until we composite with UI
+	hdrColor = TM_Stanard(REC709toREC2020(hdrColor) * PaperWhiteRatio) * MaxBrightness;
+	// Write the HDR color as-is and defer display mapping until we composite with UI
 #if SUPPORT_TYPED_UAV_LOADS
-    ColorRW[DTid.xy] = hdrColor;
+	ColorRW[DTid.xy] = hdrColor;
 #else
-    DstColor[DTid.xy] = Pack_R11G11B10_FLOAT(hdrColor);
+	DstColor[DTid.xy] = Pack_R11G11B10_FLOAT(hdrColor);
 #endif
-    OutLuma[DTid.xy] = RGBToLogLuminance(hdrColor);
+	OutLuma[DTid.xy] = RGBToLogLuminance(hdrColor);
 
 #else
 
-    // Tone map to SDR
-    float3 sdrColor = TM_Stanard(hdrColor);
+	// Tone map to SDR
+	float3 sdrColor = TM_Stanard(hdrColor);
 
 #if SUPPORT_TYPED_UAV_LOADS
-    ColorRW[DTid.xy] = sdrColor;
+	ColorRW[DTid.xy] = sdrColor;
 #else
-    DstColor[DTid.xy] = Pack_R11G11B10_FLOAT(sdrColor);
+	DstColor[DTid.xy] = Pack_R11G11B10_FLOAT(sdrColor);
 #endif
 
-    OutLuma[DTid.xy] = RGBToLogLuminance(sdrColor);
+	OutLuma[DTid.xy] = RGBToLogLuminance(sdrColor);
 
 #endif
 }

@@ -26,11 +26,11 @@
 // size and then blending the sorted groups together to form larger sorted
 // groups.  The core of the algorithm can be expressed like so:
 //
-// for (k = 2; k < NumItems; k *= 2)      // k = group size
-//     for (j = k / 2; j > 0; j /= 2)     // j = compare distance
-//         for (i = 0; i < NumItems; ++i) // i = element index
-//             if (ShouldSwap(i, i ^ j))  // Are the two in proper order?
-//                 Swap(i, i ^ j)         // If not, swap them
+// for (k = 2; k < NumItems; k *= 2)	  // k = group size
+//	 for (j = k / 2; j > 0; j /= 2)	 // j = compare distance
+//		 for (i = 0; i < NumItems; ++i) // i = element index
+//			 if (ShouldSwap(i, i ^ j))  // Are the two in proper order?
+//				 Swap(i, i ^ j)		 // If not, swap them
 //
 // In this modified form of bitonic sort, all groups of size k are sorted in
 // the same direction.  This facilitates sorting lists with non-power-of-two
@@ -74,30 +74,30 @@
 
 namespace BitonicSort
 {
-    void Sort(
-        // An existing compute context
-        ComputeContext& Context,
+	void Sort(
+		// An existing compute context
+		ComputeContext& Context,
 
-        // List to be sorted.  If element size is 4 bytes, it is assumed the key and index are packed
-        // together with the key in the most significant bytes.  If element size is 8 bytes, the key
-        // is assumed in the upper 4 bytes (i.e. uint2.y).
-        GpuBuffer& KeyIndexList,
+		// List to be sorted.  If element size is 4 bytes, it is assumed the key and index are packed
+		// together with the key in the most significant bytes.  If element size is 8 bytes, the key
+		// is assumed in the upper 4 bytes (i.e. uint2.y).
+		GpuBuffer& KeyIndexList,
 
-        // A buffer containing the count of items to be sorted.
-        GpuBuffer& CountBuffer,
+		// A buffer containing the count of items to be sorted.
+		GpuBuffer& CountBuffer,
 
-        // Offset into counter buffer to find count for this list.  Must be a multiple of 4 bytes.
-        uint32_t CounterOffset,
+		// Offset into counter buffer to find count for this list.  Must be a multiple of 4 bytes.
+		uint32_t CounterOffset,
 
-        // Pass 'true' if the list has already been sorted for k values up to 2048.  That is, each
-        // group of 2048 is already sorted.  This is common because you can combine generating a
-        // sort key list with sorting thread groups in groupshared (LDS) memory.
-        bool IsPartiallyPreSorted,
+		// Pass 'true' if the list has already been sorted for k values up to 2048.  That is, each
+		// group of 2048 is already sorted.  This is common because you can combine generating a
+		// sort key list with sorting thread groups in groupshared (LDS) memory.
+		bool IsPartiallyPreSorted,
 
-        // True to sort in ascending order (smallest to largest).  False to sort in descending order.
-        bool SortAscending
-    );
+		// True to sort in ascending order (smallest to largest).  False to sort in descending order.
+		bool SortAscending
+	);
 
-    void Test( void );
+	void Test( void );
 
 } // namespace BitonicSort

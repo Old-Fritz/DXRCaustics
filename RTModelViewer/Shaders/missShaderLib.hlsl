@@ -15,9 +15,9 @@
 [shader("miss")]
 void Miss(inout RayPayload payload)
 {
-    if (!payload.SkipShading && !IsReflection)
-    {
-        g_screenOutput[DispatchRaysIndex().xy] = float4(0, 0, 0, 1);
-    }
+	if (!payload.SkipShading && !IsReflection)
+	{
+		g_screenOutput[DispatchRaysIndex().xy] = float4(0, 0, 0, 1);
+	}
 }
 

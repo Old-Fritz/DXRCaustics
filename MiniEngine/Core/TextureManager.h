@@ -30,16 +30,16 @@ class TextureRef;
 //
 namespace TextureManager
 {
-    using Graphics::eDefaultTexture;
-    using Graphics::kMagenta2D;
+	using Graphics::eDefaultTexture;
+	using Graphics::kMagenta2D;
 
-    void Initialize( const std::wstring& RootPath );
-    void Shutdown(void);
+	void Initialize( const std::wstring& RootPath );
+	void Shutdown(void);
 
-    // Load a texture from a DDS file.  Never returns null references, but if a 
-    // texture cannot be found, ref->IsValid() will return false.
-    TextureRef LoadDDSFromFile( const std::wstring& filePath, eDefaultTexture fallback = kMagenta2D, bool sRGB = false );
-    TextureRef LoadDDSFromFile( const std::string& filePath, eDefaultTexture fallback = kMagenta2D, bool sRGB = false );
+	// Load a texture from a DDS file.  Never returns null references, but if a 
+	// texture cannot be found, ref->IsValid() will return false.
+	TextureRef LoadDDSFromFile( const std::wstring& filePath, eDefaultTexture fallback = kMagenta2D, bool sRGB = false );
+	TextureRef LoadDDSFromFile( const std::string& filePath, eDefaultTexture fallback = kMagenta2D, bool sRGB = false );
 }
 
 // Forward declaration; private implementation
@@ -54,26 +54,26 @@ class TextureRef
 {
 public:
 
-    TextureRef( const TextureRef& ref );
-    TextureRef( ManagedTexture* tex = nullptr );
-    ~TextureRef();
+	TextureRef( const TextureRef& ref );
+	TextureRef( ManagedTexture* tex = nullptr );
+	~TextureRef();
 
-    void operator= (std::nullptr_t);
-    void operator= (TextureRef& rhs);
+	void operator= (std::nullptr_t);
+	void operator= (TextureRef& rhs);
 
-    // Check that this points to a valid texture (which loaded successfully)
-    bool IsValid() const;
+	// Check that this points to a valid texture (which loaded successfully)
+	bool IsValid() const;
 
-    // Gets the SRV descriptor handle.  If the reference is invalid,
-    // returns a valid descriptor handle (specified by the fallback)
-    D3D12_CPU_DESCRIPTOR_HANDLE GetSRV() const;
+	// Gets the SRV descriptor handle.  If the reference is invalid,
+	// returns a valid descriptor handle (specified by the fallback)
+	D3D12_CPU_DESCRIPTOR_HANDLE GetSRV() const;
 
-    // Get the texture pointer.  Client is responsible to not dereference
-    // null pointers.
-    const Texture* Get( void ) const;
+	// Get the texture pointer.  Client is responsible to not dereference
+	// null pointers.
+	const Texture* Get( void ) const;
 
-    const Texture* operator->( void ) const;
+	const Texture* operator->( void ) const;
 
 private:
-    ManagedTexture* m_ref;
+	ManagedTexture* m_ref;
 };

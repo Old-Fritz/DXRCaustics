@@ -17,9 +17,9 @@ enum DXGI_FORMAT;
 
 namespace ImageScaling
 {
-    void Initialize(DXGI_FORMAT DestFormat);
+	void Initialize(DXGI_FORMAT DestFormat);
 
-    enum eScalingFilter { kBilinear, kSharpening, kBicubic, kLanczos, kFilterCount };
+	enum eScalingFilter { kBilinear, kSharpening, kBicubic, kLanczos, kFilterCount };
 
-    void Upscale(GraphicsContext& Context, ColorBuffer& dest, ColorBuffer& source, eScalingFilter tech = kLanczos);
+	void Upscale(GraphicsContext& Context, ColorBuffer& dest, ColorBuffer& source, eScalingFilter tech = kLanczos);
 }

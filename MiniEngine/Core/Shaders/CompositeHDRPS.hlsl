@@ -19,22 +19,22 @@ Texture2D<float4> OverlayBuffer : register(t1);
 
 cbuffer CB0 : register(b0)
 {
-    float PaperWhiteRatio; // PaperWhite / 10000.0
-    float MaxBrightness;
+	float PaperWhiteRatio; // PaperWhite / 10000.0
+	float MaxBrightness;
 }
 
 [RootSignature(Present_RootSig)]
 float3 main( float4 position : SV_Position, float2 uv : TexCoord0 ) : SV_Target0
 {
-    int2 ST = (int2)position.xy;
+	int2 ST = (int2)position.xy;
 
-    float3 MainColor = ApplyREC2084Curve(MainBuffer[ST] / 10000.0);
+	float3 MainColor = ApplyREC2084Curve(MainBuffer[ST] / 10000.0);
 
-    float4 OverlayColor = OverlayBuffer[ST];
+	float4 OverlayColor = OverlayBuffer[ST];
 
-    OverlayColor.rgb = RemoveSRGBCurve(OverlayColor.rgb);
-    OverlayColor.rgb = REC709toREC2020(OverlayColor.rgb / (OverlayColor.a == 0.0 ? 1.0 : OverlayColor.a));
-    OverlayColor.rgb = ApplyREC2084Curve(OverlayColor.rgb * PaperWhiteRatio);
+	OverlayColor.rgb = RemoveSRGBCurve(OverlayColor.rgb);
+	OverlayColor.rgb = REC709toREC2020(OverlayColor.rgb / (OverlayColor.a == 0.0 ? 1.0 : OverlayColor.a));
+	OverlayColor.rgb = ApplyREC2084Curve(OverlayColor.rgb * PaperWhiteRatio);
 
-    return lerp(MainColor, OverlayColor.rgb, OverlayColor.a);
+	return lerp(MainColor, OverlayColor.rgb, OverlayColor.a);
 }

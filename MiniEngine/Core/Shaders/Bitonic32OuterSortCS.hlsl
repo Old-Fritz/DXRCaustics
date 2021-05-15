@@ -17,39 +17,39 @@ RWByteAddressBuffer g_SortBuffer : register(u0);
 
 cbuffer Constants : register(b0)
 {
-    uint k;    // k >= 4096
-    uint j;    // j >= 2048 && j < k
+	uint k;	// k >= 4096
+	uint j;	// j >= 2048 && j < k
 };
 
 #ifdef BITONICSORT_64BIT
-    #define Element uint2
-    #define LoadElement(idx) g_SortBuffer.Load2(idx * 8)
-    #define StoreElement(idx, elem) g_SortBuffer.Store2(idx * 8, elem)
+	#define Element uint2
+	#define LoadElement(idx) g_SortBuffer.Load2(idx * 8)
+	#define StoreElement(idx, elem) g_SortBuffer.Store2(idx * 8, elem)
 #else
-    #define Element uint
-    #define LoadElement(idx) g_SortBuffer.Load(idx * 4)
-    #define StoreElement(idx, elem) g_SortBuffer.Store(idx * 4, elem)
+	#define Element uint
+	#define LoadElement(idx) g_SortBuffer.Load(idx * 4)
+	#define StoreElement(idx, elem) g_SortBuffer.Store(idx * 4, elem)
 #endif
 
 [RootSignature(BitonicSort_RootSig)]
 [numthreads(1024, 1, 1)]
 void main( uint3 DTid : SV_DispatchThreadID  )
 {
-    const uint ListCount = g_CounterBuffer.Load(CounterOffset);
+	const uint ListCount = g_CounterBuffer.Load(CounterOffset);
 
-    // Form unique index pair from dispatch thread ID
-    uint Index2 = InsertOneBit(DTid.x, j);
-    uint Index1 = Index2 ^ (k == 2 * j ? k - 1 : j);
+	// Form unique index pair from dispatch thread ID
+	uint Index2 = InsertOneBit(DTid.x, j);
+	uint Index1 = Index2 ^ (k == 2 * j ? k - 1 : j);
 
-    if (Index2 >= ListCount)
-        return;
+	if (Index2 >= ListCount)
+		return;
 
-    Element A = LoadElement(Index1);
-    Element B = LoadElement(Index2);
+	Element A = LoadElement(Index1);
+	Element B = LoadElement(Index2);
 
-    if (ShouldSwap(A, B))
-    {
-        StoreElement(Index1, B);
-        StoreElement(Index2, A);
-    }
+	if (ShouldSwap(A, B))
+	{
+		StoreElement(Index1, B);
+		StoreElement(Index2, A);
+	}
 }

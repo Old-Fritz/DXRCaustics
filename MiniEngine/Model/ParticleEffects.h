@@ -17,5 +17,5 @@
 
 namespace ParticleEffects
 {
-    void InitFromJSON(const std::wstring& InitJsonFile);
+	void InitFromJSON(const std::wstring& InitJsonFile);
 }

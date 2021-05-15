@@ -5,8 +5,8 @@
 #ifdef HLSL
 struct RayPayload
 {
-    bool SkipShading;
-    float RayHitT;
+	bool SkipShading;
+	float RayHitT;
 };
 
 #endif
@@ -15,10 +15,10 @@ struct RayPayload
 // Volatile part (can be split into its own CBV). 
 struct DynamicCB
 {
-    float4x4 cameraToWorld;
-    float3   worldCameraPosition;
-    uint     padding;
-    float2   resolution;
+	float4x4 cameraToWorld;
+	float3   worldCameraPosition;
+	uint	 padding;
+	float2   resolution;
 };
 #ifdef HLSL
 #ifndef SINGLE
@@ -31,32 +31,32 @@ RWTexture2D<float4> g_screenOutput : register(u2);
 
 cbuffer HitShaderConstants : register(b0)
 {
-    float3 SunDirection;
-    float3 SunColor;
-    float3 AmbientColor;
-    float4 ShadowTexelSize;
-    float4x4 ModelToShadow;
-    uint IsReflection;
-    uint UseShadowRays;
+	float3 SunDirection;
+	float3 SunColor;
+	float3 AmbientColor;
+	float4 ShadowTexelSize;
+	float4x4 ModelToShadow;
+	uint IsReflection;
+	uint UseShadowRays;
 }
 
 cbuffer b1 : register(b1)
 {
-    DynamicCB g_dynamic;
+	DynamicCB g_dynamic;
 };
 
 inline void GenerateCameraRay(uint2 index, out float3 origin, out float3 direction)
 {
-    float2 xy = index + 0.5; // center in the middle of the pixel
-    float2 screenPos = xy / g_dynamic.resolution * 2.0 - 1.0;
+	float2 xy = index + 0.5; // center in the middle of the pixel
+	float2 screenPos = xy / g_dynamic.resolution * 2.0 - 1.0;
 
-    // Invert Y for DirectX-style coordinates
-    screenPos.y = -screenPos.y;
+	// Invert Y for DirectX-style coordinates
+	screenPos.y = -screenPos.y;
 
-    // Unproject into a ray
-    float4 unprojected = mul(g_dynamic.cameraToWorld, float4(screenPos, 0, 1));
-    float3 world = unprojected.xyz / unprojected.w;
-    origin = g_dynamic.worldCameraPosition;
-    direction = normalize(world - origin);
+	// Unproject into a ray
+	float4 unprojected = mul(g_dynamic.cameraToWorld, float4(screenPos, 0, 1));
+	float3 world = unprojected.xyz / unprojected.w;
+	origin = g_dynamic.worldCameraPosition;
+	direction = normalize(world - origin);
 }
 #endif
