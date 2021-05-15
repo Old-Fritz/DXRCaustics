@@ -4,10 +4,10 @@ This repo contains implementation of Caustic Visualization with the DirectX 12
 
 This sample demonstrates how DirectX Raytracing (DXR) brings a new level of graphics realism to video games, previously only achievable in the movie industry.
 
-[MiniEngine Sample](Src/ModelViewer/readme.md)
+[MiniEngine Sample](RTModelViewer/readme.md)
 This sample demonstrates integration of the DirectX Raytracing in the MiniEngine's Model Viewer and several sample uses of raytracing.
 
-![D3D12 Raytracing Mini Engine](Src/ModelViewer/Screenshot_small.png)
+![D3D12 Raytracing Mini Engine](RTModelViewer/Screenshot_small.png)
 
 ## MiniEngine: A DirectX 12 Engine Starter Kit
 

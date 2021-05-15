@@ -42,21 +42,21 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(SolutionDir)..\Bin\Libs\</OutDir>
-    <IntDir>$(SolutionDir)..\Temp\$(Configuration)\$(ProjectName)\</IntDir>
+    <OutDir>$(SolutionDir)Bin\Libs\</OutDir>
+    <IntDir>$(SolutionDir)Temp\$(Configuration)\$(ProjectName)\</IntDir>
     <TargetName>$(ProjectName).$(Configuration)</TargetName>
-    <IncludePath>$(Console_SdkIncludeRoot);$(SolutionDir)..\Bin\;$(IncludePath)</IncludePath>
+    <IncludePath>$(Console_SdkIncludeRoot);$(SolutionDir)Bin\;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
-    <OutDir>$(SolutionDir)..\Bin\Libs\</OutDir>
-    <IntDir>$(SolutionDir)..\Temp\$(Configuration)\$(ProjectName)\</IntDir>
+    <OutDir>$(SolutionDir)Bin\Libs\</OutDir>
+    <IntDir>$(SolutionDir)Temp\$(Configuration)\$(ProjectName)\</IntDir>
     <TargetName>$(ProjectName).$(Configuration)</TargetName>
-    <IncludePath>$(Console_SdkIncludeRoot);$(SolutionDir)..\Bin\;$(IncludePath)</IncludePath>
+    <IncludePath>$(Console_SdkIncludeRoot);$(SolutionDir)Bin\;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)..\Bin\Libs\</OutDir>
-    <IntDir>$(SolutionDir)..\Temp\$(Configuration)\$(ProjectName)\</IntDir>
-    <IncludePath>$(Console_SdkIncludeRoot);$(SolutionDir)..\Bin\;$(IncludePath)</IncludePath>
+    <OutDir>$(SolutionDir)Bin\Libs\</OutDir>
+    <IntDir>$(SolutionDir)Temp\$(Configuration)\$(ProjectName)\</IntDir>
+    <IncludePath>$(Console_SdkIncludeRoot);$(SolutionDir)Bin\;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
@@ -460,13 +460,13 @@
       <MultiProcessorCompilation Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</MultiProcessorCompilation>
     </ClCompile>
     <FxCompile>
-      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)..\Bin\CompiledShaders\%(Filename).h</HeaderFileOutput>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)Bin\CompiledShaders\%(Filename).h</HeaderFileOutput>
     </FxCompile>
     <FxCompile>
-      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">$(SolutionDir)..\Bin\CompiledShaders\%(Filename).h</HeaderFileOutput>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">$(SolutionDir)Bin\CompiledShaders\%(Filename).h</HeaderFileOutput>
     </FxCompile>
     <FxCompile>
-      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)..\Bin\CompiledShaders\%(Filename).h</HeaderFileOutput>
+      <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)Bin\CompiledShaders\%(Filename).h</HeaderFileOutput>
     </FxCompile>
   </ItemDefinitionGroup>
   <ImportGroup Label="ExtensionTargets">

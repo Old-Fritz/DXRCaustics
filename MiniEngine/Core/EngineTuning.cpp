@@ -573,7 +573,7 @@ void HandleDigitalButtonPress( GameInput::DigitalInput button, float timeDelta, 
     float oldDuration = durationHeld - timeDelta;
 
     // Before 2 seconds, use slow scale (200ms/tick), afterward use fast scale (50ms/tick).
-    float timeStretch = durationHeld < 2.0f ? 5.0f : 20.0f;
+    float timeStretch = durationHeld < 2.0f ? 1.0f : 10.0f;
 
     if (Floor(durationHeld * timeStretch) > Floor(oldDuration * timeStretch))
         action();

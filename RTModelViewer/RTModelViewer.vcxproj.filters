@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="Shaders\RayTracingHlslCompat.h">
+      <Filter>Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\ModelViewerRayTracing.h">
+      <Filter>Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\Unpacking.hlsli">
+      <Filter>Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\DXSampleHelper.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\RTModelViewer.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{432e44b5-99f5-4002-a860-0999ed4e2328}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{8be3895e-9f38-4b8d-bf48-b94d69970e47}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4de42580-a799-4b4c-8d1a-5a0f5082caab}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\RayTracing">
+      <UniqueIdentifier>{ea2fcbb5-f761-4408-a44b-61f541f9bd72}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+    <None Include="..\readme.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Shaders\RayGenerationShadowsLib.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\RayGenerationShaderLib.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\RayGenerationShaderSSRLib.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\missShadowsLib.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\missShaderLib.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\hitShaderLib.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\DiffuseHitShaderLib.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Src\RenderFrame.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\RTModelViewer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Startup.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\RayTracingExecute.cpp">
+      <Filter>Source Files\RayTracing</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\RayTracingInit.cpp">
+      <Filter>Source Files\RayTracing</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\RayTracingTLAS.cpp">
+      <Filter>Source Files\RayTracing</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
