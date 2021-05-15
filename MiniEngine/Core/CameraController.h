@@ -24,6 +24,9 @@ namespace Math
 
 using namespace Math;
 
+extern NumVar g_ModelScale;
+
+
 class CameraController
 {
 public:
