@@ -72,6 +72,7 @@ __declspec(align(16)) struct HitShaderConstants
 	Vector3 ambientLight;
 	float ShadowTexelSize[4];
 	Matrix4 modelToShadow;
+	float ModelScale;
 	UINT32 IsReflection;
 	UINT32 UseShadowRays;
 };

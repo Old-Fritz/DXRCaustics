@@ -96,9 +96,9 @@ void RTModelViewer::CreateTLAS(const ModelInstance& model, UINT numMeshes)
 
 		// Identity matrix
 		ZeroMemory(instanceDesc.Transform, sizeof(instanceDesc.Transform));
-		instanceDesc.Transform[0][0] = 1.0f;
-		instanceDesc.Transform[1][1] = 1.0f;
-		instanceDesc.Transform[2][2] = 1.0f;
+		instanceDesc.Transform[0][0] = 1.0f * g_ModelScale;
+		instanceDesc.Transform[1][1] = 1.0f * g_ModelScale;
+		instanceDesc.Transform[2][2] = 1.0f * g_ModelScale;
 
 		instanceDesc.AccelerationStructure = g_bvh_bottomLevelAccelerationStructures[i]->GetGPUVirtualAddress();
 		instanceDesc.Flags = 0;

@@ -171,7 +171,7 @@ void RTModelViewer::Startup(void)
 	if (CommandLineArgs::GetString(L"model", gltfFileName) == false)
 	{
 		m_ModelInst = Renderer::LoadModel(L"../Data/Sponza/sponza2.gltf", forceRebuild);
-		//m_ModelInst.Resize(100.0f * m_ModelInst.GetRadius());
+		m_ModelInst.Resize(g_ModelScale * m_ModelInst.GetRadius());
 		OrientedBox obb = m_ModelInst.GetBoundingBox();
 		float modelRadius = Length(obb.GetDimensions()) * 0.5f;
 		const Vector3 eye = obb.GetCenter() + Vector3(modelRadius * 0.5f, 0.0f, 0.0f);
@@ -183,7 +183,7 @@ void RTModelViewer::Startup(void)
 			gltfFileName,
 			forceRebuild);
 		m_ModelInst.LoopAllAnimations();
-		//m_ModelInst.Resize(10.0f);
+		m_ModelInst.Resize(g_ModelScale * m_ModelInst.GetRadius());
 
 		MotionBlur::Enable = false;
 	}

@@ -101,7 +101,7 @@ float3 GetTangentAttribute(uint byteOffset)
 
 float3 GetPositionAttribute(uint byteOffset)
 {
-	return asfloat(g_attributes.Load3(byteOffset));
+	return asfloat(g_attributes.Load3(byteOffset)) * ModelScale;
 }
 
 void AntiAliasSpecular(inout float3 texNormal, inout float gloss)

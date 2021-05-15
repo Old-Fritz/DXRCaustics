@@ -30,6 +30,7 @@ void Raytracebarycentrics(
 
 	HitShaderConstants hitShaderConstants = {};
 	hitShaderConstants.IsReflection = false;
+	hitShaderConstants.ModelScale = g_ModelScale;
 	context.WriteBuffer(g_hitConstantBuffer, 0, &hitShaderConstants, sizeof(hitShaderConstants));
 
 	context.WriteBuffer(g_dynamicConstantBuffer, 0, &inputs, sizeof(inputs));
@@ -79,6 +80,7 @@ void RaytracebarycentricsSSR(
 
 	HitShaderConstants hitShaderConstants = {};
 	hitShaderConstants.IsReflection = false;
+	hitShaderConstants.ModelScale = g_ModelScale;
 	context.WriteBuffer(g_hitConstantBuffer, 0, &hitShaderConstants, sizeof(hitShaderConstants));
 
 	ComputeContext& ctx = context.GetComputeContext();
@@ -135,6 +137,7 @@ void RTModelViewer::RaytraceShadows(
 	hitShaderConstants.modelToShadow = Sponza::m_SunShadow.GetShadowMatrix();
 	hitShaderConstants.IsReflection = false;
 	hitShaderConstants.UseShadowRays = false;
+	hitShaderConstants.ModelScale = g_ModelScale;
 	context.WriteBuffer(g_hitConstantBuffer, 0, &hitShaderConstants, sizeof(hitShaderConstants));
 
 	ComputeContext& ctx = context.GetComputeContext();
@@ -192,6 +195,7 @@ void RTModelViewer::RaytraceDiffuse(
 	hitShaderConstants.modelToShadow = Transpose(Sponza::m_SunShadow.GetShadowMatrix());
 	hitShaderConstants.IsReflection = false;
 	hitShaderConstants.UseShadowRays = rayTracingMode == RTM_DIFFUSE_WITH_SHADOWRAYS;
+	hitShaderConstants.ModelScale = g_ModelScale;
 	context.WriteBuffer(g_hitConstantBuffer, 0, &hitShaderConstants, sizeof(hitShaderConstants));
 	context.WriteBuffer(g_dynamicConstantBuffer, 0, &inputs, sizeof(inputs));
 
@@ -248,6 +252,7 @@ void RTModelViewer::RaytraceReflections(
 	hitShaderConstants.modelToShadow = Transpose(Sponza::m_SunShadow.GetShadowMatrix());
 	hitShaderConstants.IsReflection = true;
 	hitShaderConstants.UseShadowRays = false;
+	hitShaderConstants.ModelScale = g_ModelScale;
 	context.WriteBuffer(g_hitConstantBuffer, 0, &hitShaderConstants, sizeof(hitShaderConstants));
 	context.WriteBuffer(g_dynamicConstantBuffer, 0, &inputs, sizeof(inputs));
 
