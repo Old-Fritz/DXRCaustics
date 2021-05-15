@@ -14,6 +14,7 @@
 #pragma once
 
 #include "Animation.h"
+#include "MeshConvert.h"
 #include "../Core/GpuBuffer.h"
 #include "../Core/VectorMath.h"
 #include "../Core/Camera.h"
@@ -70,6 +71,7 @@ struct Mesh
     uint16_t startJoint;    // Flat offset to first joint index
     uint16_t numDraws;      // Number of draw groups
 
+    uint32_t streamOffsets[glTF::Primitive::kNumAttribs];
     struct Draw
     {
         uint32_t primCount;   // Number of indices = 3 * number of triangles
@@ -98,6 +100,26 @@ struct Joint
     Math::Matrix3 nrmXform;
 };
 
+class MeshIterator
+{
+public:
+    MeshIterator(const uint8_t* pMesh, uint32_t meshCount) : m_pBaseMesh(pMesh), m_meshCount(meshCount)
+    {
+        Reset();
+    }
+
+    void Reset();
+
+    const Mesh* GetMesh(uint32_t index);
+    const Mesh* GetNext();
+private:
+    const uint8_t* m_pBaseMesh = nullptr;
+    const uint8_t* m_pNextMesh = nullptr;
+
+    uint32_t m_meshCount = 0;
+    uint32_t m_nextIndex = 0;
+};
+
 class Model
 {
 public:
@@ -117,6 +139,8 @@ public:
     uint32_t m_NumMeshes;
     uint32_t m_NumAnimations;
     uint32_t m_NumJoints;
+    uint32_t m_NumMaterials;
+    std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> m_SourceTextures;
     std::unique_ptr<uint8_t[]> m_MeshData;
     std::unique_ptr<GraphNode[]> m_SceneGraph;
     std::vector<TextureRef> textures;
@@ -125,6 +149,10 @@ public:
     std::unique_ptr<AnimationSet[]> m_Animations;
     std::unique_ptr<uint16_t[]> m_JointIndices;
     std::unique_ptr<Math::Matrix4[]> m_JointIBMs;
+
+    const MeshIterator GetMeshIterator() const;
+    void CreateVertexBufferSRV(D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle) const;
+    void CreateIndexBufferSRV(D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle) const;
 
 protected:
     void Destroy();
@@ -161,6 +189,8 @@ public:
     void StopAnimation(uint32_t animIdx);
     void UpdateAnimations(float deltaTime);
     void LoopAllAnimations(void);
+
+    std::shared_ptr<const Model> GetModel() const;
 
 private:
     std::shared_ptr<const Model> m_Model;

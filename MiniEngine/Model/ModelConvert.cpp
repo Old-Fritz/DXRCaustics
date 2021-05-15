@@ -137,6 +137,7 @@ void Renderer::CompileMesh(
             mesh->numJoints = 0;
             mesh->startJoint = 0xFFFF;
         }
+        memcpy(mesh->streamOffsets, iter.second[0]->offsets, sizeof(uint32_t) * glTF::Primitive::kNumAttribs);
 
         mesh->numDraws = (uint16_t)numDraws;
 

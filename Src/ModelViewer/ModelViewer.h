@@ -39,6 +39,9 @@
 #include "SponzaRenderer.h"
 #include "ModelH3D.h"
 #include "Renderer.h"
+#include "Model.h"
+#include "ModelLoader.h"
+#include "MeshConvert.h"
 
 #include <atlbase.h>
 #include "DXSampleHelper.h"
@@ -60,6 +63,7 @@ using namespace Graphics;
 
 constexpr UINT MaxRayRecursion = 2;
 constexpr UINT c_NumCameraPositions = 5;
+constexpr UINT MaxMaterials = 100;
 
 __declspec(align(16)) struct HitShaderConstants
 {
@@ -183,7 +187,7 @@ public:
     void SetCameraToPredefinedPosition(int cameraPosition);
 
 private:
-    void InitializeRaytracingStateObjects(const ModelH3D& model, UINT numMeshes);
+    void InitializeRaytracingStateObjects(const ModelInstance& model, UINT numMeshes);
     
     void InitStaticSamplers(D3D12_STATIC_SAMPLER_DESC* descs);
     void InitGlobalRootSignature();
@@ -197,14 +201,14 @@ private:
     void InitRayTraceInputs(std::function<void(ID3D12StateObject*, byte*)> GetShaderTable, D3D12_STATE_OBJECT_DESC& stateObject, 
         std::vector<byte>& pHitShaderTable, UINT shaderRecordSizeInBytes, ShaderExport exports[SEN_NumExports]);
 
-    void CreateTLAS(const ModelH3D& model, UINT numMeshes);
+    void CreateTLAS(const ModelInstance& model, UINT numMeshes);
 
     void RaytraceDiffuse(GraphicsContext& context, const Math::Camera& camera, ColorBuffer& colorTarget);
     void RaytraceShadows(GraphicsContext& context, const Math::Camera& camera, ColorBuffer& colorTarget, DepthBuffer& depth);
     void RaytraceReflections(GraphicsContext& context, const Math::Camera& camera, ColorBuffer& colorTarget, DepthBuffer& depth, ColorBuffer& normals);
 
     Camera m_Camera;
-    std::unique_ptr<FlyingFPSCamera> m_CameraController;
+    std::unique_ptr<CameraController> m_CameraController;
     D3D12_VIEWPORT m_MainViewport;
     D3D12_RECT m_MainScissor;
 
@@ -218,6 +222,8 @@ private:
     CameraPosition m_CameraPosArray[c_NumCameraPositions];
     UINT m_CameraPosArrayCurrentPosition;
 
+    ModelInstance m_ModelInst;
+    ShadowCamera m_SunShadowCamera;
 };
 
 
@@ -322,7 +328,7 @@ extern std::unique_ptr<DescriptorHeapStack> g_pRaytracingDescriptorHeap;
 extern ByteAddressBuffer          g_hitConstantBuffer;
 extern ByteAddressBuffer          g_dynamicConstantBuffer;
 
-extern D3D12_GPU_DESCRIPTOR_HANDLE g_GpuSceneMaterialSrvs[27];
+extern D3D12_GPU_DESCRIPTOR_HANDLE g_GpuSceneMaterialSrvs[MaxMaterials];
 extern D3D12_CPU_DESCRIPTOR_HANDLE g_SceneMeshInfo;
 
 extern D3D12_GPU_DESCRIPTOR_HANDLE g_OutputUAV;
@@ -346,3 +352,16 @@ extern D3D12_CPU_DESCRIPTOR_HANDLE g_bvh_attributeSrvs[34];
 extern ByteAddressBuffer   g_bvh_bottomLevelAccelerationStructure;
 
 extern CComPtr<ID3D12Device5> g_pRaytracingDevice;
+
+
+void ChangeIBLSet(EngineVar::ActionType);
+void ChangeIBLBias(EngineVar::ActionType);
+
+extern DynamicEnumVar g_IBLSet;
+extern std::vector<std::pair<TextureRef, TextureRef>> g_IBLTextures;
+extern NumVar g_IBLBias;
+
+
+extern ExpVar g_SunLightIntensity;
+extern NumVar g_SunOrientation;
+extern NumVar g_SunInclination;

@@ -25,7 +25,7 @@ void SetPipelineStateStackSize(LPCWSTR raygen, LPCWSTR closestHit, LPCWSTR miss,
     stateObjectProperties->SetPipelineStackSize(totalStackSize);
 }
 
-void RTModelViewer::InitializeRaytracingStateObjects(const ModelH3D& model, UINT numMeshes)
+void RTModelViewer::InitializeRaytracingStateObjects(const ModelInstance& model, UINT numMeshes)
 {
     ZeroMemory(&g_dynamicCb, sizeof(g_dynamicCb));
 
@@ -65,12 +65,14 @@ void RTModelViewer::InitializeRaytracingStateObjects(const ModelH3D& model, UINT
         ID3D12StateObjectProperties* stateObjectProperties = nullptr;
         ThrowIfFailed(pPSO->QueryInterface(IID_PPV_ARGS(&stateObjectProperties)));
         void* pHitGroupIdentifierData = stateObjectProperties->GetShaderIdentifier(hitGroupNames[HG_HitGroup]);
+
+        auto iterator = model.GetModel()->GetMeshIterator();
         for (UINT i = 0; i < numMeshes; i++)
         {
             byte* pShaderRecord = i * shaderRecordSizeInBytes + pShaderTable;
             memcpy(pShaderRecord, pHitGroupIdentifierData, shaderIdentifierSize);
 
-            UINT materialIndex = model.m_pMesh[i].materialIndex;
+            UINT materialIndex = iterator.GetMesh(i)->materialCBV;
             memcpy(pShaderRecord + offsetToDescriptorHandle, &g_GpuSceneMaterialSrvs[materialIndex].ptr, sizeof(g_GpuSceneMaterialSrvs[materialIndex].ptr));
 
             MaterialRootConstant material;
@@ -121,18 +123,21 @@ void RTModelViewer::InitGlobalRootSignature()
     D3D12_STATIC_SAMPLER_DESC staticSamplerDescs[2] = {};
     InitStaticSamplers(staticSamplerDescs);
 
+    // scene srv
     D3D12_DESCRIPTOR_RANGE1 sceneBuffersDescriptorRange = {};
     sceneBuffersDescriptorRange.BaseShaderRegister = 1;
-    sceneBuffersDescriptorRange.NumDescriptors = 5;
+    sceneBuffersDescriptorRange.NumDescriptors = 6;
     sceneBuffersDescriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
     sceneBuffersDescriptorRange.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_NONE;
 
+    // depth/normals
     D3D12_DESCRIPTOR_RANGE1 srvDescriptorRange = {};
     srvDescriptorRange.BaseShaderRegister = 12;
     srvDescriptorRange.NumDescriptors = 2;
     srvDescriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
     srvDescriptorRange.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_NONE;
 
+    // outputs
     D3D12_DESCRIPTOR_RANGE1 uavDescriptorRange = {};
     uavDescriptorRange.BaseShaderRegister = 2;
     uavDescriptorRange.NumDescriptors = 10;
@@ -140,11 +145,11 @@ void RTModelViewer::InitGlobalRootSignature()
     uavDescriptorRange.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_NONE;
 
     CD3DX12_ROOT_PARAMETER1 globalRootSignatureParameters[8];
-    globalRootSignatureParameters[0].InitAsDescriptorTable(1, &sceneBuffersDescriptorRange);
-    globalRootSignatureParameters[1].InitAsConstantBufferView(0);
-    globalRootSignatureParameters[2].InitAsConstantBufferView(1);
-    globalRootSignatureParameters[3].InitAsDescriptorTable(1, &srvDescriptorRange);
-    globalRootSignatureParameters[4].InitAsDescriptorTable(1, &uavDescriptorRange);
+    globalRootSignatureParameters[0].InitAsDescriptorTable(1, &sceneBuffersDescriptorRange); // scene srv
+    globalRootSignatureParameters[1].InitAsConstantBufferView(0); // hit CB
+    globalRootSignatureParameters[2].InitAsConstantBufferView(1); // dyn CB
+    globalRootSignatureParameters[3].InitAsDescriptorTable(1, &srvDescriptorRange); // d/n
+    globalRootSignatureParameters[4].InitAsDescriptorTable(1, &uavDescriptorRange); // outputs
     globalRootSignatureParameters[5].InitAsUnorderedAccessView(0);
     globalRootSignatureParameters[6].InitAsUnorderedAccessView(1);
     globalRootSignatureParameters[7].InitAsShaderResourceView(0);
@@ -168,8 +173,8 @@ void RTModelViewer::InitGlobalRootSignature()
 void RTModelViewer::InitLocalRootSignature()
 {
     D3D12_DESCRIPTOR_RANGE1 localTextureDescriptorRange = {};
-    localTextureDescriptorRange.BaseShaderRegister = 6;
-    localTextureDescriptorRange.NumDescriptors = 2;
+    localTextureDescriptorRange.BaseShaderRegister = 7;
+    localTextureDescriptorRange.NumDescriptors = kNumTextures;
     localTextureDescriptorRange.RegisterSpace = 0;
     localTextureDescriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
     localTextureDescriptorRange.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_NONE;

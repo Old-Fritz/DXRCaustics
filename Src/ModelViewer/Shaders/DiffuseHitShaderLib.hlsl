@@ -14,6 +14,7 @@
 #define HLSL
 #include "ModelViewerRaytracing.h"
 #include "RayTracingHlslCompat.h"
+#include "Unpacking.hlsli"
 
 cbuffer Material : register(b3)
 {
@@ -25,11 +26,16 @@ ByteAddressBuffer g_indices : register(t2);
 ByteAddressBuffer g_attributes : register(t3);
 Texture2D<float> texShadow : register(t4);
 Texture2D<float> texSSAO : register(t5);
+StructuredBuffer<MaterialConstantsRT> g_materialConstants : register(t6);
 SamplerState      g_s0 : register(s0);
 SamplerComparisonState shadowSampler : register(s1);
 
 Texture2D<float4> g_localTexture : register(t6);
-Texture2D<float4> g_localNormal : register(t7);
+Texture2D<float4> g_localTexture : register(t7);
+Texture2D<float4> g_localMetallicRoughness : register(t8);
+Texture2D<float4> g_localOcclusion : register(t9);
+Texture2D<float4> g_localEmissive : register(t10);
+Texture2D<float4> g_localNormal : register(t11);
 
 Texture2D<float4>   normals  : register(t13);
 
@@ -81,7 +87,22 @@ float GetShadow(float3 ShadowCoord)
 
 float2 GetUVAttribute(uint byteOffset)
 {
-    return asfloat(g_attributes.Load2(byteOffset));
+    return UnPackFloat16_2(g_attributes.Load(byteOffset));
+}
+
+float3 GetNormalAttribute(uint byteOffset)
+{
+    return UnPackDec4(g_attributes.Load(byteOffset));
+}
+
+float3 GetTangentAttribute(uint byteOffset)
+{
+    return UnPackDec4(g_attributes.Load(byteOffset));
+}
+
+float3 GetPositionAttribute(uint byteOffset)
+{
+    return asfloat(g_attributes.Load3(byteOffset));
 }
 
 void AntiAliasSpecular(inout float3 texNormal, inout float gloss)
@@ -164,7 +185,7 @@ void Hit(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attr
 
     RayTraceMeshInfo info = g_meshInfo[materialID];
 
-    const uint3 ii = Load3x16BitIndices(info.m_indexOffsetBytes + PrimitiveIndex() * 3 * 2);
+    const uint3 ii = Load3x16BitIndices(info.m_indexOffsetBytes + triangleID * 3 * 2);
     const float2 uv0 = GetUVAttribute(info.m_uvAttributeOffsetBytes + ii.x * info.m_attributeStrideBytes);
     const float2 uv1 = GetUVAttribute(info.m_uvAttributeOffsetBytes + ii.y * info.m_attributeStrideBytes);
     const float2 uv2 = GetUVAttribute(info.m_uvAttributeOffsetBytes + ii.z * info.m_attributeStrideBytes);
@@ -172,28 +193,29 @@ void Hit(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attr
     float3 bary = float3(1.0 - attr.barycentrics.x - attr.barycentrics.y, attr.barycentrics.x, attr.barycentrics.y);
     float2 uv = bary.x * uv0 + bary.y * uv1 + bary.z * uv2;
 
-    const float3 normal0 = asfloat(g_attributes.Load3(info.m_normalAttributeOffsetBytes + ii.x * info.m_attributeStrideBytes));
-    const float3 normal1 = asfloat(g_attributes.Load3(info.m_normalAttributeOffsetBytes + ii.y * info.m_attributeStrideBytes));
-    const float3 normal2 = asfloat(g_attributes.Load3(info.m_normalAttributeOffsetBytes + ii.z * info.m_attributeStrideBytes));
+    const float3 normal0 = GetNormalAttribute(info.m_normalAttributeOffsetBytes + ii.x * info.m_attributeStrideBytes);
+    const float3 normal1 = GetNormalAttribute(info.m_normalAttributeOffsetBytes + ii.y * info.m_attributeStrideBytes);
+    const float3 normal2 = GetNormalAttribute(info.m_normalAttributeOffsetBytes + ii.z * info.m_attributeStrideBytes);
     float3 vsNormal = normalize(normal0 * bary.x + normal1 * bary.y + normal2 * bary.z);
     
-    const float3 tangent0 = asfloat(g_attributes.Load3(info.m_tangentAttributeOffsetBytes + ii.x * info.m_attributeStrideBytes));
-    const float3 tangent1 = asfloat(g_attributes.Load3(info.m_tangentAttributeOffsetBytes + ii.y * info.m_attributeStrideBytes));
-    const float3 tangent2 = asfloat(g_attributes.Load3(info.m_tangentAttributeOffsetBytes + ii.z * info.m_attributeStrideBytes));
+    const float3 tangent0 = GetTangentAttribute(info.m_tangentAttributeOffsetBytes + ii.x * info.m_attributeStrideBytes);
+    const float3 tangent1 = GetTangentAttribute(info.m_tangentAttributeOffsetBytes + ii.y * info.m_attributeStrideBytes);
+    const float3 tangent2 = GetTangentAttribute(info.m_tangentAttributeOffsetBytes + ii.z * info.m_attributeStrideBytes);
     float3 vsTangent = normalize(tangent0 * bary.x + tangent1 * bary.y + tangent2 * bary.z);
 
     // Reintroduced the bitangent because we aren't storing the handedness of the tangent frame anywhere.  Assuming the space
     // is right-handed causes normal maps to invert for some surfaces.  The Sponza mesh has all three axes of the tangent frame.
-    //float3 vsBitangent = normalize(cross(vsNormal, vsTangent)) * (isRightHanded ? 1.0 : -1.0);
-    const float3 bitangent0 = asfloat(g_attributes.Load3(info.m_bitangentAttributeOffsetBytes + ii.x * info.m_attributeStrideBytes));
-    const float3 bitangent1 = asfloat(g_attributes.Load3(info.m_bitangentAttributeOffsetBytes + ii.y * info.m_attributeStrideBytes));
-    const float3 bitangent2 = asfloat(g_attributes.Load3(info.m_bitangentAttributeOffsetBytes + ii.z * info.m_attributeStrideBytes));
-    float3 vsBitangent = normalize(bitangent0 * bary.x + bitangent1 * bary.y + bitangent2 * bary.z);
+    bool isRightHanded = true;
+    float3 vsBitangent = normalize(cross(vsNormal, vsTangent)) * (isRightHanded ? 1.0 : -1.0);
+    //const float3 bitangent0 = asfloat(g_attributes.Load3(info.m_bitangentAttributeOffsetBytes + ii.x * info.m_attributeStrideBytes));
+    //const float3 bitangent1 = asfloat(g_attributes.Load3(info.m_bitangentAttributeOffsetBytes + ii.y * info.m_attributeStrideBytes));
+    //const float3 bitangent2 = asfloat(g_attributes.Load3(info.m_bitangentAttributeOffsetBytes + ii.z * info.m_attributeStrideBytes));
+    //float3 vsBitangent = normalize(bitangent0 * bary.x + bitangent1 * bary.y + bitangent2 * bary.z);
 
     // TODO: Should just store uv partial derivatives in here rather than loading position and caculating it per pixel
-    const float3 p0 = asfloat(g_attributes.Load3(info.m_positionAttributeOffsetBytes + ii.x * info.m_attributeStrideBytes));
-    const float3 p1 = asfloat(g_attributes.Load3(info.m_positionAttributeOffsetBytes + ii.y * info.m_attributeStrideBytes));
-    const float3 p2 = asfloat(g_attributes.Load3(info.m_positionAttributeOffsetBytes + ii.z * info.m_attributeStrideBytes));
+    const float3 p0 = GetPositionAttribute(info.m_positionAttributeOffsetBytes + ii.x * info.m_attributeStrideBytes);
+    const float3 p1 = GetPositionAttribute(info.m_positionAttributeOffsetBytes + ii.y * info.m_attributeStrideBytes);
+    const float3 p2 = GetPositionAttribute(info.m_positionAttributeOffsetBytes + ii.z * info.m_attributeStrideBytes);
 
     float3 worldPosition = WorldRayOrigin() + WorldRayDirection() * RayTCurrent();
 

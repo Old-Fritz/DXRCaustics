@@ -18,4 +18,14 @@ struct RayTraceMeshInfo
     uint  m_materialInstanceId;
 };
 
+struct MaterialConstantsRT
+{
+    float4 baseColorFactor; // default=[1,1,1,1]
+    float3 emissiveFactor; // default=[0,0,0]
+    float normalTextureScale; // default=1
+    float metallicFactor; // default=1
+    float roughnessFactor; // default=1
+    uint flags;
+};
+
 #endif //RAYTRACING_USER_HLSL_COMPAT_H_INCLUDED

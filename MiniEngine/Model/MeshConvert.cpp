@@ -337,28 +337,49 @@ void OptimizeMesh( Renderer::Primitive& outPrim, const glTF::Primitive& inPrim, 
     // Use VBWriter to generate a new, interleaved and compressed vertex buffer
     std::vector<D3D12_INPUT_ELEMENT_DESC> OutputElements;
 
+    uint32_t vbOffset = 0;
     outPrim.psoFlags = PSOFlags::kHasPosition | PSOFlags::kHasNormal;
     OutputElements.push_back({"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT});
+    outPrim.offsets[glTF::Primitive::kPosition] = vbOffset;
+    vbOffset += 12;
+
     OutputElements.push_back({"NORMAL", 0, DXGI_FORMAT_R10G10B10A2_UNORM, 0, D3D12_APPEND_ALIGNED_ELEMENT});
+    outPrim.offsets[glTF::Primitive::kNormal] = vbOffset;
+    vbOffset += 4;
+
     if (tangent.get())
     {
         OutputElements.push_back({"TANGENT", 0, DXGI_FORMAT_R10G10B10A2_UNORM, 0, D3D12_APPEND_ALIGNED_ELEMENT});
+        outPrim.offsets[glTF::Primitive::kTangent] = vbOffset;
+        vbOffset += 4;
+
         outPrim.psoFlags |= PSOFlags::kHasTangent;
     }
     if (texcoord0.get())
     {
         OutputElements.push_back({"TEXCOORD", 0, DXGI_FORMAT_R16G16_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT});
+        outPrim.offsets[glTF::Primitive::kTexcoord0] = vbOffset;
+        vbOffset += 4;
+
         outPrim.psoFlags |= PSOFlags::kHasUV0;
     }
     if (texcoord1.get())
     {
         OutputElements.push_back({"TEXCOORD", 1, DXGI_FORMAT_R16G16_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT});
+        outPrim.offsets[glTF::Primitive::kTexcoord1] = vbOffset;
+        vbOffset += 4;
+
         outPrim.psoFlags |= PSOFlags::kHasUV1;
     }
     if (HasSkin)
     {
         OutputElements.push_back({ "BLENDINDICES", 0, DXGI_FORMAT_R16G16B16A16_UINT, 0, D3D12_APPEND_ALIGNED_ELEMENT });
+        outPrim.offsets[glTF::Primitive::kJoints0] = vbOffset;
+        vbOffset += 8;
         OutputElements.push_back({ "BLENDWEIGHT", 0, DXGI_FORMAT_R16G16B16A16_UNORM, 0, D3D12_APPEND_ALIGNED_ELEMENT });
+        outPrim.offsets[glTF::Primitive::kWeights0] = vbOffset;
+        vbOffset += 8;
+
         outPrim.psoFlags |= PSOFlags::kHasSkin;
     }
     if (material.alphaBlend)

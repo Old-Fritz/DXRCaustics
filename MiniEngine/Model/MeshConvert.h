@@ -44,6 +44,7 @@ namespace Renderer
             };
         };
         uint16_t vertexStride;
+        uint32_t offsets[glTF::Primitive::kNumAttribs];
     };
 }
 

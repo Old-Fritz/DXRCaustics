@@ -94,6 +94,11 @@ void LoadMaterials(Model& model,
         g_Device->CopyDescriptors(1, &TextureHandles, &DestCount,
             DestCount, SourceTextures, SourceCounts, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
+        for (uint32_t j = 0; j < kNumTextures; ++j)
+        {
+            model.m_SourceTextures.push_back(SourceTextures[j]);
+        }
+
         // See if this combination of samplers has been used before.  If not, allocate more from the heap
         // and copy in the descriptors.
         uint32_t addressModes = srcMat.addressModes;
@@ -251,6 +256,7 @@ std::shared_ptr<Model> Renderer::LoadModel(const std::wstring& filePath, bool fo
 		}
 		materialConstants.Unmap();
 		model->m_MaterialConstants.Create(L"Material Constants", header.numMaterials, sizeof(MaterialConstants), materialConstants);
+        model->m_NumMaterials = header.numMaterials;
 	}
 
     // Read material texture and sampler properties so we can load the material

@@ -13,6 +13,9 @@
     <ClInclude Include="ModelViewer.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="Shaders\Unpacking.hlsli">
+      <Filter>Shaders</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CopyFileToFolders Include="Textures\Atrium_diffuseIBL.dds">

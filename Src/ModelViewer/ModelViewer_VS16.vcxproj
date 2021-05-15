@@ -410,6 +410,7 @@
     <ClInclude Include="ModelViewer.h" />
     <ClInclude Include="Shaders\ModelViewerRayTracing.h" />
     <ClInclude Include="Shaders\RayTracingHlslCompat.h" />
+    <ClInclude Include="Shaders\Unpacking.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\MiniEngine\Core\Core.vcxproj">

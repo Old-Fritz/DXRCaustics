@@ -279,3 +279,86 @@ Math::OrientedBox ModelInstance::GetBoundingBox() const
 
     return m_Locator * m_Model->m_BoundingBox;
 }
+
+std::shared_ptr<const Model> ModelInstance::GetModel() const
+{
+    return m_Model;
+}
+
+void MeshIterator::Reset()
+{
+    m_pNextMesh = m_pBaseMesh;
+    m_nextIndex = 0;
+}
+
+const Mesh* MeshIterator::GetMesh(uint32_t index)
+{
+    if (index >= m_meshCount)
+    {
+        return nullptr;
+    }
+    else if (m_nextIndex > index)
+    {
+        Reset();
+    }
+
+    while (m_nextIndex != index)
+    {
+        GetNext();
+    }
+
+    return GetNext();
+}
+
+const Mesh* MeshIterator::GetNext()
+{
+    if (m_nextIndex >= m_meshCount)
+    {
+        m_nextIndex = 0;
+        m_pNextMesh = m_pBaseMesh;
+
+        return nullptr;
+    }
+
+    const Mesh* mesh = (const Mesh*)m_pNextMesh;
+
+    m_pNextMesh += sizeof(Mesh) + (mesh->numDraws - 1) * sizeof(Mesh::Draw);
+    m_nextIndex++;
+
+    return mesh;
+}
+
+const MeshIterator Model::GetMeshIterator() const
+{
+    return MeshIterator(m_MeshData.get(), m_NumMeshes);
+}
+
+void Model::CreateVertexBufferSRV(D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle) const
+{
+  
+
+    D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+    srvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+    srvDesc.Buffer.FirstElement = 0;
+    srvDesc.Buffer.NumElements = (UINT)(m_DataBuffer.GetBufferSize() / sizeof(UINT32));
+    srvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_RAW;
+    srvDesc.Format = DXGI_FORMAT_R32_TYPELESS;
+    srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+
+    m_DataBuffer.GetBufferSize();
+
+    Graphics::g_Device->CreateShaderResourceView(const_cast<ID3D12Resource*>(m_DataBuffer.GetResource()), &srvDesc, cpuHandle);
+}
+
+void Model::CreateIndexBufferSRV(D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle) const
+{
+    D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+    srvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
+    srvDesc.Buffer.FirstElement = 0;
+    srvDesc.Buffer.NumElements = (UINT)(m_DataBuffer.GetBufferSize() / sizeof(UINT32));
+    srvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_RAW;
+    srvDesc.Format = DXGI_FORMAT_R32_TYPELESS;
+    srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+
+    Graphics::g_Device->CreateShaderResourceView(const_cast<ID3D12Resource*>(m_DataBuffer.GetResource()), &srvDesc, cpuHandle);
+}

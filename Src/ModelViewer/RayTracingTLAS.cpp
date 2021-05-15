@@ -1,6 +1,6 @@
 #include "ModelViewer.h"
 
-void RTModelViewer::CreateTLAS(const ModelH3D& model, UINT numMeshes)
+void RTModelViewer::CreateTLAS(const ModelInstance& model, UINT numMeshes)
 {
     const UINT numBottomLevels = 1;
 
@@ -15,11 +15,13 @@ void RTModelViewer::CreateTLAS(const ModelH3D& model, UINT numMeshes)
     g_pRaytracingDevice->GetRaytracingAccelerationStructurePrebuildInfo(&topLevelInputs, &topLevelPrebuildInfo);
 
     const D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAGS buildFlag = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE;
-    std::vector<D3D12_RAYTRACING_GEOMETRY_DESC> geometryDescs(model.m_Header.meshCount);
+    std::vector<D3D12_RAYTRACING_GEOMETRY_DESC> geometryDescs(model.GetModel()->m_NumMeshes);
     UINT64 scratchBufferSizeNeeded = topLevelPrebuildInfo.ScratchDataSizeInBytes;
+
+    auto iterator = model.GetModel()->GetMeshIterator();
     for (UINT i = 0; i < numMeshes; i++)
     {
-        auto& mesh = model.m_pMesh[i];
+        auto mesh = iterator.GetMesh(i);
 
         D3D12_RAYTRACING_GEOMETRY_DESC& desc = geometryDescs[i];
         desc.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
@@ -27,11 +29,11 @@ void RTModelViewer::CreateTLAS(const ModelH3D& model, UINT numMeshes)
 
         D3D12_RAYTRACING_GEOMETRY_TRIANGLES_DESC& trianglesDesc = desc.Triangles;
         trianglesDesc.VertexFormat = DXGI_FORMAT_R32G32B32_FLOAT;
-        trianglesDesc.VertexCount = mesh.vertexCount;
-        trianglesDesc.VertexBuffer.StartAddress = model.GetVertexBuffer().BufferLocation + (mesh.vertexDataByteOffset + mesh.attrib[ModelH3D::attrib_position].offset);
-        trianglesDesc.IndexBuffer = model.GetIndexBuffer().BufferLocation + mesh.indexDataByteOffset;
-        trianglesDesc.VertexBuffer.StrideInBytes = mesh.vertexStride;
-        trianglesDesc.IndexCount = mesh.indexCount;
+        trianglesDesc.VertexCount = mesh->vbSize / mesh->vbStride;
+        trianglesDesc.VertexBuffer.StartAddress = model.GetModel()->m_DataBuffer.GetGpuVirtualAddress() + mesh->vbOffset;
+        trianglesDesc.IndexBuffer = model.GetModel()->m_DataBuffer.GetGpuVirtualAddress() + mesh->ibOffset;
+        trianglesDesc.VertexBuffer.StrideInBytes = mesh->vbStride;
+        trianglesDesc.IndexCount = mesh->ibSize / ((DXGI_FORMAT)mesh->ibFormat == DXGI_FORMAT_R32_UINT ? 4 : 2);
         trianglesDesc.IndexFormat = DXGI_FORMAT_R16_UINT;
         trianglesDesc.Transform3x4 = 0;
     }
