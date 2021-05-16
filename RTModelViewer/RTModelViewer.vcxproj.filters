@@ -59,7 +59,7 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Src\RenderFrame.cpp">
+    <ClCompile Include="Src\ViewerRender.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Src\RTModelViewer.cpp">
@@ -68,13 +68,19 @@
     <ClCompile Include="Src\Startup.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Src\RayTracingExecute.cpp">
+    <ClCompile Include="Src\RayTracingRender.cpp">
       <Filter>Source Files\RayTracing</Filter>
     </ClCompile>
-    <ClCompile Include="Src\RayTracingInit.cpp">
+    <ClCompile Include="Src\RayTracingPSO.cpp">
       <Filter>Source Files\RayTracing</Filter>
     </ClCompile>
     <ClCompile Include="Src\RayTracingTLAS.cpp">
+      <Filter>Source Files\RayTracing</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\ViewerUpdate.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\RayTracingModel.cpp">
       <Filter>Source Files\RayTracing</Filter>
     </ClCompile>
   </ItemGroup>

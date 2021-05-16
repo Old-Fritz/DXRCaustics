@@ -224,9 +224,9 @@ void Sponza::RenderLightShadows(GraphicsContext& gfxContext, const Camera& camer
 	m_LightShadowTempBuffer.BeginRendering(gfxContext);
 	{
 		gfxContext.SetPipelineState(m_ShadowPSO);
-		RenderObjects(gfxContext, m_LightShadowMatrix[LightIndex], camera.GetPosition(), kOpaque);
+		RenderObjects(gfxContext, m_LightShadowCamera[LightIndex].GetViewProjMatrix(), camera.GetPosition(), kOpaque);
 		gfxContext.SetPipelineState(m_CutoutShadowPSO);
-		RenderObjects(gfxContext, m_LightShadowMatrix[LightIndex], camera.GetPosition(), kCutout);
+		RenderObjects(gfxContext, m_LightShadowCamera[LightIndex].GetViewProjMatrix(), camera.GetPosition(), kCutout);
 	}
 	//m_LightShadowTempBuffer.EndRendering(gfxContext);
 

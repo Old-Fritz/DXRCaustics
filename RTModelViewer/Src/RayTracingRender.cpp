@@ -9,7 +9,7 @@ const char* rayTracingModes[] = {
 	"Diffuse&ShadowRays",
 	"Reflection Rays"
 };
-EnumVar rayTracingMode("Application/Raytracing/RayTraceMode", RTM_OFF, _countof(rayTracingModes), rayTracingModes);
+EnumVar rayTracingMode("Viewer/Raytracing/RayTraceMode", RTM_OFF, _countof(rayTracingModes), rayTracingModes);
 
 
 void Raytracebarycentrics(
@@ -286,7 +286,7 @@ void RTModelViewer::RaytraceReflections(
 	pRaytracingCommandList->DispatchRays(&dispatchRaysDesc);
 }
 
-void RTModelViewer::Raytrace(class GraphicsContext& gfxContext)
+void RTModelViewer::RenderRaytrace(GraphicsContext& gfxContext)
 {
 	ScopedTimer _prof(L"Raytrace", gfxContext);
 

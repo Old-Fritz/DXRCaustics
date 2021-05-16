@@ -52,6 +52,8 @@ namespace Math
 		friend Frustum  operator* ( const AffineTransform& xform, const Frustum& frustum );		// Slow
 		friend Frustum  operator* ( const Matrix4& xform, const Frustum& frustum );				// Slowest (and most general)
 
+		void SetIntersectAll(bool intersectAll) { m_intersectAll = intersectAll; }
+
 	private:
 
 		// Perspective frustum constructor (for pyramid-shaped frusta)
@@ -62,6 +64,7 @@ namespace Math
 
 		Vector3 m_FrustumCorners[8];		// the corners of the frustum
 		BoundingPlane m_FrustumPlanes[6];			// the bounding planes
+		bool m_intersectAll = false;
 	};
 
 	//=======================================================================================================
@@ -70,6 +73,11 @@ namespace Math
 
 	inline bool Frustum::IntersectSphere( BoundingSphere sphere ) const
 	{
+		if (m_intersectAll)
+		{
+			return true;
+		}
+
 		float radius = sphere.GetRadius();
 		for (int i = 0; i < 6; ++i)
 		{
@@ -81,6 +89,11 @@ namespace Math
 
 	inline bool Frustum::IntersectBoundingBox(const AxisAlignedBox& aabb) const
 	{
+		if (m_intersectAll)
+		{
+			return true;
+		}
+
 		for (int i = 0; i < 6; ++i)
 		{
 			BoundingPlane p = m_FrustumPlanes[i];

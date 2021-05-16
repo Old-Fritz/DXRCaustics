@@ -132,9 +132,8 @@ float4 main(VSOutput vsOutput) : SV_Target0
 
 	Surface.c_diff *= ssao;
 	Surface.c_spec *= ssao;
-
 	
-#if 0
+#if 1
 	{
 		// Add IBL
 		colorAccum += Diffuse_IBL(Surface);

@@ -154,10 +154,8 @@ float GetDirectionalShadowPBR(float3 ShadowCoord, Texture2D<float> texShadow)
 
 float GetShadowConeLightPBR(uint lightIndex, float3 shadowCoord)
 {
-	float result = 
-		1
-		//lightShadowArrayTex.SampleCmpLevelZero(shadowSampler, float3(shadowCoord.xy, lightIndex), shadowCoord.z)
-		;
+	float result = lightShadowArrayTex.SampleCmpLevelZero(shadowSampler, float3(shadowCoord.xy, lightIndex), shadowCoord.z);
+
 	return result * result;
 }
 

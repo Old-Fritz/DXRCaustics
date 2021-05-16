@@ -181,14 +181,35 @@ public:
 	virtual void Cleanup(void) override;
 
 	virtual void Update(float deltaT) override;
+
 	virtual void RenderScene(void) override;
 	virtual void RenderUI(class GraphicsContext&) override;
-	virtual void Raytrace(class GraphicsContext&);
 
 	void SetCameraToPredefinedPosition(int cameraPosition);
 
+	// scene render
+	void UpdateGlobalConstants(GlobalConstants& globals);
+	void RenderLightShadows(GraphicsContext& gfxContext, GlobalConstants& globals);
+	void RenderSunShadow(GraphicsContext& gfxContext, GlobalConstants& globals);
+
+	void RenderZPass(GraphicsContext& gfxContext, Renderer::MeshSorter& sorter, GlobalConstants& globals);
+	void RenderColor(GraphicsContext& gfxContext, Renderer::MeshSorter& sorter, GlobalConstants& globals);
+
+	void RenderPostProces(GraphicsContext& gfxContext);
+
+	void RenderRaytrace(GraphicsContext& gfxContext);
+
 private:
-	void InitializeRaytracingStateObjects(const ModelInstance& model, UINT numMeshes);
+	// Viewer startup
+	void SetupPredefinedCameraPositions();
+
+	// RT Model
+	void InitializeRTModel();
+	void InitializeRTMeshInfo();
+	void InitializeRTViews();
+
+	// RT PSO
+	void InitializeRaytracingStateObjects();
 	
 	void InitStaticSamplers(D3D12_STATIC_SAMPLER_DESC* descs);
 	void InitGlobalRootSignature();
@@ -202,8 +223,10 @@ private:
 	void InitRayTraceInputs(std::function<void(ID3D12StateObject*, byte*)> GetShaderTable, D3D12_STATE_OBJECT_DESC& stateObject, 
 		std::vector<byte>& pHitShaderTable, UINT shaderRecordSizeInBytes, ShaderExport exports[SEN_NumExports]);
 
-	void CreateTLAS(const ModelInstance& model, UINT numMeshes);
+	// RT TLAS
+	void CreateTLAS();
 
+	// RT Render
 	void RaytraceDiffuse(GraphicsContext& context, const Math::Camera& camera, ColorBuffer& colorTarget);
 	void RaytraceShadows(GraphicsContext& context, const Math::Camera& camera, ColorBuffer& colorTarget, DepthBuffer& depth);
 	void RaytraceReflections(GraphicsContext& context, const Math::Camera& camera, ColorBuffer& colorTarget, DepthBuffer& depth, ColorBuffer& normals);

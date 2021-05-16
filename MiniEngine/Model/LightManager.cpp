@@ -16,7 +16,7 @@
 #include "PipelineState.h"
 #include "RootSignature.h"
 #include "CommandContext.h"
-#include "Camera.h"
+#include "ShadowCamera.h"
 #include "BufferManager.h"
 #include "TemporalEffects.h"
 
@@ -28,25 +28,11 @@
 using namespace Math;
 using namespace Graphics;
 
-// must keep in sync with HLSL
-struct LightData
-{
-	float pos[3];
-	float radiusSq;
-	float color[3];
 
-	uint32_t type;
-	float coneDir[3];
-	float coneAngles[2];
-
-	float shadowTextureMatrix[16];
-};
-
-enum { kMinLightGridDim = 8 };
 
 namespace Lighting
 {
-	IntVar LightGridDim("Application/Forward+/Light Grid Dim", 16, kMinLightGridDim, 32, 8 );
+	IntVar LightGridDim("Graphics/Lighting/Forward+/Light Grid Dim", 16, kMinLightGridDim, 32, 8 );
 
 	RootSignature m_FillLightRootSig;
 	ComputePSO m_FillLightGridCS_8(L"Fill Light Grid 8 CS");
@@ -63,9 +49,9 @@ namespace Lighting
 	uint32_t m_FirstConeShadowedLight;
 
 	enum {shadowDim = 512};
-	ColorBuffer m_LightShadowArray;
+	ShadowBuffer m_LightShadowArray;
 	ShadowBuffer m_LightShadowTempBuffer;
-	Matrix4 m_LightShadowMatrix[MaxLights];
+	Math::Camera m_LightShadowCamera[MaxLights];
 
 	void InitializeResources(void);
 	void CreateRandomLights(const Vector3 minBound, const Vector3 maxBound);
@@ -105,7 +91,7 @@ void Lighting::InitializeResources( void )
 	uint32_t lightGridBitMaskSizeBytes = lightGridCells * 4 * 4;
 	m_LightGridBitMask.Create(L"m_LightGridBitMask", lightGridBitMaskSizeBytes, 1);
 
-	m_LightShadowArray.CreateArray(L"m_LightShadowArray", shadowDim, shadowDim, MaxLights, DXGI_FORMAT_R16_UNORM);
+	m_LightShadowArray.CreateArray(L"m_LightShadowArray", shadowDim, shadowDim, MaxLights);
 	m_LightShadowTempBuffer.Create(L"m_LightShadowTempBuffer", shadowDim, shadowDim);
 
 	m_LightBuffer.Create(L"m_LightBuffer", MaxLights, sizeof(LightData));
@@ -117,7 +103,7 @@ void Lighting::CreateRandomLights( const Vector3 minBound, const Vector3 maxBoun
 	Vector3 posBias = minBound;
 
 	// todo: replace this with MT
-	srand(12645);
+	srand(126458);
 	auto randUint = []() -> uint32_t
 	{
 		return rand(); // [0, RAND_MAX]
@@ -169,6 +155,9 @@ void Lighting::CreateRandomLights( const Vector3 minBound, const Vector3 maxBoun
 		Vector3 pos = randVecUniform() * posScale + posBias;
 		float lightRadius = randFloat() * 800.0f + 200.0f;
 
+		//Vector3 pos = Vector3(0, 300, 0);// (minBound + maxBound) / 2;
+		//float lightRadius = (randFloat() * 800.0f + 200.0f) * 3.0f;
+
 		Vector3 color = randVecUniform();
 		float colorScale = randFloat() * .3f + .3f;
 		color = color * colorScale;
@@ -182,6 +171,8 @@ void Lighting::CreateRandomLights( const Vector3 minBound, const Vector3 maxBoun
 		else
 			type = 2;
 
+		type = 2;
+
 		Vector3 coneDir = randVecGaussian();
 		float coneInner = (randFloat() * .2f + .025f) * pi;
 		float coneOuter = coneInner + randFloat() * .1f * pi;
@@ -192,12 +183,10 @@ void Lighting::CreateRandomLights( const Vector3 minBound, const Vector3 maxBoun
 			color = color * 5.0f;
 		}
 
-		Math::Camera shadowCamera;
-		shadowCamera.SetEyeAtUp(pos, pos + coneDir, Vector3(0, 1, 0));
-		shadowCamera.SetPerspectiveMatrix(coneOuter * 2, 1.0f, lightRadius * .05f, lightRadius * 1.0f);
-		shadowCamera.Update();
-		m_LightShadowMatrix[n] = shadowCamera.GetViewProjMatrix();
-		Matrix4 shadowTextureMatrix = Matrix4(AffineTransform(Matrix3::MakeScale( 0.5f, -0.5f, 1.0f ), Vector3(0.5f, 0.5f, 0.0f))) * m_LightShadowMatrix[n];
+		m_LightShadowCamera[n].SetEyeAtUp(pos, pos + coneDir, Vector3(0, 1, 0));
+		m_LightShadowCamera[n].SetPerspectiveMatrix(coneOuter * 2, 1.0f, lightRadius * .05f, lightRadius * 1.0f);
+		m_LightShadowCamera[n].Update();
+		Matrix4 shadowTextureMatrix = Matrix4(AffineTransform(Matrix3::MakeScale( 0.5f, -0.5f, 1.0f ), Vector3(0.5f, 0.5f, 0.0f))) * m_LightShadowCamera[n].GetViewProjMatrix();
 
 		m_LightData[n].pos[0] = pos.GetX();
 		m_LightData[n].pos[1] = pos.GetY();

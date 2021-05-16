@@ -103,12 +103,14 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Src\RayTracingExecute.cpp" />
-    <ClCompile Include="Src\RayTracingInit.cpp" />
+    <ClCompile Include="Src\RayTracingModel.cpp" />
+    <ClCompile Include="Src\RayTracingRender.cpp" />
+    <ClCompile Include="Src\RayTracingPSO.cpp" />
     <ClCompile Include="Src\RayTracingTLAS.cpp" />
-    <ClCompile Include="Src\RenderFrame.cpp" />
+    <ClCompile Include="Src\ViewerRender.cpp" />
     <ClCompile Include="Src\RTModelViewer.cpp" />
     <ClCompile Include="Src\Startup.cpp" />
+    <ClCompile Include="Src\ViewerUpdate.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ItemDefinitionGroup>

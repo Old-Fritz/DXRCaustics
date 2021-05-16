@@ -1,6 +1,6 @@
 #include "RTModelViewer.h"
 
-void RTModelViewer::CreateTLAS(const ModelInstance& model, UINT numMeshes)
+void RTModelViewer::CreateTLAS()
 {
 	const UINT numBottomLevels = 1;
 
@@ -15,11 +15,11 @@ void RTModelViewer::CreateTLAS(const ModelInstance& model, UINT numMeshes)
 	g_pRaytracingDevice->GetRaytracingAccelerationStructurePrebuildInfo(&topLevelInputs, &topLevelPrebuildInfo);
 
 	const D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAGS buildFlag = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE;
-	std::vector<D3D12_RAYTRACING_GEOMETRY_DESC> geometryDescs(model.GetModel()->m_NumMeshes);
+	std::vector<D3D12_RAYTRACING_GEOMETRY_DESC> geometryDescs(m_ModelInst.GetModel()->m_NumMeshes);
 	UINT64 scratchBufferSizeNeeded = topLevelPrebuildInfo.ScratchDataSizeInBytes;
 
-	auto iterator = model.GetModel()->GetMeshIterator();
-	for (UINT i = 0; i < numMeshes; i++)
+	auto iterator = m_ModelInst.GetModel()->GetMeshIterator();
+	for (UINT i = 0; i < m_ModelInst.GetModel()->m_NumMeshes; i++)
 	{
 		auto mesh = iterator.GetMesh(i);
 
@@ -30,8 +30,8 @@ void RTModelViewer::CreateTLAS(const ModelInstance& model, UINT numMeshes)
 		D3D12_RAYTRACING_GEOMETRY_TRIANGLES_DESC& trianglesDesc = desc.Triangles;
 		trianglesDesc.VertexFormat = DXGI_FORMAT_R32G32B32_FLOAT;
 		trianglesDesc.VertexCount = mesh->vbSize / mesh->vbStride;
-		trianglesDesc.VertexBuffer.StartAddress = model.GetModel()->m_DataBuffer.GetGpuVirtualAddress() + mesh->vbOffset;
-		trianglesDesc.IndexBuffer = model.GetModel()->m_DataBuffer.GetGpuVirtualAddress() + mesh->ibOffset;
+		trianglesDesc.VertexBuffer.StartAddress = m_ModelInst.GetModel()->m_DataBuffer.GetGpuVirtualAddress() + mesh->vbOffset;
+		trianglesDesc.IndexBuffer = m_ModelInst.GetModel()->m_DataBuffer.GetGpuVirtualAddress() + mesh->ibOffset;
 		trianglesDesc.VertexBuffer.StrideInBytes = mesh->vbStride;
 		trianglesDesc.IndexCount = mesh->ibSize / ((DXGI_FORMAT)mesh->ibFormat == DXGI_FORMAT_R32_UINT ? 4 : 2);
 		trianglesDesc.IndexFormat = DXGI_FORMAT_R16_UINT;
@@ -45,7 +45,7 @@ void RTModelViewer::CreateTLAS(const ModelInstance& model, UINT numMeshes)
 		D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC& bottomLevelAccelerationStructureDesc = bottomLevelAccelerationStructureDescs[i];
 		D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_INPUTS& bottomLevelInputs = bottomLevelAccelerationStructureDesc.Inputs;
 		bottomLevelInputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
-		bottomLevelInputs.NumDescs = numMeshes;
+		bottomLevelInputs.NumDescs = m_ModelInst.GetModel()->m_NumMeshes;
 		bottomLevelInputs.pGeometryDescs = &geometryDescs[i];
 		bottomLevelInputs.Flags = buildFlag;
 		bottomLevelInputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;

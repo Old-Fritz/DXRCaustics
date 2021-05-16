@@ -46,3 +46,9 @@ void ShadowCamera::UpdateMatrix(
 	// Transform from clip space to texture space
 	m_ShadowMatrix = Matrix4( AffineTransform( Matrix3::MakeScale( 0.5f, -0.5f, 1.0f ), Vector3(0.5f, 0.5f, 0.0f) ) ) * m_ViewProjMatrix;
 }
+
+void ShadowCamera::SetIntersectAll(bool intersectAll)
+{
+	m_FrustumVS.SetIntersectAll(intersectAll);
+	m_FrustumWS.SetIntersectAll(intersectAll);
+}

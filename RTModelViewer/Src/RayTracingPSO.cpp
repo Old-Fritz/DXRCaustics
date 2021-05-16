@@ -25,9 +25,12 @@ void SetPipelineStateStackSize(LPCWSTR raygen, LPCWSTR closestHit, LPCWSTR miss,
 	stateObjectProperties->SetPipelineStackSize(totalStackSize);
 }
 
-void RTModelViewer::InitializeRaytracingStateObjects(const ModelInstance& model, UINT numMeshes)
+void RTModelViewer::InitializeRaytracingStateObjects()
 {
 	ZeroMemory(&g_dynamicCb, sizeof(g_dynamicCb));
+
+	auto& model = m_ModelInst;
+	UINT numMeshes = model.GetModel()->m_NumMeshes;
 
 	InitGlobalRootSignature();
 	InitLocalRootSignature();
