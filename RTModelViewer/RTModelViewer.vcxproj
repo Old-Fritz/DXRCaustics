@@ -109,7 +109,7 @@
     <ClCompile Include="Src\RayTracingTLAS.cpp" />
     <ClCompile Include="Src\ViewerRender.cpp" />
     <ClCompile Include="Src\RTModelViewer.cpp" />
-    <ClCompile Include="Src\Startup.cpp" />
+    <ClCompile Include="Src\ViewerStartup.cpp" />
     <ClCompile Include="Src\ViewerUpdate.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -65,7 +65,7 @@
     <ClCompile Include="Src\RTModelViewer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Startup.cpp">
+    <ClCompile Include="Src\ViewerStartup.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Src\RayTracingRender.cpp">
