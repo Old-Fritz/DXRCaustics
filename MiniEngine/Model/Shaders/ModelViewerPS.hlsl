@@ -11,6 +11,22 @@
 // Author(s):	James Stanard
 
 #include "Common.hlsli"
+
+
+cbuffer PSConstants : register(b0)
+{
+	float3 SunDirection;
+	float3 SunColor;
+	float3 AmbientColor;
+	float4 ShadowTexelSize;
+
+	float4 InvTileDim;
+	uint4 TileCount;
+	uint4 FirstLightIndex;
+
+	uint FrameIndexMod2;
+}
+
 #include "Lighting.hlsli"
 
 Texture2D<float3> texDiffuse		: register(t0);

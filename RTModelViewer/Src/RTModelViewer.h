@@ -42,7 +42,7 @@
 #include "Model.h"
 #include "ModelLoader.h"
 #include "MeshConvert.h"
-
+#include "LightManager.h"
 #include <atlbase.h>
 #include "DXSampleHelper.h"
 
@@ -364,5 +364,6 @@ extern NumVar g_IBLBias;
 
 
 extern ExpVar g_SunLightIntensity;
+extern ExpVar g_AmbientIntensity;
 extern NumVar g_SunOrientation;
 extern NumVar g_SunInclination;

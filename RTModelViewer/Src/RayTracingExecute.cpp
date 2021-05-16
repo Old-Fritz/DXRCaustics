@@ -9,7 +9,7 @@ const char* rayTracingModes[] = {
 	"Diffuse&ShadowRays",
 	"Reflection Rays"
 };
-EnumVar rayTracingMode("Application/Raytracing/RayTraceMode", RTM_DIFFUSE_WITH_SHADOWMAPS, _countof(rayTracingModes), rayTracingModes);
+EnumVar rayTracingMode("Application/Raytracing/RayTraceMode", RTM_OFF, _countof(rayTracingModes), rayTracingModes);
 
 
 void Raytracebarycentrics(

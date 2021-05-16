@@ -16,20 +16,6 @@
 #include "Common.hlsli"
 #include "LightGrid.hlsli"
 
-cbuffer PSConstants : register(b0)
-{
-	float3 SunDirection;
-	float3 SunColor;
-	float3 AmbientColor;
-	float4 ShadowTexelSize;
-
-	float4 InvTileDim;
-	uint4 TileCount;
-	uint4 FirstLightIndex;
-
-	uint FrameIndexMod2;
-}
-
 StructuredBuffer<LightData> lightBuffer : register(t14);
 Texture2DArray<float> lightShadowArrayTex : register(t15);
 ByteAddressBuffer lightGrid : register(t16);

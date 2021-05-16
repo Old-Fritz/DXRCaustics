@@ -46,10 +46,18 @@ cbuffer GlobalConstants : register(b1)
 	float3 ViewerPos;
 	float3 SunDirection;
 	float3 SunIntensity;
-	float _pad;
+	float3 AmbientIntensity;
+	float4 ShadowTexelSize;
+	float4 InvTileDim;
+	uint4 TileCount;
+	uint4 FirstLightIndex;
+	uint FrameIndexMod2;
 	float IBLRange;
 	float IBLBias;
 }
+
+#include "Lighting.hlsli"
+#include "LightingPBR.hlsli"
 
 struct VSOutput
 {
@@ -66,155 +74,11 @@ struct VSOutput
 	float3 sunShadowCoord : TEXCOORD3;
 };
 
-// Numeric constants
-static const float PI = 3.14159265;
-static const float3 kDielectricSpecular = float3(0.04, 0.04, 0.04);
-
-// Flag helpers
-static const uint BASECOLOR = 0;
-static const uint METALLICROUGHNESS = 1;
-static const uint OCCLUSION = 2;
-static const uint EMISSIVE = 3;
-static const uint NORMAL = 4;
 #ifdef NO_SECOND_UV
 #define UVSET( offset ) vsOutput.uv0
 #else
 #define UVSET( offset ) lerp(vsOutput.uv0, vsOutput.uv1, (flags >> offset) & 1)
 #endif
-
-struct SurfaceProperties
-{
-	float3 N;
-	float3 V;
-	float3 c_diff;
-	float3 c_spec;
-	float roughness;
-	float alpha; // roughness squared
-	float alphaSqr; // alpha squared
-	float NdotV;
-};
-
-struct LightProperties
-{
-	float3 L;
-	float NdotL;
-	float LdotH;
-	float NdotH;
-};
-
-//
-// Shader Math
-//
-
-float Pow5(float x)
-{
-	float xSq = x * x;
-	return xSq * xSq * x;
-}
-
-// Shlick's approximation of Fresnel
-float3 Fresnel_Shlick(float3 F0, float3 F90, float cosine)
-{
-	return lerp(F0, F90, Pow5(1.0 - cosine));
-}
-
-float Fresnel_Shlick(float F0, float F90, float cosine)
-{
-	return lerp(F0, F90, Pow5(1.0 - cosine));
-}
-
-// Burley's diffuse BRDF
-float3 Diffuse_Burley(SurfaceProperties Surface, LightProperties Light)
-{
-	float fd90 = 0.5 + 2.0 * Surface.roughness * Light.LdotH * Light.LdotH;
-	return Surface.c_diff * Fresnel_Shlick(1, fd90, Light.NdotL).x * Fresnel_Shlick(1, fd90, Surface.NdotV).x;
-}
-
-// GGX specular D (normal distribution)
-float Specular_D_GGX(SurfaceProperties Surface, LightProperties Light)
-{
-	float lower = lerp(1, Surface.alphaSqr, Light.NdotH * Light.NdotH);
-	return Surface.alphaSqr / max(1e-6, PI * lower * lower);
-}
-
-// Schlick-Smith specular geometric visibility function
-float G_Schlick_Smith(SurfaceProperties Surface, LightProperties Light)
-{
-	return 1.0 / max(1e-6, lerp(Surface.NdotV, 1, Surface.alpha * 0.5) * lerp(Light.NdotL, 1, Surface.alpha * 0.5));
-}
-
-// Schlick-Smith specular visibility with Hable's LdotH approximation
-float G_Shlick_Smith_Hable(SurfaceProperties Surface, LightProperties Light)
-{
-	return 1.0 / lerp(Light.LdotH * Light.LdotH, 1, Surface.alphaSqr * 0.25);
-}
-
-
-// A microfacet based BRDF.
-// alpha:	This is roughness squared as in the Disney PBR model by Burley et al.
-// c_spec:   The F0 reflectance value - 0.04 for non-metals, or RGB for metals.  This is the specular albedo.
-// NdotV, NdotL, LdotH, NdotH:  vector dot products
-//  N - surface normal
-//  V - normalized view vector
-//  L - normalized direction to light
-//  H - normalized half vector (L+V)/2 -- halfway between L and V
-float3 Specular_BRDF(SurfaceProperties Surface, LightProperties Light)
-{
-	// Normal Distribution term
-	float ND = Specular_D_GGX(Surface, Light);
-
-	// Geometric Visibility term
-	//float GV = G_Schlick_Smith(Surface, Light);
-	float GV = G_Shlick_Smith_Hable(Surface, Light);
-
-	// Fresnel term
-	float3 F = Fresnel_Shlick(Surface.c_spec, 1.0, Light.LdotH);
-
-	return ND * GV * F;
-}
-
-float3 ShadeDirectionalLight(SurfaceProperties Surface, float3 L, float3 c_light)
-{
-	LightProperties Light;
-	Light.L = L;
-
-	// Half vector
-	float3 H = normalize(L + Surface.V);
-
-	// Pre-compute dot products
-	Light.NdotL = saturate(dot(Surface.N, L));
-	Light.LdotH = saturate(dot(L, H));
-	Light.NdotH = saturate(dot(Surface.N, H));
-
-	// Diffuse & specular factors
-	float3 diffuse = Diffuse_Burley(Surface, Light);
-	float3 specular = Specular_BRDF(Surface, Light);
-
-	// Directional light
-	return Light.NdotL * c_light * (diffuse + specular);
-}
-
-// Diffuse irradiance
-float3 Diffuse_IBL(SurfaceProperties Surface)
-{
-	// Assumption:  L = N
-
-	//return Surface.c_diff * irradianceIBLTexture.Sample(defaultSampler, Surface.N);
-
-	// This is nicer but more expensive, and specular can often drown out the diffuse anyway
-	float LdotH = saturate(dot(Surface.N, normalize(Surface.N + Surface.V)));
-	float fd90 = 0.5 + 2.0 * Surface.roughness * LdotH * LdotH;
-	float3 DiffuseBurley = Surface.c_diff * Fresnel_Shlick(1, fd90, Surface.NdotV);
-	return DiffuseBurley * irradianceIBLTexture.Sample(defaultSampler, Surface.N);
-}
-
-// Approximate specular IBL by sampling lower mips according to roughness.  Then modulate by Fresnel. 
-float3 Specular_IBL(SurfaceProperties Surface)
-{
-	float lod = Surface.roughness * IBLRange + IBLBias;
-	float3 specular = Fresnel_Shlick(Surface.c_spec, 1, Surface.NdotV);
-	return specular * radianceIBLTexture.SampleLevel(cubeMapSampler, reflect(-Surface.V, Surface.N), lod);
-}
 
 float3 ComputeNormal(VSOutput vsOutput)
 {
@@ -263,33 +127,54 @@ float4 main(VSOutput vsOutput) : SV_Target0
 	// Begin accumulating light starting with emissive
 	float3 colorAccum = emissive;
 
+	uint2 pixelPos = uint2(vsOutput.position.xy);
+	float ssao = texSSAO[pixelPos];
+
+	Surface.c_diff *= ssao;
+	Surface.c_spec *= ssao;
+
+	
 #if 0
-	float sunShadow = texSunShadow.SampleCmpLevelZero( shadowSampler, vsOutput.sunShadowCoord.xy, vsOutput.sunShadowCoord.z );
-	colorAccum += ShadeDirectionalLight(Surface, SunDirection, sunShadow * SunIntensity);
+	{
+		// Add IBL
+		colorAccum += Diffuse_IBL(Surface);
+		colorAccum += Specular_IBL(Surface);
 
-	uint2 pixelPos = uint2(vsOutput.position.xy);
-	float ssao = texSSAO[pixelPos];
-
-	Surface.c_diff *= ssao;
-	Surface.c_spec *= ssao;
-
-	// Old-school ambient light
-	colorAccum += Surface.c_diff * 0.1;
-
+		colorAccum += ApplyDirectionalLightPBR(Surface, SunDirection, SunIntensity, vsOutput.sunShadowCoord, texSunShadow);
+		ShadeLightsPBR(colorAccum, pixelPos, Surface, vsOutput.worldPos);
+	}
 #else
+	{
+		// Old-school ambient light
+		colorAccum += Surface.c_diff * AmbientIntensity;
 
-	uint2 pixelPos = uint2(vsOutput.position.xy);
-	float ssao = texSSAO[pixelPos];
+		float3 viewDir = Surface.V;
+		float gloss = 128.0;
 
-	Surface.c_diff *= ssao;
-	Surface.c_spec *= ssao;
 
-	// Add IBL
-	colorAccum += Diffuse_IBL(Surface);
-	colorAccum += Specular_IBL(Surface);
+		colorAccum += ApplyDirectionalLight(Surface.c_diff,
+			Surface.c_spec, 
+			Surface.alpha, 
+			gloss, 
+			normal, 
+			viewDir, 
+			SunDirection, 
+			SunIntensity, 
+			vsOutput.sunShadowCoord, 
+			texSunShadow);
+
+		ShadeLights(colorAccum,
+			pixelPos,
+			Surface.c_diff,
+			Surface.c_spec,
+			Surface.alpha,
+			gloss,
+			normal,
+			viewDir,
+			vsOutput.worldPos
+		);
+	}
 #endif
-
-	// TODO: Shade each light using Forward+ tiles
 
 	return float4(colorAccum, baseColor.a);
 }

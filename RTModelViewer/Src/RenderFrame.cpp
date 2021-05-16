@@ -126,9 +126,8 @@ void RTModelViewer::RenderScene(void)
 
 		Vector3 SunDirection = Normalize(Vector3(costheta * cosphi, sinphi, sintheta * cosphi));
 		Vector3 ShadowBounds = Vector3(m_ModelInst.GetRadius());
-		//m_SunShadowCamera.UpdateMatrix(-SunDirection, m_ModelInst.GetCenter(), ShadowBounds,
-		m_SunShadowCamera.UpdateMatrix(-SunDirection, Vector3(0, -500.0f, 0), Vector3(5000, 3000, 3000),
-			(uint32_t)g_ShadowBuffer.GetWidth(), (uint32_t)g_ShadowBuffer.GetHeight(), 16);
+		m_SunShadowCamera.UpdateMatrix(-SunDirection, m_ModelInst.GetCenter(), ShadowBounds * 1.5f,
+			(uint32_t)g_ShadowBuffer.GetWidth(), (uint32_t)g_ShadowBuffer.GetHeight(), 1);
 
 		GlobalConstants globals;
 		globals.ViewProjMatrix = m_Camera.GetViewProjMatrix();
@@ -136,6 +135,14 @@ void RTModelViewer::RenderScene(void)
 		globals.CameraPos = m_Camera.GetPosition();
 		globals.SunDirection = SunDirection;
 		globals.SunIntensity = Vector3(Scalar(g_SunLightIntensity));
+		globals.AmbientIntensity = Vector3(1.0f, 1.0f, 1.0f) * g_AmbientIntensity;
+		globals.ShadowTexelSize = Vector4(1.0f / g_ShadowBuffer.GetWidth(), 0.0f, 0.0f, 0.0f);
+		globals.InvTileDim = Vector4(1.0f / Lighting::LightGridDim, 1.0f / Lighting::LightGridDim, 0.0f, 0.0f);
+		globals.TileCount[0] = Math::DivideByMultiple(g_SceneColorBuffer.GetWidth(), Lighting::LightGridDim);
+		globals.TileCount[1] = Math::DivideByMultiple(g_SceneColorBuffer.GetHeight(), Lighting::LightGridDim);
+		globals.FirstLightIndex[0] = Lighting::m_FirstConeLight;
+		globals.FirstLightIndex[1] = Lighting::m_FirstConeShadowedLight;
+		globals.FrameIndexMod2 = FrameIndex;
 
 		// Begin rendering depth
 		gfxContext.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE, true);
@@ -152,17 +159,23 @@ void RTModelViewer::RenderScene(void)
 
 		sorter.Sort();
 
+		// Z pre pass
+
+		//RenderLightShadows(gfxContext, camera);
+
 		{
 			ScopedTimer _prof(L"Depth Pre-Pass", gfxContext);
 			sorter.RenderMeshes(MeshSorter::kZPass, gfxContext, globals);
 		}
 
+		// SSAO
 		SSAO::Render(gfxContext, m_Camera);
 
 		if (!SSAO::DebugDraw)
 		{
 			ScopedTimer _outerprof(L"Main Render", gfxContext);
 
+			if (!skipShadowMap)
 			{
 				ScopedTimer _prof(L"Sun Shadow Map", gfxContext);
 
@@ -175,24 +188,28 @@ void RTModelViewer::RenderScene(void)
 				shadowSorter.Sort();
 				shadowSorter.RenderMeshes(MeshSorter::kZPass, gfxContext, globals);
 			}
-
-			gfxContext.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, true);
-			gfxContext.ClearColor(g_SceneColorBuffer);
-
+			if (!skipDiffusePass)
 			{
-				ScopedTimer _prof(L"Render Color", gfxContext);
+				Lighting::FillLightGrid(gfxContext, m_Camera);
 
-				gfxContext.TransitionResource(g_SSAOFullScreen, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-				gfxContext.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_READ);
-				gfxContext.SetRenderTarget(g_SceneColorBuffer.GetRTV(), g_SceneDepthBuffer.GetDSV_DepthReadOnly());
-				gfxContext.SetViewportAndScissor(viewport, scissor);
+				gfxContext.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, true);
+				gfxContext.ClearColor(g_SceneColorBuffer);
 
-				sorter.RenderMeshes(MeshSorter::kOpaque, gfxContext, globals);
+				{
+					ScopedTimer _prof(L"Render Color", gfxContext);
+
+					gfxContext.TransitionResource(g_SSAOFullScreen, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+					gfxContext.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_READ);
+					gfxContext.SetRenderTarget(g_SceneColorBuffer.GetRTV(), g_SceneDepthBuffer.GetDSV_DepthReadOnly());
+					gfxContext.SetViewportAndScissor(viewport, scissor);
+
+					sorter.RenderMeshes(MeshSorter::kOpaque, gfxContext, globals);
+				}
+
+				Renderer::DrawSkybox(gfxContext, m_Camera, viewport, scissor);
+
+				sorter.RenderMeshes(MeshSorter::kTransparent, gfxContext, globals);
 			}
-
-			Renderer::DrawSkybox(gfxContext, m_Camera, viewport, scissor);
-
-			sorter.RenderMeshes(MeshSorter::kTransparent, gfxContext, globals);
 		}
 	}
 

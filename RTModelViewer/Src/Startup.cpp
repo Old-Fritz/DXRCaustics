@@ -174,8 +174,8 @@ void RTModelViewer::Startup(void)
 		m_ModelInst.Resize(g_ModelScale * m_ModelInst.GetRadius());
 		OrientedBox obb = m_ModelInst.GetBoundingBox();
 		float modelRadius = Length(obb.GetDimensions()) * 0.5f;
-		const Vector3 eye = obb.GetCenter() + Vector3(modelRadius * 0.5f, 0.0f, 0.0f);
-		m_Camera.SetEyeAtUp(eye, Vector3(kZero), Vector3(kYUnitVector));
+		const Vector3 eye = obb.GetCenter() + Vector3(modelRadius * 0.3f, -modelRadius * 0.1f, 0.0f);
+		m_Camera.SetEyeAtUp(eye, Vector3(kZero) + Vector3(0.0, modelRadius * 0.1f, 0.0f), Vector3(kYUnitVector));
 	}
 	else
 	{
@@ -243,6 +243,8 @@ void RTModelViewer::Startup(void)
 	m_CameraPosArray[4].position = Vector3(-1463.0f, 600.0f, 394.52f);
 	m_CameraPosArray[4].heading = -1.236f;
 	m_CameraPosArray[4].pitch = 0.0f;
+
+	Lighting::CreateRandomLights(m_ModelInst.GetCenter() - m_ModelInst.GetBoundingBox().GetDimensions() / 2.0f, m_ModelInst.GetCenter() + m_ModelInst.GetBoundingBox().GetDimensions() / 2.0f);
 }
 
 void RTModelViewer::Cleanup(void)
@@ -251,5 +253,6 @@ void RTModelViewer::Cleanup(void)
 
 	g_IBLTextures.clear();
 
+	Lighting::Shutdown();
 	Renderer::Shutdown();
 }
