@@ -36,4 +36,16 @@ struct MaterialConstantsRT
 	uint __pad1[52];
 };
 
+struct MeshConstantsRT
+{
+	float4x4 world;
+	float3 worldIT_0;
+	uint __pad0;
+	float3 worldIT_1;
+	uint __pad1;
+	float3 worldIT_2;
+	uint __pad2;
+	uint __pad3[36];
+};
+
 #endif //RAYTRACING_USER_HLSL_COMPAT_H_INCLUDED

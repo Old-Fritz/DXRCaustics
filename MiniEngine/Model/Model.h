@@ -151,8 +151,7 @@ public:
 	std::unique_ptr<Math::Matrix4[]> m_JointIBMs;
 
 	const MeshIterator GetMeshIterator() const;
-	void CreateVertexBufferSRV(D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle) const;
-	void CreateIndexBufferSRV(D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle) const;
+	void CreateMeshDataSRV(D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle) const;
 
 protected:
 	void Destroy();
@@ -191,6 +190,7 @@ public:
 	void LoopAllAnimations(void);
 
 	std::shared_ptr<const Model> GetModel() const;
+	const ByteAddressBuffer& GetMeshConstantsGPU() const { return m_MeshConstantsGPU; }
 
 private:
 	std::shared_ptr<const Model> m_Model;

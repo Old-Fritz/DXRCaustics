@@ -101,14 +101,10 @@ void RTModelViewer::InitializeRTViews()
 		Graphics::g_Device->CopyDescriptorsSimple(1, srvHandle, g_SceneMeshInfo, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 		g_SceneSrvs = g_pRaytracingDescriptorHeap->GetGpuHandle(srvDescriptorIndex);
 
-		// IB
+		// mesh data
 		UINT unused;
 		g_pRaytracingDescriptorHeap->AllocateDescriptor(srvHandle, unused);
-		m_ModelInst.GetModel()->CreateIndexBufferSRV(srvHandle);
-
-		// VB
-		g_pRaytracingDescriptorHeap->AllocateDescriptor(srvHandle, unused);
-		m_ModelInst.GetModel()->CreateVertexBufferSRV(srvHandle);
+		m_ModelInst.GetModel()->CreateMeshDataSRV(srvHandle);
 
 		// Shadows
 		g_pRaytracingDescriptorHeap->AllocateDescriptor(srvHandle, unused);
@@ -121,10 +117,15 @@ void RTModelViewer::InitializeRTViews()
 		// materail constants
 		g_pRaytracingDescriptorHeap->AllocateDescriptor(srvHandle, unused);
 		Graphics::g_Device->CopyDescriptorsSimple(1, srvHandle, m_ModelInst.GetModel()->m_MaterialConstants.GetSRV(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+		// mesh constants
+		g_pRaytracingDescriptorHeap->AllocateDescriptor(srvHandle, unused);
+		Graphics::g_Device->CopyDescriptorsSimple(1, srvHandle, m_ModelInst.GetMeshConstantsGPU().GetSRV(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	}
 
 	// Local
 	{
+		// srv textures
 		D3D12_CPU_DESCRIPTOR_HANDLE srvHandle;
 
 		for (UINT i = 0; i < m_ModelInst.GetModel()->m_NumMaterials; i++)

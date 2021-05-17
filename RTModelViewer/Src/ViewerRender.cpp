@@ -179,10 +179,9 @@ void RTModelViewer::RenderScene(void)
 
 	UpdateGlobalConstants(globals);
 
-	RenderPostProces(gfxContext);
-
 	RenderRaytrace(gfxContext, globals);
 
+	RenderPostProces(gfxContext);
 
 	gfxContext.Finish();
 }

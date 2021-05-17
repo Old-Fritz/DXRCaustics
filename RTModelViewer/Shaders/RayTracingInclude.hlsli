@@ -23,17 +23,17 @@ RWTexture2D<float4> g_screenOutput : register(u2);
 cbuffer HitShaderConstants : register(b0)
 {
 	column_major float4x4	SunShadowMatrix;
-	float4		ViewerPos;
-	float4		SunDirection;
-	float4		SunIntensity;
-	float4		AmbientIntensity;
-	float4		ShadowTexelSize;
-	float4		InvTileDim;
-	uint4		TileCount;
-	uint4		FirstLightIndex;
-	float		ModelScale;
-	uint		IsReflection;
-	uint		UseShadowRays;
+	float4					ViewerPos;
+	float4					SunDirection;
+	float4					SunIntensity;
+	float4					AmbientIntensity;
+	float4					ShadowTexelSize;
+	float4					InvTileDim;
+	uint4					TileCount;
+	uint4					FirstLightIndex;
+	float					ModelScale;
+	uint					IsReflection;
+	uint					UseShadowRays;
 }
 
 cbuffer b1 : register(b1)

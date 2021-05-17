@@ -27,11 +27,11 @@ cbuffer Material : register(b3)
 
 // SCENE BUFFERS (global range 1-6)
 StructuredBuffer<RayTraceMeshInfo>		g_meshInfo					: register(t1);
-ByteAddressBuffer						g_indices					: register(t2);
-ByteAddressBuffer						g_attributes				: register(t3);
-Texture2D<float>						texShadow					: register(t4);
-Texture2D<float>						texSSAO						: register(t5);
-StructuredBuffer<MaterialConstantsRT>	g_materialConstants			: register(t6);
+ByteAddressBuffer						g_meshData					: register(t2);
+Texture2D<float>						texShadow					: register(t3);
+Texture2D<float>						texSSAO						: register(t4);
+StructuredBuffer<MaterialConstantsRT>	g_materialConstants			: register(t5);
+StructuredBuffer<MeshConstantsRT>		g_meshConstants				: register(t6);
 
 // MATERIAL TEXTURES (local range 7-11)
 Texture2D<float4>						g_localTexture				: register(t7);
@@ -61,7 +61,7 @@ uint3 Load3x16BitIndices(
 {
 	const uint dwordAlignedOffset = offsetBytes & ~3;
 
-	const uint2 four16BitIndices = g_indices.Load2(dwordAlignedOffset);
+	const uint2 four16BitIndices = g_meshData.Load2(dwordAlignedOffset);
 
 	uint3 indices;
 
@@ -105,22 +105,24 @@ float GetShadow(float3 ShadowCoord)
 // unpack attributes
 float2 GetUVAttribute(uint byteOffset)
 {
-	return UnPackFloat16_2(g_attributes.Load(byteOffset));
+	return UnPackFloat16_2(g_meshData.Load(byteOffset));
 }
 
 float4 GetNormalAttribute(uint byteOffset)
 {
-	return UnPackDec4(g_attributes.Load(byteOffset)) * 2 - 1;
+	// TODO: change to worldIT mul
+	return (UnPackDec4(g_meshData.Load(byteOffset)) * 2 - 1) / 100.0f;
 }
 
 float4 GetTangentAttribute(uint byteOffset)
 {
-	return UnPackDec4(g_attributes.Load(byteOffset));
+	// TODO: change to worldIT mul
+	return (UnPackDec4(g_meshData.Load(byteOffset)) * 2 - 1) / 100.0f;
 }
 
 float3 GetPositionAttribute(uint byteOffset)
 {
-	return asfloat(g_attributes.Load3(byteOffset)) * ModelScale;
+	return asfloat(g_meshData.Load3(byteOffset)) * ModelScale;
 }
 
 float3 RayPlaneIntersection(float3 planeOrigin, float3 planeNormal, float3 rayOrigin, float3 rayDirection)
@@ -167,6 +169,11 @@ void Hit(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attr
 	// ---------------------------------------------- //
 
 	RayTraceMeshInfo info = g_meshInfo[materialID];
+	MeshConstantsRT meshConstants = g_meshConstants[materialID];
+	float3x3 worldIT = float3x3(meshConstants.worldIT_0, meshConstants.worldIT_1, meshConstants.worldIT_2);
+	//worldIT = float3x3(0.01f, 0, 0,
+	//	0, 0.01f, 0,
+	//	0, 0, 0.01f);
 
 	const uint3 ii = Load3x16BitIndices(info.m_indexOffsetBytes + triangleID * 3 * 2);
 	const float2 uv0 = GetUVAttribute(info.m_uvAttributeOffsetBytes + ii.x * info.m_attributeStrideBytes);
@@ -181,23 +188,25 @@ void Hit(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attr
 	const float4 normal2 = GetNormalAttribute(info.m_normalAttributeOffsetBytes + ii.z * info.m_attributeStrideBytes);
 	const float4 normalW = normal0 * bary.x + normal1 * bary.y + normal2 * bary.z;
 	float3 vsNormal = normalize(normalW.xyz);
-	
+	//float3 vsNormal = mul(worldIT, normalW.xyz);
+
 	const float4 tangent0 = GetTangentAttribute(info.m_tangentAttributeOffsetBytes + ii.x * info.m_attributeStrideBytes);
 	const float4 tangent1 = GetTangentAttribute(info.m_tangentAttributeOffsetBytes + ii.y * info.m_attributeStrideBytes);
 	const float4 tangent2 = GetTangentAttribute(info.m_tangentAttributeOffsetBytes + ii.z * info.m_attributeStrideBytes);
 	const float4 tangentW = tangent0 * bary.x + tangent1 * bary.y + tangent2 * bary.z;
 	float3 vsTangent = normalize(tangentW.xyz);
+	//float3 vsTangent = mul(worldIT, tangentW.xyz);
 
 	// Reintroduced the bitangent because we aren't storing the handedness of the tangent frame anywhere.  Assuming the space
 	// is right-handed causes normal maps to invert for some surfaces.  The Sponza mesh has all three axes of the tangent frame.
 	//bool isRightHanded = true;
 	//float scaleBitangent = (isRightHanded ? 1.0 : -1.0);
 	float scaleBitangent = tangentW.w; 
-	float3 vsBitangent = normalize(cross(vsNormal, vsTangent)) * scaleBitangent;
+	float3 vsBitangent = normalize(cross(vsNormal, vsTangent) * scaleBitangent);
 
-	//const float3 bitangent0 = asfloat(g_attributes.Load3(info.m_bitangentAttributeOffsetBytes + ii.x * info.m_attributeStrideBytes));
-	//const float3 bitangent1 = asfloat(g_attributes.Load3(info.m_bitangentAttributeOffsetBytes + ii.y * info.m_attributeStrideBytes));
-	//const float3 bitangent2 = asfloat(g_attributes.Load3(info.m_bitangentAttributeOffsetBytes + ii.z * info.m_attributeStrideBytes));
+	//const float3 bitangent0 = asfloat(g_meshData.Load3(info.m_bitangentAttributeOffsetBytes + ii.x * info.m_attributeStrideBytes));
+	//const float3 bitangent1 = asfloat(g_meshData.Load3(info.m_bitangentAttributeOffsetBytes + ii.y * info.m_attributeStrideBytes));
+	//const float3 bitangent2 = asfloat(g_meshData.Load3(info.m_bitangentAttributeOffsetBytes + ii.z * info.m_attributeStrideBytes));
 	//float3 vsBitangent = normalize(bitangent0 * bary.x + bitangent1 * bary.y + bitangent2 * bary.z);
 
 	// TODO: Should just store uv partial derivatives in here rather than loading position and caculating it per pixel
