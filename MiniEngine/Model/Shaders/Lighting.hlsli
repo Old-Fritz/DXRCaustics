@@ -13,8 +13,10 @@
 //
 // Thanks to Michal Drobot for his feedback.
 
+#ifndef RAY_TRACING
 #include "Common.hlsli"
 #include "LightGrid.hlsli"
+#endif
 
 StructuredBuffer<LightData> lightBuffer : register(t14);
 Texture2DArray<float> lightShadowArrayTex : register(t15);

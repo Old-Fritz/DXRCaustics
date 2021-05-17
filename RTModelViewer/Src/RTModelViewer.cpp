@@ -20,7 +20,7 @@ D3D12_GPU_DESCRIPTOR_HANDLE g_GpuSceneMaterialSrvs[MaxMaterials];
 D3D12_CPU_DESCRIPTOR_HANDLE g_SceneMeshInfo;
 
 D3D12_GPU_DESCRIPTOR_HANDLE g_OutputUAV;
-D3D12_GPU_DESCRIPTOR_HANDLE g_DepthAndNormalsTable;
+D3D12_GPU_DESCRIPTOR_HANDLE g_LightingSrvs;
 D3D12_GPU_DESCRIPTOR_HANDLE g_SceneSrvs;
 
 std::vector<CComPtr<ID3D12Resource>>   g_bvh_bottomLevelAccelerationStructures;
@@ -44,7 +44,7 @@ DynamicEnumVar g_IBLSet("Viewer/Lighting/Environment", ChangeIBLSet);
 NumVar g_IBLBias("Viewer/Lighting/Gloss Reduction", 4.0f, 0.0f, 10.0f, 1.0f, ChangeIBLBias);
 
 ExpVar g_SunLightIntensity("Viewer/Lighting/Sun Light Intensity", 4.0f, 0.0f, 16.0f, 0.1f);
-ExpVar g_AmbientIntensity("Viewer/Lighting/Sun Light Intensity", 0.1f, -16.0f, 16.0f, 0.1f);
+ExpVar g_AmbientIntensity("Viewer/Lighting/Ambient Intensity", 0.1f, -16.0f, 16.0f, 0.1f);
 
 NumVar g_SunOrientation("Viewer/Lighting/Sun Orientation", -0.5f, -100.0f, 100.0f, 0.1f);
 NumVar g_SunInclination("Viewer/Lighting/Sun Inclination", 0.75f, 0.0f, 1.0f, 0.01f);

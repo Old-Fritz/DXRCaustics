@@ -135,9 +135,11 @@ float4 main(VSOutput vsOutput) : SV_Target0
 	
 #if 1
 	{
+		colorAccum += Surface.c_diff * AmbientIntensity;
+
 		// Add IBL
-		colorAccum += Diffuse_IBL(Surface);
-		colorAccum += Specular_IBL(Surface);
+		//colorAccum += Diffuse_IBL(Surface);
+		//colorAccum += Specular_IBL(Surface);
 
 		colorAccum += ApplyDirectionalLightPBR(Surface, SunDirection, SunIntensity, vsOutput.sunShadowCoord, texSunShadow);
 		ShadeLightsPBR(colorAccum, pixelPos, Surface, vsOutput.worldPos);

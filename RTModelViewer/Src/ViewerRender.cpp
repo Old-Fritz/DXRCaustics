@@ -19,16 +19,16 @@ void RTModelViewer::UpdateGlobalConstants(GlobalConstants& globals)
 
 	globals.ViewProjMatrix = m_Camera.GetViewProjMatrix();
 	globals.SunShadowMatrix = m_SunShadowCamera.GetShadowMatrix();
-	globals.CameraPos = m_Camera.GetPosition();
-	globals.SunDirection = SunDirection;
-	globals.SunIntensity = Vector3(Scalar(g_SunLightIntensity));
-	globals.AmbientIntensity = Vector3(1.0f, 1.0f, 1.0f) * g_AmbientIntensity;
+	globals.CameraPos = Vector4(m_Camera.GetPosition(), 0.0f);
+	globals.SunDirection = Vector4(SunDirection, 0.0f);
+	globals.SunIntensity = Vector4(Vector3(Scalar(g_SunLightIntensity)), 0.0f);
+	globals.AmbientIntensity = Vector4(1.0f, 1.0f, 1.0f, 0.0f) * g_AmbientIntensity;
 	globals.ShadowTexelSize = Vector4(1.0f / g_ShadowBuffer.GetWidth(), 0.0f, 0.0f, 0.0f);
 	globals.InvTileDim = Vector4(1.0f / Lighting::LightGridDim, 1.0f / Lighting::LightGridDim, 0.0f, 0.0f);
-	globals.TileCount[0] = Math::DivideByMultiple(g_SceneColorBuffer.GetWidth(), Lighting::LightGridDim);
-	globals.TileCount[1] = Math::DivideByMultiple(g_SceneColorBuffer.GetHeight(), Lighting::LightGridDim);
-	globals.FirstLightIndex[0] = Lighting::m_FirstConeLight;
-	globals.FirstLightIndex[1] = Lighting::m_FirstConeShadowedLight;
+	globals.TileCount.x = Math::DivideByMultiple(g_SceneColorBuffer.GetWidth(), Lighting::LightGridDim);
+	globals.TileCount.y = Math::DivideByMultiple(g_SceneColorBuffer.GetHeight(), Lighting::LightGridDim);
+	globals.FirstLightIndex.x = Lighting::m_FirstConeLight;
+	globals.FirstLightIndex.y = Lighting::m_FirstConeShadowedLight;
 	globals.FrameIndexMod2 = TemporalEffects::GetFrameIndexMod2();
 }
 
@@ -42,7 +42,7 @@ void RTModelViewer::RenderLightShadows(GraphicsContext& gfxContext, GlobalConsta
 	{
 		wchar_t str[1024];
 		wsprintf(str, L"RenderLightShadows: %d", i);
-		ScopedTimer _prof(str, gfxContext);
+		ScopedTimer _profLocal(str, gfxContext);
 		
 		MeshSorter shadowSorter(MeshSorter::kShadows);
 		shadowSorter.SetCamera(m_LightShadowCamera[i]);
@@ -169,17 +169,20 @@ void RTModelViewer::RenderScene(void)
 			RenderLightShadows(gfxContext, globals);
 		}
 
+		Lighting::FillLightGrid(gfxContext, m_Camera);
+
 		if (!skipDiffusePass)
 		{
-			Lighting::FillLightGrid(gfxContext, m_Camera);
-
 			RenderColor(gfxContext, sorter, globals);
 		}
 	}
 
+	UpdateGlobalConstants(globals);
+
 	RenderPostProces(gfxContext);
 
-	RenderRaytrace(gfxContext);
+	RenderRaytrace(gfxContext, globals);
+
 
 	gfxContext.Finish();
 }

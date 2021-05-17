@@ -10,7 +10,7 @@
 //*********************************************************
 
 #define HLSL
-#include "ModelViewerRaytracing.h"
+#include "RayTracingInclude.hlsli"
 
 [shader("closesthit")]
 void Hit(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attr)

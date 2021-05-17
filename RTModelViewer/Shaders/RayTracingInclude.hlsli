@@ -1,44 +1,39 @@
-#ifndef HLSL
-#include "HlslCompat.h"
-#endif
+#ifndef RAYTRACING_INPUT_H_INCLUDED
+#define RAYTRACING_INPUT_H_INCLUDED
 
-#ifdef HLSL
+#include "RayTracingHlslCompat.h"
+
 struct RayPayload
 {
 	bool SkipShading;
 	float RayHitT;
 };
 
-#endif
-
-#pragma once
-// Volatile part (can be split into its own CBV). 
-struct DynamicCB
-{
-	float4x4 cameraToWorld;
-	float3   worldCameraPosition;
-	uint	 padding;
-	float2   resolution;
-};
-#ifdef HLSL
 #ifndef SINGLE
 static const float FLT_MAX = asfloat(0x7F7FFFFF);
 #endif
 
+// TLAS (global view 0)
 RaytracingAccelerationStructure g_accel : register(t0);
 
+// OUTPUTS ( global range 2-10)
 RWTexture2D<float4> g_screenOutput : register(u2);
 
+// GLOBAL CONSTANT BUFFERS (0, 1)
 cbuffer HitShaderConstants : register(b0)
 {
-	float3 SunDirection;
-	float3 SunColor;
-	float3 AmbientColor;
-	float4 ShadowTexelSize;
-	float4x4 ModelToShadow;
-	float ModelScale;
-	uint IsReflection;
-	uint UseShadowRays;
+	column_major float4x4	SunShadowMatrix;
+	float4		ViewerPos;
+	float4		SunDirection;
+	float4		SunIntensity;
+	float4		AmbientIntensity;
+	float4		ShadowTexelSize;
+	float4		InvTileDim;
+	uint4		TileCount;
+	uint4		FirstLightIndex;
+	float		ModelScale;
+	uint		IsReflection;
+	uint		UseShadowRays;
 }
 
 cbuffer b1 : register(b1)
@@ -60,4 +55,5 @@ inline void GenerateCameraRay(uint2 index, out float3 origin, out float3 directi
 	origin = g_dynamic.worldCameraPosition;
 	direction = normalize(world - origin);
 }
-#endif
+
+#endif // RAYTRACING_INPUT_H_INCLUDED

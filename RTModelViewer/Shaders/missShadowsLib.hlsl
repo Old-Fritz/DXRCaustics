@@ -10,7 +10,7 @@
 //*********************************************************
 
 #define HLSL
-#include "ModelViewerRaytracing.h"
+#include "RayTracingInclude.hlsli"
 
 [shader("miss")]
 void Miss(inout RayPayload payload)

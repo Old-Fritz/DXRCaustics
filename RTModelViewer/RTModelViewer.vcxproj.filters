@@ -4,9 +4,6 @@
     <ClInclude Include="Shaders\RayTracingHlslCompat.h">
       <Filter>Shaders</Filter>
     </ClInclude>
-    <ClInclude Include="Shaders\ModelViewerRayTracing.h">
-      <Filter>Shaders</Filter>
-    </ClInclude>
     <ClInclude Include="Shaders\Unpacking.hlsli">
       <Filter>Shaders</Filter>
     </ClInclude>
@@ -15,6 +12,9 @@
     </ClInclude>
     <ClInclude Include="Src\RTModelViewer.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\RayTracingInclude.hlsli">
+      <Filter>Shaders</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

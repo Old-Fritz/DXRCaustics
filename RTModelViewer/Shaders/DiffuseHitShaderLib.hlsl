@@ -12,31 +12,49 @@
 //
 
 #define HLSL
-#include "ModelViewerRaytracing.h"
-#include "RayTracingHlslCompat.h"
+#define RAY_TRACING
+
+#include "RayTracingInclude.hlsli"
 #include "Unpacking.hlsli"
 
+#include "../../MiniEngine/Model/Shaders/LightGrid.hlsli"
+
+// MATERIAL INDEX (local contant 3)
 cbuffer Material : register(b3)
 {
 	uint MaterialID;
 }
 
-StructuredBuffer<RayTraceMeshInfo> g_meshInfo : register(t1);
-ByteAddressBuffer g_indices : register(t2);
-ByteAddressBuffer g_attributes : register(t3);
-Texture2D<float> texShadow : register(t4);
-Texture2D<float> texSSAO : register(t5);
-StructuredBuffer<MaterialConstantsRT> g_materialConstants : register(t6);
-SamplerState	  g_s0 : register(s0);
-SamplerComparisonState shadowSampler : register(s1);
+// SCENE BUFFERS (global range 1-6)
+StructuredBuffer<RayTraceMeshInfo>		g_meshInfo					: register(t1);
+ByteAddressBuffer						g_indices					: register(t2);
+ByteAddressBuffer						g_attributes				: register(t3);
+Texture2D<float>						texShadow					: register(t4);
+Texture2D<float>						texSSAO						: register(t5);
+StructuredBuffer<MaterialConstantsRT>	g_materialConstants			: register(t6);
 
-Texture2D<float4> g_localTexture : register(t7);
-Texture2D<float4> g_localMetallicRoughness : register(t8);
-Texture2D<float4> g_localOcclusion : register(t9);
-Texture2D<float4> g_localEmissive : register(t10);
-Texture2D<float4> g_localNormal : register(t11);
+// MATERIAL TEXTURES (local range 7-11)
+Texture2D<float4>						g_localTexture				: register(t7);
+Texture2D<float3>						g_localMetallicRoughness	: register(t8);
+Texture2D<float1>						g_localOcclusion			: register(t9);
+Texture2D<float3>						g_localEmissive				: register(t10);
+Texture2D<float3>						g_localNormal				: register(t11);
 
-Texture2D<float4>   normals  : register(t13);
+// LIGHTING BUFFERS (global range 12-17)
+Texture2D<float>						depth						: register(t12);
+Texture2D<float4>						normals						: register(t13);
+// from Lighting.hlsli
+// StructuredBuffer<LightData>				lightBuffer					: register(t14);
+// Texture2DArray<float>					lightShadowArrayTex			: register(t15);
+// ByteAddressBuffer						lightGrid					: register(t16);
+// ByteAddressBuffer						lightGridBitMask			: register(t17);
+
+// SAMPLERS (global sfatic 0, 1)
+SamplerState							g_s0						: register(s0);
+SamplerComparisonState					shadowSampler				: register(s1);
+
+#include "../../MiniEngine/Model/Shaders/Lighting.hlsli"
+#include "../../MiniEngine/Model/Shaders/LightingPBR.hlsli"
 
 uint3 Load3x16BitIndices(
 	uint offsetBytes)
@@ -84,17 +102,18 @@ float GetShadow(float3 ShadowCoord)
 	return result * result;
 }
 
+// unpack attributes
 float2 GetUVAttribute(uint byteOffset)
 {
 	return UnPackFloat16_2(g_attributes.Load(byteOffset));
 }
 
-float3 GetNormalAttribute(uint byteOffset)
+float4 GetNormalAttribute(uint byteOffset)
 {
-	return UnPackDec4(g_attributes.Load(byteOffset));
+	return UnPackDec4(g_attributes.Load(byteOffset)) * 2 - 1;
 }
 
-float3 GetTangentAttribute(uint byteOffset)
+float4 GetTangentAttribute(uint byteOffset)
 {
 	return UnPackDec4(g_attributes.Load(byteOffset));
 }
@@ -102,45 +121,6 @@ float3 GetTangentAttribute(uint byteOffset)
 float3 GetPositionAttribute(uint byteOffset)
 {
 	return asfloat(g_attributes.Load3(byteOffset)) * ModelScale;
-}
-
-void AntiAliasSpecular(inout float3 texNormal, inout float gloss)
-{
-	float normalLenSq = dot(texNormal, texNormal);
-	float invNormalLen = rsqrt(normalLenSq);
-	texNormal *= invNormalLen;
-	gloss = lerp(1, gloss, rcp(invNormalLen));
-}
-
-// Apply fresnel to modulate the specular albedo
-void FSchlick(inout float3 specular, inout float3 diffuse, float3 lightDir, float3 halfVec)
-{
-	float fresnel = pow(1.0 - saturate(dot(lightDir, halfVec)), 5.0);
-	specular = lerp(specular, 1, fresnel);
-	diffuse = lerp(diffuse, 0, fresnel);
-}
-
-float3 ApplyLightCommon(
-	float3	diffuseColor,	// Diffuse albedo
-	float3	specularColor,	// Specular albedo
-	float	specularMask,	// Where is it shiny or dingy?
-	float	gloss,			// Specular power
-	float3	normal,			// World-space normal
-	float3	viewDir,		// World-space vector from eye to point
-	float3	lightDir,		// World-space vector from point to light
-	float3	lightColor		// Radiance of directional light
-)
-{
-	float3 halfVec = normalize(lightDir - viewDir);
-	float nDotH = saturate(dot(halfVec, normal));
-
-	FSchlick(specularColor, diffuseColor, lightDir, halfVec);
-
-	float specularFactor = specularMask * pow(nDotH, gloss) * (gloss + 2) / 8;
-
-	float nDotL = saturate(dot(normal, lightDir));
-
-	return nDotL * lightColor * (diffuseColor + specularFactor * specularColor);
 }
 
 float3 RayPlaneIntersection(float3 planeOrigin, float3 planeNormal, float3 rayOrigin, float3 rayDirection)
@@ -182,6 +162,10 @@ void Hit(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attr
 	uint materialID = MaterialID;
 	uint triangleID = PrimitiveIndex();
 
+	  // ---------------------------------------------- //
+	 // ------------ EXTRACT MESH DATA --------------- //
+	// ---------------------------------------------- //
+
 	RayTraceMeshInfo info = g_meshInfo[materialID];
 
 	const uint3 ii = Load3x16BitIndices(info.m_indexOffsetBytes + triangleID * 3 * 2);
@@ -192,20 +176,25 @@ void Hit(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attr
 	float3 bary = float3(1.0 - attr.barycentrics.x - attr.barycentrics.y, attr.barycentrics.x, attr.barycentrics.y);
 	float2 uv = bary.x * uv0 + bary.y * uv1 + bary.z * uv2;
 
-	const float3 normal0 = GetNormalAttribute(info.m_normalAttributeOffsetBytes + ii.x * info.m_attributeStrideBytes);
-	const float3 normal1 = GetNormalAttribute(info.m_normalAttributeOffsetBytes + ii.y * info.m_attributeStrideBytes);
-	const float3 normal2 = GetNormalAttribute(info.m_normalAttributeOffsetBytes + ii.z * info.m_attributeStrideBytes);
-	float3 vsNormal = normalize(normal0 * bary.x + normal1 * bary.y + normal2 * bary.z);
+	const float4 normal0 = GetNormalAttribute(info.m_normalAttributeOffsetBytes + ii.x * info.m_attributeStrideBytes);
+	const float4 normal1 = GetNormalAttribute(info.m_normalAttributeOffsetBytes + ii.y * info.m_attributeStrideBytes);
+	const float4 normal2 = GetNormalAttribute(info.m_normalAttributeOffsetBytes + ii.z * info.m_attributeStrideBytes);
+	const float4 normalW = normal0 * bary.x + normal1 * bary.y + normal2 * bary.z;
+	float3 vsNormal = normalize(normalW.xyz);
 	
-	const float3 tangent0 = GetTangentAttribute(info.m_tangentAttributeOffsetBytes + ii.x * info.m_attributeStrideBytes);
-	const float3 tangent1 = GetTangentAttribute(info.m_tangentAttributeOffsetBytes + ii.y * info.m_attributeStrideBytes);
-	const float3 tangent2 = GetTangentAttribute(info.m_tangentAttributeOffsetBytes + ii.z * info.m_attributeStrideBytes);
-	float3 vsTangent = normalize(tangent0 * bary.x + tangent1 * bary.y + tangent2 * bary.z);
+	const float4 tangent0 = GetTangentAttribute(info.m_tangentAttributeOffsetBytes + ii.x * info.m_attributeStrideBytes);
+	const float4 tangent1 = GetTangentAttribute(info.m_tangentAttributeOffsetBytes + ii.y * info.m_attributeStrideBytes);
+	const float4 tangent2 = GetTangentAttribute(info.m_tangentAttributeOffsetBytes + ii.z * info.m_attributeStrideBytes);
+	const float4 tangentW = tangent0 * bary.x + tangent1 * bary.y + tangent2 * bary.z;
+	float3 vsTangent = normalize(tangentW.xyz);
 
 	// Reintroduced the bitangent because we aren't storing the handedness of the tangent frame anywhere.  Assuming the space
 	// is right-handed causes normal maps to invert for some surfaces.  The Sponza mesh has all three axes of the tangent frame.
-	bool isRightHanded = true;
-	float3 vsBitangent = normalize(cross(vsNormal, vsTangent)) * (isRightHanded ? 1.0 : -1.0);
+	//bool isRightHanded = true;
+	//float scaleBitangent = (isRightHanded ? 1.0 : -1.0);
+	float scaleBitangent = tangentW.w; 
+	float3 vsBitangent = normalize(cross(vsNormal, vsTangent)) * scaleBitangent;
+
 	//const float3 bitangent0 = asfloat(g_attributes.Load3(info.m_bitangentAttributeOffsetBytes + ii.x * info.m_attributeStrideBytes));
 	//const float3 bitangent1 = asfloat(g_attributes.Load3(info.m_bitangentAttributeOffsetBytes + ii.y * info.m_attributeStrideBytes));
 	//const float3 bitangent2 = asfloat(g_attributes.Load3(info.m_bitangentAttributeOffsetBytes + ii.z * info.m_attributeStrideBytes));
@@ -218,6 +207,11 @@ void Hit(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attr
 
 	float3 worldPosition = WorldRayOrigin() + WorldRayDirection() * RayTCurrent();
 
+
+	  // ---------------------------------------------- //
+	 // ----------------- TEXTURE UV ----------------- //
+	// ---------------------------------------------- //
+	
 	//---------------------------------------------------------------------------------------------
 	// Compute partial derivatives of UV coordinates:
 	//
@@ -249,65 +243,78 @@ void Hit(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attr
 	float2 ddxUV = mul(baryX, uvMat) - uv;
 	float2 ddyUV = mul(baryY, uvMat) - uv;
 
-	//---------------------------------------------------------------------------------------------
+	  // ---------------------------------------------- //
+	 // ------------ SURFACE CREATION ---------------- //
+	// ---------------------------------------------- //
 
-	const float3 diffuseColor = g_localTexture.SampleGrad(g_s0, uv, ddxUV, ddyUV).rgb;
-	float3 normal;
-	float3 specularAlbedo = float3(0.56, 0.56, 0.56);
-	float specularMask = 0;	 // TODO: read the texture
-	float gloss = 128.0;
-	{
-		normal = g_localNormal.SampleGrad(g_s0, uv, ddxUV, ddyUV).rgb * 2.0 - 1.0;
-		AntiAliasSpecular(normal, gloss);
-		float3x3 tbn = float3x3(vsTangent, vsBitangent, vsNormal);
-		normal = normalize(mul(normal, tbn));
-	}
-	
-	float3 outputColor = AmbientColor * diffuseColor * texSSAO[DispatchRaysIndex().xy];
+	// Retrieve material constants
+	MaterialConstantsRT material = g_materialConstants[g_meshInfo[materialID].m_materialInstanceId];
 
-	float shadow = 1.0;
-	if (UseShadowRays)
-	{
-		float3 shadowDirection = SunDirection;
-		float3 shadowOrigin = worldPosition;
-		RayDesc rayDesc = { shadowOrigin,
-			0.1f,
-			shadowDirection,
-			FLT_MAX };
-		RayPayload shadowPayload;
-		shadowPayload.SkipShading = true;
-		shadowPayload.RayHitT = FLT_MAX;
-		TraceRay(g_accel, RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH,~0,0,1,0,rayDesc,shadowPayload);
-		if (shadowPayload.RayHitT < FLT_MAX)
-		{
-			shadow = 0.0;
-		}
-	}
-	else
-	{
-		// TODO: This could be pre-calculated once per vertex if this mul per pixel was a concern
-		float4 shadowCoord = mul(ModelToShadow, float4(worldPosition, 1.0f));
-		shadow = GetShadow(shadowCoord.xyz);
-	}
-	
-	const float3 viewDir = normalize(-WorldRayDirection());
+	// Load and modulate textures
+	float4 baseColor = material.baseColorFactor * g_localTexture.SampleGrad(g_s0, uv, ddxUV, ddyUV);
+	float2 metallicRoughness = material.metallicRoughnessFactor * g_localMetallicRoughness.SampleGrad(g_s0, uv, ddxUV, ddyUV).bg;
+	float occlusion = g_localOcclusion.SampleGrad(g_s0, uv, ddxUV, ddyUV);
+	float3 emissive = material.emissiveFactor * g_localEmissive.SampleGrad(g_s0, uv, ddxUV, ddyUV);
 
-	outputColor +=  shadow * ApplyLightCommon(
-		diffuseColor,
-		specularAlbedo,
-		specularMask,
-		gloss,
-		normal,
-		viewDir,
-		SunDirection,
-		SunColor);
+	// calculate normal
+	float3 normal = g_localNormal.SampleGrad(g_s0, uv, ddxUV, ddyUV) * 2.0 - 1.0;
+	normal = normalize(normal * float3(material.normalTextureScale, material.normalTextureScale, 1));
+	float3x3 tbn = float3x3(vsTangent, vsBitangent, vsNormal);
+	normal = mul(normal, tbn);
+
+	// build surface
+	SurfaceProperties Surface;
+	Surface.N = normal;
+	Surface.V = normalize(ViewerPos - worldPosition);
+	Surface.NdotV = saturate(dot(Surface.N, Surface.V));
+	Surface.c_diff = baseColor.rgb * (1 - kDielectricSpecular) * (1 - metallicRoughness.x) * occlusion;
+	Surface.c_spec = lerp(kDielectricSpecular, baseColor.rgb, metallicRoughness.x) * occlusion;
+	Surface.roughness = metallicRoughness.y;
+	Surface.alpha = metallicRoughness.y * metallicRoughness.y;
+	Surface.alphaSqr = Surface.alpha * Surface.alpha;
+
+	  // ---------------------------------------------- //
+	 // ----------------- SHADING -------------------- //
+	// ---------------------------------------------- //
+
+	// Begin accumulating light starting with emissive
+	float3 colorAccum = emissive;
+
+	uint2 pixelPos = uint2(DispatchRaysIndex().xy);
+	float ssao = texSSAO[pixelPos];
+
+	Surface.c_diff *= ssao;
+	Surface.c_spec *= ssao;
+
+#if 1
+	// Old-school ambient light
+	colorAccum += Surface.c_diff * AmbientIntensity;
+#else
+	// Add IBL
+	colorAccum += Diffuse_IBL(Surface);
+	colorAccum += Specular_IBL(Surface);
+#endif
+
+	float3 shadowCoord = mul(SunShadowMatrix, float4(worldPosition, 1.0f)).xyz;
+	colorAccum += ApplyDirectionalLightPBR(Surface, SunDirection, SunIntensity, shadowCoord, texShadow);
+	ShadeLightsPBR(colorAccum, pixelPos, Surface, worldPosition);
+
+
+	  // ---------------------------------------------- //
+	 // ----------------- REFLECTIONS ---------------- //
+	// ---------------------------------------------- //
+
 
 	// TODO: Should be passed in via material info
-	if (IsReflection)
-	{
-		float reflectivity = normals[DispatchRaysIndex().xy].w;
-		outputColor = g_screenOutput[DispatchRaysIndex().xy].rgb + reflectivity * outputColor;
-	}
+	//if (IsReflection)
+	//{
+	//	float reflectivity = normals[DispatchRaysIndex().xy].w;
+	//	colorAccum = g_screenOutput[DispatchRaysIndex().xy].rgb + reflectivity * colorAccum;
+	//}
 
-	g_screenOutput[DispatchRaysIndex().xy] = float4(outputColor, 1.0);
+	  // ---------------------------------------------- //
+	 // ----------------- OUTPUT --------------------- //
+	// ---------------------------------------------- //
+
+	g_screenOutput[DispatchRaysIndex().xy] = float4(colorAccum, 1.0);
 }

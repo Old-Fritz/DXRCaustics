@@ -130,6 +130,7 @@ void ApplyTemporalBlend(uint2 ST, uint ldsIdx, float3 BoxMin, float3 BoxMax)
 
 	// Fetch temporal color.  Its "confidence" weight is stored in alpha.
 	float4 Temp = InTemporal.SampleLevel(LinearSampler, STtoUV(ST + Velocity.xy), 0);
+	Temp = isfinite(Temp) ? Temp : 0;
 	float3 TemporalColor = Temp.rgb;
 	float TemporalWeight = Temp.w;
 

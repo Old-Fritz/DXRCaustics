@@ -134,11 +134,11 @@ void RTModelViewer::InitGlobalRootSignature()
 	sceneBuffersDescriptorRange.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_NONE;
 
 	// depth/normals
-	D3D12_DESCRIPTOR_RANGE1 srvDescriptorRange = {};
-	srvDescriptorRange.BaseShaderRegister = 12;
-	srvDescriptorRange.NumDescriptors = 2;
-	srvDescriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-	srvDescriptorRange.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_NONE;
+	D3D12_DESCRIPTOR_RANGE1 lightingBuffersDescriptorRange = {};
+	lightingBuffersDescriptorRange.BaseShaderRegister = 12;
+	lightingBuffersDescriptorRange.NumDescriptors = 6;
+	lightingBuffersDescriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	lightingBuffersDescriptorRange.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_NONE;
 
 	// outputs
 	D3D12_DESCRIPTOR_RANGE1 uavDescriptorRange = {};
@@ -151,7 +151,7 @@ void RTModelViewer::InitGlobalRootSignature()
 	globalRootSignatureParameters[0].InitAsDescriptorTable(1, &sceneBuffersDescriptorRange); // scene srv
 	globalRootSignatureParameters[1].InitAsConstantBufferView(0); // hit CB
 	globalRootSignatureParameters[2].InitAsConstantBufferView(1); // dyn CB
-	globalRootSignatureParameters[3].InitAsDescriptorTable(1, &srvDescriptorRange); // d/n
+	globalRootSignatureParameters[3].InitAsDescriptorTable(1, &lightingBuffersDescriptorRange); // lighting
 	globalRootSignatureParameters[4].InitAsDescriptorTable(1, &uavDescriptorRange); // outputs
 	globalRootSignatureParameters[5].InitAsUnorderedAccessView(0);
 	globalRootSignatureParameters[6].InitAsUnorderedAccessView(1);

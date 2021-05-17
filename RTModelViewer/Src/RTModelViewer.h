@@ -55,7 +55,6 @@
 #include "CompiledShaders/MissShadowsLib.h"
 
 #include "Shaders/RaytracingHlslCompat.h"
-#include "Shaders/ModelViewerRayTracing.h"
 
 using namespace GameCore;
 using namespace Math;
@@ -65,16 +64,20 @@ constexpr UINT MaxRayRecursion = 2;
 constexpr UINT c_NumCameraPositions = 5;
 constexpr UINT MaxMaterials = 100;
 
-__declspec(align(16)) struct HitShaderConstants
+__declspec(align(256)) struct HitShaderConstants
 {
-	Vector3 sunDirection;
-	Vector3 sunLight;
-	Vector3 ambientLight;
-	float ShadowTexelSize[4];
-	Matrix4 modelToShadow;
-	float ModelScale;
-	UINT32 IsReflection;
-	UINT32 UseShadowRays;
+	Matrix4			SunShadowMatrix;
+	Vector4			ViewerPos;
+	Vector4			SunDirection; 
+	Vector4			SunIntensity;
+	Vector4			AmbientIntensity;
+	Vector4			ShadowTexelSize;
+	Vector4			InvTileDim;
+	UintVector4		TileCount;
+	UintVector4		FirstLightIndex;
+	float			ModelScale;
+	uint			IsReflection;
+	uint			UseShadowRays;
 };
 
 struct ShaderExport
@@ -197,7 +200,7 @@ public:
 
 	void RenderPostProces(GraphicsContext& gfxContext);
 
-	void RenderRaytrace(GraphicsContext& gfxContext);
+	void RenderRaytrace(GraphicsContext& gfxContext, const GlobalConstants& globalConstants);
 
 private:
 	// Viewer startup
@@ -227,9 +230,12 @@ private:
 	void CreateTLAS();
 
 	// RT Render
-	void RaytraceDiffuse(GraphicsContext& context, const Math::Camera& camera, ColorBuffer& colorTarget);
-	void RaytraceShadows(GraphicsContext& context, const Math::Camera& camera, ColorBuffer& colorTarget, DepthBuffer& depth);
-	void RaytraceReflections(GraphicsContext& context, const Math::Camera& camera, ColorBuffer& colorTarget, DepthBuffer& depth, ColorBuffer& normals);
+	void RaytraceDiffuse(GraphicsContext& context, const GlobalConstants& globalConstants, 
+		const Math::Camera& camera, ColorBuffer& colorTarget);
+	void RaytraceShadows(GraphicsContext& context, const GlobalConstants& globalConstants, 
+		const Math::Camera& camera, ColorBuffer& colorTarget, DepthBuffer& depth);
+	void RaytraceReflections(GraphicsContext& context, const GlobalConstants& globalConstants,
+		const Math::Camera& camera, ColorBuffer& colorTarget, DepthBuffer& depth, ColorBuffer& normals);
 
 	Camera m_Camera;
 	std::unique_ptr<CameraController> m_CameraController;
@@ -356,7 +362,7 @@ extern D3D12_GPU_DESCRIPTOR_HANDLE			g_GpuSceneMaterialSrvs[MaxMaterials];
 extern D3D12_CPU_DESCRIPTOR_HANDLE			g_SceneMeshInfo;
 
 extern D3D12_GPU_DESCRIPTOR_HANDLE			g_OutputUAV;
-extern D3D12_GPU_DESCRIPTOR_HANDLE			g_DepthAndNormalsTable;
+extern D3D12_GPU_DESCRIPTOR_HANDLE			g_LightingSrvs;
 extern D3D12_GPU_DESCRIPTOR_HANDLE			g_SceneSrvs;
 
 extern std::vector<CComPtr<ID3D12Resource>>	g_bvh_bottomLevelAccelerationStructures;

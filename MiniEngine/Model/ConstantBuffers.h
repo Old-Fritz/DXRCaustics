@@ -61,14 +61,14 @@ __declspec(align(256)) struct GlobalConstants
 {
 	Math::Matrix4 ViewProjMatrix;
 	Math::Matrix4 SunShadowMatrix;
-	Math::Vector3 CameraPos;
-	Math::Vector3 SunDirection;
-	Math::Vector3 SunIntensity;
-	Math::Vector3 AmbientIntensity;
+	Math::Vector4 CameraPos;
+	Math::Vector4 SunDirection;
+	Math::Vector4 SunIntensity;
+	Math::Vector4 AmbientIntensity;
 	Math::Vector4 ShadowTexelSize;
 	Math::Vector4 InvTileDim;
-	uint32_t TileCount[4];
-	uint32_t FirstLightIndex[4];
+	Math::UintVector4 TileCount;
+	Math::UintVector4 FirstLightIndex;
 	uint32_t FrameIndexMod2;
 	float IBLRange;
 	float IBLBias;

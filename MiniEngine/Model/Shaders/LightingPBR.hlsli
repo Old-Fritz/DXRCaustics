@@ -105,6 +105,7 @@ float3 Specular_BRDF(SurfaceProperties Surface, LightProperties Light)
 	return ND * GV * F;
 }
 
+#ifndef RAY_TRACING
 // Diffuse irradiance
 float3 Diffuse_IBL(SurfaceProperties Surface)
 {
@@ -126,6 +127,7 @@ float3 Specular_IBL(SurfaceProperties Surface)
 	float3 specular = Fresnel_Shlick(Surface.c_spec, 1, Surface.NdotV);
 	return specular * radianceIBLTexture.SampleLevel(cubeMapSampler, reflect(-Surface.V, Surface.N), lod);
 }
+#endif
 
 float GetDirectionalShadowPBR(float3 ShadowCoord, Texture2D<float> texShadow)
 {
@@ -246,6 +248,9 @@ float3 ApplyConeShadowedLightPBR(SurfaceProperties Surface, float3 c_light,
 	uint	lightIndex
 )
 {
+#ifdef RAY_TRACING
+	shadowTextureMatrix = transpose(shadowTextureMatrix);
+#endif
 	float4 shadowCoord = mul(shadowTextureMatrix, float4(worldPos, 1.0));
 	shadowCoord.xyz *= rcp(shadowCoord.w);
 	float shadow = GetShadowConeLightPBR(lightIndex, shadowCoord.xyz);

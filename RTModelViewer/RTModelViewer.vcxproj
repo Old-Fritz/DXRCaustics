@@ -88,7 +88,7 @@
     <FxCompile Include="Shaders\RayGenerationShadowsLib.hlsl" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Shaders\ModelViewerRayTracing.h" />
+    <ClInclude Include="Shaders\RayTracingInclude.hlsli" />
     <ClInclude Include="Shaders\RayTracingHlslCompat.h" />
     <ClInclude Include="Shaders\Unpacking.hlsli" />
     <ClInclude Include="Src\DXSampleHelper.h" />

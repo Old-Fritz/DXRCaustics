@@ -557,7 +557,7 @@ void MeshSorter::RenderMeshes(
 
 	// Set common shader constants
 	globals.ViewProjMatrix = m_Camera->GetViewProjMatrix();
-	globals.CameraPos = m_Camera->GetPosition();
+	globals.CameraPos = Vector4(m_Camera->GetPosition(), 0.0f);
 	globals.IBLRange = s_SpecularIBLRange - s_SpecularIBLBias;
 	globals.IBLBias = s_SpecularIBLBias;
 	context.SetDynamicConstantBufferView(kCommonCBV, sizeof(GlobalConstants), &globals);

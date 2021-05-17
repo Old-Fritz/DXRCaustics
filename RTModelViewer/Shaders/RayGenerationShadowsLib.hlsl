@@ -10,7 +10,7 @@
 //*********************************************************
 
 #define HLSL
-#include "ModelViewerRaytracing.h"
+#include "RayTracingInclude.hlsli"
 
 Texture2D<float>	depth	: register(t12);
 

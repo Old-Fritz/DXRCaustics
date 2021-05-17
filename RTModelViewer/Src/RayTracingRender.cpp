@@ -11,9 +11,37 @@ const char* rayTracingModes[] = {
 };
 EnumVar rayTracingMode("Viewer/Raytracing/RayTraceMode", RTM_OFF, _countof(rayTracingModes), rayTracingModes);
 
+void UpdateHitShaderConstants(HitShaderConstants& hitShaderConstants, const GlobalConstants& globalConstants)
+{
+	hitShaderConstants.SunShadowMatrix = globalConstants.SunShadowMatrix;
+	hitShaderConstants.ViewerPos = globalConstants.CameraPos;
+	hitShaderConstants.SunDirection = globalConstants.SunDirection;
+	hitShaderConstants.SunIntensity = globalConstants.SunIntensity;
+	hitShaderConstants.AmbientIntensity = globalConstants.AmbientIntensity;
+	hitShaderConstants.ShadowTexelSize = globalConstants.ShadowTexelSize;
+	hitShaderConstants.InvTileDim = globalConstants.InvTileDim;
+	hitShaderConstants.TileCount = globalConstants.TileCount;
+	hitShaderConstants.FirstLightIndex = globalConstants.FirstLightIndex;
+	hitShaderConstants.ModelScale = g_ModelScale;
+	hitShaderConstants.IsReflection = false;
+	hitShaderConstants.UseShadowRays = false;
+}
+
+void UpdateDynamicConstants(DynamicCB& inputs, const Math::Camera& camera, ColorBuffer& colorTarget)
+{
+
+	auto m0 = camera.GetViewProjMatrix();
+	auto m1 = Transpose(Invert(m0));
+	memcpy(&inputs.cameraToWorld, &m1, sizeof(inputs.cameraToWorld));
+	memcpy(&inputs.worldCameraPosition, &camera.GetPosition(), sizeof(inputs.worldCameraPosition));
+	inputs.resolution.x = (float)colorTarget.GetWidth();
+	inputs.resolution.y = (float)colorTarget.GetHeight();
+}
+
 
 void Raytracebarycentrics(
-	CommandContext& context,
+	CommandContext& context, 
+	const GlobalConstants& globalConstants,
 	const Math::Camera& camera,
 	ColorBuffer& colorTarget)
 {
@@ -21,18 +49,11 @@ void Raytracebarycentrics(
 
 	// Prepare constants
 	DynamicCB inputs = g_dynamicCb;
-	auto m0 = camera.GetViewProjMatrix();
-	auto m1 = Transpose(Invert(m0));
-	memcpy(&inputs.cameraToWorld, &m1, sizeof(inputs.cameraToWorld));
-	memcpy(&inputs.worldCameraPosition, &camera.GetPosition(), sizeof(inputs.worldCameraPosition));
-	inputs.resolution.x = (float)colorTarget.GetWidth();
-	inputs.resolution.y = (float)colorTarget.GetHeight();
-
 	HitShaderConstants hitShaderConstants = {};
-	hitShaderConstants.IsReflection = false;
-	hitShaderConstants.ModelScale = g_ModelScale;
-	context.WriteBuffer(g_hitConstantBuffer, 0, &hitShaderConstants, sizeof(hitShaderConstants));
+	UpdateDynamicConstants(inputs, camera, colorTarget);
+	UpdateHitShaderConstants(hitShaderConstants, globalConstants);
 
+	context.WriteBuffer(g_hitConstantBuffer, 0, &hitShaderConstants, sizeof(hitShaderConstants));
 	context.WriteBuffer(g_dynamicConstantBuffer, 0, &inputs, sizeof(inputs));
 
 	context.TransitionResource(g_hitConstantBuffer, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
@@ -63,6 +84,7 @@ void Raytracebarycentrics(
 
 void RaytracebarycentricsSSR(
 	CommandContext& context,
+	const GlobalConstants& globalConstants,
 	const Math::Camera& camera,
 	ColorBuffer& colorTarget,
 	DepthBuffer& depth,
@@ -70,17 +92,12 @@ void RaytracebarycentricsSSR(
 {
 	ScopedTimer _p0(L"Raytracing SSR barycentrics", context);
 
+	// Prepare constants
 	DynamicCB inputs = g_dynamicCb;
-	auto m0 = camera.GetViewProjMatrix();
-	auto m1 = Transpose(Invert(m0));
-	memcpy(&inputs.cameraToWorld, &m1, sizeof(inputs.cameraToWorld));
-	memcpy(&inputs.worldCameraPosition, &camera.GetPosition(), sizeof(inputs.worldCameraPosition));
-	inputs.resolution.x = (float)colorTarget.GetWidth();
-	inputs.resolution.y = (float)colorTarget.GetHeight();
-
 	HitShaderConstants hitShaderConstants = {};
-	hitShaderConstants.IsReflection = false;
-	hitShaderConstants.ModelScale = g_ModelScale;
+	UpdateDynamicConstants(inputs, camera, colorTarget);
+	UpdateHitShaderConstants(hitShaderConstants, globalConstants);
+
 	context.WriteBuffer(g_hitConstantBuffer, 0, &hitShaderConstants, sizeof(hitShaderConstants));
 
 	ComputeContext& ctx = context.GetComputeContext();
@@ -105,7 +122,7 @@ void RaytracebarycentricsSSR(
 	pCommandList->SetComputeRootConstantBufferView(1, g_hitConstantBuffer.GetGpuVirtualAddress());
 	pCommandList->SetComputeRootConstantBufferView(2, g_dynamicConstantBuffer.GetGpuVirtualAddress());
 	pCommandList->SetComputeRootDescriptorTable(4, g_OutputUAV);
-	pCommandList->SetComputeRootDescriptorTable(3, g_DepthAndNormalsTable);
+	pCommandList->SetComputeRootDescriptorTable(3, g_LightingSrvs);
 	pRaytracingCommandList->SetComputeRootShaderResourceView(7, g_bvh_topLevelAccelerationStructure->GetGPUVirtualAddress());
 
 	D3D12_DISPATCH_RAYS_DESC dispatchRaysDesc = g_RaytracingInputs[Reflectionbarycentric].GetDispatchRayDesc(colorTarget.GetWidth(), colorTarget.GetHeight());
@@ -115,29 +132,19 @@ void RaytracebarycentricsSSR(
 
 void RTModelViewer::RaytraceShadows(
 	GraphicsContext& context,
+	const GlobalConstants& globalConstants,
 	const Math::Camera& camera,
 	ColorBuffer& colorTarget,
 	DepthBuffer& depth)
 {
 	ScopedTimer _p0(L"Raytracing Shadows", context);
 
+	// Prepare constants
 	DynamicCB inputs = g_dynamicCb;
-	auto m0 = camera.GetViewProjMatrix();
-	auto m1 = Transpose(Invert(m0));
-	memcpy(&inputs.cameraToWorld, &m1, sizeof(inputs.cameraToWorld));
-	memcpy(&inputs.worldCameraPosition, &camera.GetPosition(), sizeof(inputs.worldCameraPosition));
-	inputs.resolution.x = (float)colorTarget.GetWidth();
-	inputs.resolution.y = (float)colorTarget.GetHeight();
-
 	HitShaderConstants hitShaderConstants = {};
-	hitShaderConstants.sunDirection = Sponza::m_SunDirection;
-	hitShaderConstants.sunLight = Vector3(1.0f, 1.0f, 1.0f) * Sponza::m_SunLightIntensity;
-	hitShaderConstants.ambientLight = Vector3(1.0f, 1.0f, 1.0f) * Sponza::m_AmbientIntensity;
-	hitShaderConstants.ShadowTexelSize[0] = 1.0f / g_ShadowBuffer.GetWidth();
-	hitShaderConstants.modelToShadow = Sponza::m_SunShadow.GetShadowMatrix();
-	hitShaderConstants.IsReflection = false;
-	hitShaderConstants.UseShadowRays = false;
-	hitShaderConstants.ModelScale = g_ModelScale;
+	UpdateDynamicConstants(inputs, camera, colorTarget);
+	UpdateHitShaderConstants(hitShaderConstants, globalConstants);
+
 	context.WriteBuffer(g_hitConstantBuffer, 0, &hitShaderConstants, sizeof(hitShaderConstants));
 
 	ComputeContext& ctx = context.GetComputeContext();
@@ -163,7 +170,7 @@ void RTModelViewer::RaytraceShadows(
 	pCommandList->SetComputeRootConstantBufferView(1, g_hitConstantBuffer.GetGpuVirtualAddress());
 	pCommandList->SetComputeRootConstantBufferView(2, g_dynamicConstantBuffer->GetGPUVirtualAddress());
 	pCommandList->SetComputeRootDescriptorTable(4, g_OutputUAV);
-	pCommandList->SetComputeRootDescriptorTable(3, g_DepthAndNormalsTable);
+	pCommandList->SetComputeRootDescriptorTable(3, g_LightingSrvs);
 	pRaytracingCommandList->SetComputeRootShaderResourceView(7, g_bvh_topLevelAccelerationStructure->GetGPUVirtualAddress());
 
 	D3D12_DISPATCH_RAYS_DESC dispatchRaysDesc = g_RaytracingInputs[Shadows].GetDispatchRayDesc(colorTarget.GetWidth(), colorTarget.GetHeight());
@@ -173,6 +180,7 @@ void RTModelViewer::RaytraceShadows(
 
 void RTModelViewer::RaytraceDiffuse(
 	GraphicsContext& context,
+	const GlobalConstants& globalConstants,
 	const Math::Camera& camera,
 	ColorBuffer& colorTarget)
 {
@@ -180,30 +188,24 @@ void RTModelViewer::RaytraceDiffuse(
 
 	// Prepare constants
 	DynamicCB inputs = g_dynamicCb;
-	auto m0 = camera.GetViewProjMatrix();
-	auto m1 = Transpose(Invert(m0));
-	memcpy(&inputs.cameraToWorld, &m1, sizeof(inputs.cameraToWorld));
-	memcpy(&inputs.worldCameraPosition, &camera.GetPosition(), sizeof(inputs.worldCameraPosition));
-	inputs.resolution.x = (float)colorTarget.GetWidth();
-	inputs.resolution.y = (float)colorTarget.GetHeight();
-
 	HitShaderConstants hitShaderConstants = {};
-	hitShaderConstants.sunDirection = Sponza::m_SunDirection;
-	hitShaderConstants.sunLight = Vector3(1.0f, 1.0f, 1.0f) * Sponza::m_SunLightIntensity;
-	hitShaderConstants.ambientLight = Vector3(1.0f, 1.0f, 1.0f) * Sponza::m_AmbientIntensity;
-	hitShaderConstants.ShadowTexelSize[0] = 1.0f / g_ShadowBuffer.GetWidth();
-	hitShaderConstants.modelToShadow = Transpose(Sponza::m_SunShadow.GetShadowMatrix());
-	hitShaderConstants.IsReflection = false;
+	UpdateDynamicConstants(inputs, camera, colorTarget);
+	UpdateHitShaderConstants(hitShaderConstants, globalConstants);
 	hitShaderConstants.UseShadowRays = rayTracingMode == RTM_DIFFUSE_WITH_SHADOWRAYS;
-	hitShaderConstants.ModelScale = g_ModelScale;
+
 	context.WriteBuffer(g_hitConstantBuffer, 0, &hitShaderConstants, sizeof(hitShaderConstants));
 	context.WriteBuffer(g_dynamicConstantBuffer, 0, &inputs, sizeof(inputs));
 
-	context.TransitionResource(g_dynamicConstantBuffer, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
-	context.TransitionResource(g_SSAOFullScreen, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-	context.TransitionResource(g_hitConstantBuffer, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
-	context.TransitionResource(g_ShadowBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
-	context.TransitionResource(colorTarget, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+	context.TransitionResource(g_dynamicConstantBuffer,			D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
+	context.TransitionResource(g_SSAOFullScreen,				D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+	context.TransitionResource(g_hitConstantBuffer,				D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER);
+	context.TransitionResource(g_ShadowBuffer,					D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+	context.TransitionResource(colorTarget,						D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+	// lighting
+	context.TransitionResource(Lighting::m_LightBuffer,			D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+	context.TransitionResource(Lighting::m_LightShadowArray,	D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+	context.TransitionResource(Lighting::m_LightGrid,			D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+	context.TransitionResource(Lighting::m_LightGridBitMask,	D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 	context.FlushResourceBarriers();
 
 	ID3D12GraphicsCommandList* pCommandList = context.GetCommandList();
@@ -218,6 +220,7 @@ void RTModelViewer::RaytraceDiffuse(
 	pCommandList->SetComputeRootDescriptorTable(0, g_SceneSrvs);
 	pCommandList->SetComputeRootConstantBufferView(1, g_hitConstantBuffer.GetGpuVirtualAddress());
 	pCommandList->SetComputeRootConstantBufferView(2, g_dynamicConstantBuffer.GetGpuVirtualAddress());
+	pCommandList->SetComputeRootDescriptorTable(3, g_LightingSrvs);
 	pCommandList->SetComputeRootDescriptorTable(4, g_OutputUAV);
 	pRaytracingCommandList->SetComputeRootShaderResourceView(7, g_bvh_topLevelAccelerationStructure->GetGPUVirtualAddress());
 
@@ -228,6 +231,7 @@ void RTModelViewer::RaytraceDiffuse(
 
 void RTModelViewer::RaytraceReflections(
 	GraphicsContext& context,
+	const GlobalConstants& globalConstants,
 	const Math::Camera& camera,
 	ColorBuffer& colorTarget,
 	DepthBuffer& depth,
@@ -237,22 +241,11 @@ void RTModelViewer::RaytraceReflections(
 
 	// Prepare constants
 	DynamicCB inputs = g_dynamicCb;
-	auto m0 = camera.GetViewProjMatrix();
-	auto m1 = Transpose(Invert(m0));
-	memcpy(&inputs.cameraToWorld, &m1, sizeof(inputs.cameraToWorld));
-	memcpy(&inputs.worldCameraPosition, &camera.GetPosition(), sizeof(inputs.worldCameraPosition));
-	inputs.resolution.x = (float)colorTarget.GetWidth();
-	inputs.resolution.y = (float)colorTarget.GetHeight();
-
 	HitShaderConstants hitShaderConstants = {};
-	hitShaderConstants.sunDirection = Sponza::m_SunDirection;
-	hitShaderConstants.sunLight = Vector3(1.0f, 1.0f, 1.0f) * Sponza::m_SunLightIntensity;
-	hitShaderConstants.ambientLight = Vector3(1.0f, 1.0f, 1.0f) * Sponza::m_AmbientIntensity;
-	hitShaderConstants.ShadowTexelSize[0] = 1.0f / g_ShadowBuffer.GetWidth();
-	hitShaderConstants.modelToShadow = Transpose(Sponza::m_SunShadow.GetShadowMatrix());
+	UpdateDynamicConstants(inputs, camera, colorTarget);
+	UpdateHitShaderConstants(hitShaderConstants, globalConstants);
 	hitShaderConstants.IsReflection = true;
-	hitShaderConstants.UseShadowRays = false;
-	hitShaderConstants.ModelScale = g_ModelScale;
+
 	context.WriteBuffer(g_hitConstantBuffer, 0, &hitShaderConstants, sizeof(hitShaderConstants));
 	context.WriteBuffer(g_dynamicConstantBuffer, 0, &inputs, sizeof(inputs));
 
@@ -277,7 +270,7 @@ void RTModelViewer::RaytraceReflections(
 	pCommandList->SetComputeRootDescriptorTable(0, g_SceneSrvs);
 	pCommandList->SetComputeRootConstantBufferView(1, g_hitConstantBuffer.GetGpuVirtualAddress());
 	pCommandList->SetComputeRootConstantBufferView(2, g_dynamicConstantBuffer.GetGpuVirtualAddress());
-	pCommandList->SetComputeRootDescriptorTable(3, g_DepthAndNormalsTable);
+	pCommandList->SetComputeRootDescriptorTable(3, g_LightingSrvs);
 	pCommandList->SetComputeRootDescriptorTable(4, g_OutputUAV);
 	pRaytracingCommandList->SetComputeRootShaderResourceView(7, g_bvh_topLevelAccelerationStructure->GetGPUVirtualAddress());
 
@@ -286,7 +279,7 @@ void RTModelViewer::RaytraceReflections(
 	pRaytracingCommandList->DispatchRays(&dispatchRaysDesc);
 }
 
-void RTModelViewer::RenderRaytrace(GraphicsContext& gfxContext)
+void RTModelViewer::RenderRaytrace(GraphicsContext& gfxContext, const GlobalConstants& globalConstants)
 {
 	ScopedTimer _prof(L"Raytrace", gfxContext);
 
@@ -295,24 +288,24 @@ void RTModelViewer::RenderRaytrace(GraphicsContext& gfxContext)
 	switch (rayTracingMode)
 	{
 	case RTM_TRAVERSAL:
-		Raytracebarycentrics(gfxContext, m_Camera, g_SceneColorBuffer);
+		Raytracebarycentrics(gfxContext, globalConstants, m_Camera, g_SceneColorBuffer);
 		break;
 
 	case RTM_SSR:
-		RaytracebarycentricsSSR(gfxContext, m_Camera, g_SceneColorBuffer, g_SceneDepthBuffer, g_SceneNormalBuffer);
+		RaytracebarycentricsSSR(gfxContext, globalConstants, m_Camera, g_SceneColorBuffer, g_SceneDepthBuffer, g_SceneNormalBuffer);
 		break;
 
 	case RTM_SHADOWS:
-		RaytraceShadows(gfxContext, m_Camera, g_SceneColorBuffer, g_SceneDepthBuffer);
+		RaytraceShadows(gfxContext, globalConstants, m_Camera, g_SceneColorBuffer, g_SceneDepthBuffer);
 		break;
 
 	case RTM_DIFFUSE_WITH_SHADOWMAPS:
 	case RTM_DIFFUSE_WITH_SHADOWRAYS:
-		RaytraceDiffuse(gfxContext, m_Camera, g_SceneColorBuffer);
+		RaytraceDiffuse(gfxContext, globalConstants, m_Camera, g_SceneColorBuffer);
 		break;
 
 	case RTM_REFLECTIONS:
-		RaytraceReflections(gfxContext, m_Camera, g_SceneColorBuffer, g_SceneDepthBuffer, g_SceneNormalBuffer);
+		RaytraceReflections(gfxContext, globalConstants, m_Camera, g_SceneColorBuffer, g_SceneDepthBuffer, g_SceneNormalBuffer);
 		break;
 	}
 

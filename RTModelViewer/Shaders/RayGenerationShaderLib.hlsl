@@ -10,8 +10,7 @@
 //*********************************************************
 
 #define HLSL
-#include "ModelViewerRaytracing.h"
-
+#include "RayTracingInclude.hlsli"
 
 [shader("raygeneration")]
 void RayGen()

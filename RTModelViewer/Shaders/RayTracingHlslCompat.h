@@ -5,6 +5,14 @@
 #include "HlslCompat.h"
 #endif
 
+// Volatile part (can be split into its own CBV). 
+struct DynamicCB
+{
+	float4x4 cameraToWorld;
+	float3   worldCameraPosition;
+	uint	 padding;
+	float2   resolution;
+};
 
 struct RayTraceMeshInfo
 {
@@ -19,12 +27,13 @@ struct RayTraceMeshInfo
 
 struct MaterialConstantsRT
 {
-	float4 baseColorFactor; // default=[1,1,1,1]
-	float3 emissiveFactor; // default=[0,0,0]
-	float normalTextureScale; // default=1
-	float metallicFactor; // default=1
-	float roughnessFactor; // default=1
-	uint flags;
+	float4 baseColorFactor;				// default=[1,1,1,1]	16
+	float3 emissiveFactor;				// default=[0,0,0]		
+	float normalTextureScale;			// default=1			32
+	float2 metallicRoughnessFactor;		// default=[1,1]		
+	uint flags;							
+	uint __pad0;						//						48
+	uint __pad1[52];
 };
 
 #endif //RAYTRACING_USER_HLSL_COMPAT_H_INCLUDED

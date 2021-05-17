@@ -145,4 +145,9 @@ namespace Math
 		XMVECTOR m_vec;
 	};
 
+	struct UintVector4
+	{
+		uint32_t x, y, z, w;
+	};
+
 } // namespace Math
