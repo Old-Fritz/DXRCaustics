@@ -264,6 +264,10 @@ float3 ApplyConeShadowedLightPBR(SurfaceProperties Surface, float3 c_light,
 	);
 }
 
+#ifdef RAY_TRACING
+#include "../../RTModelViewer/Shaders/LightingRT.hlsli"
+#endif
+
 #define POINT_LIGHT_ARGS_PBR \
 	Surface, lightData.color, \
 	worldPos, \
@@ -329,7 +333,16 @@ void ShadeLightsPBR(inout float3 colorSum, uint2 pixelPos,
 	{
 		uint lightIndex = lightGrid.Load(tileLightLoadOffset);
 		LightData lightData = lightBuffer[lightIndex];
-		colorSum += ApplyConeShadowedLightPBR(SHADOWED_LIGHT_ARGS_PBR);
+#ifdef RAY_TRACING
+		if (UseShadowRays)
+		{
+			colorSum += ApplyConeShadowedLightRT(CONE_LIGHT_ARGS_PBR);
+		}
+		else
+#endif
+		{
+			colorSum += ApplyConeShadowedLightPBR(SHADOWED_LIGHT_ARGS_PBR);
+		}
 	}
 }
 #endif // LIGHTING_PBR_H_INCLUDED

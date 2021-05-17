@@ -295,8 +295,15 @@ void Hit(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attr
 	colorAccum += Specular_IBL(Surface);
 #endif
 
-	float3 shadowCoord = mul(SunShadowMatrix, float4(worldPosition, 1.0f)).xyz;
-	colorAccum += ApplyDirectionalLightPBR(Surface, SunDirection, SunIntensity, shadowCoord, texShadow);
+	if (UseShadowRays)
+	{
+		colorAccum += ApplyDirectionalLightRT(Surface, SunDirection, SunIntensity, worldPosition);
+	}
+	else
+	{
+		float3 shadowCoord = mul(SunShadowMatrix, float4(worldPosition, 1.0f)).xyz;
+		colorAccum += ApplyDirectionalLightPBR(Surface, SunDirection, SunIntensity, shadowCoord, texShadow);
+	}
 	ShadeLightsPBR(colorAccum, pixelPos, Surface, worldPosition);
 
 
