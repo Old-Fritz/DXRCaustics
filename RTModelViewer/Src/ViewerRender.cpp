@@ -29,6 +29,7 @@ void RTModelViewer::UpdateGlobalConstants(GlobalConstants& globals)
 	globals.TileCount.y = Math::DivideByMultiple(g_SceneColorBuffer.GetHeight(), Lighting::LightGridDim);
 	globals.FirstLightIndex.x = Lighting::m_FirstConeLight;
 	globals.FirstLightIndex.y = Lighting::m_FirstConeShadowedLight;
+	globals.FirstLightIndex.z = Lighting::m_LastLight;
 	globals.FrameIndexMod2 = TemporalEffects::GetFrameIndexMod2();
 }
 

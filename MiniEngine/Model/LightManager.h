@@ -57,6 +57,7 @@ namespace Lighting
 	extern ByteAddressBuffer m_LightGridBitMask;
 	extern std::uint32_t m_FirstConeLight;
 	extern std::uint32_t m_FirstConeShadowedLight;
+	extern std::uint32_t m_LastLight;
 
 	extern ShadowBuffer m_LightShadowArray;
 	extern ShadowBuffer m_LightShadowTempBuffer;

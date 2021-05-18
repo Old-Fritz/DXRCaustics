@@ -461,12 +461,15 @@
     </ClCompile>
     <FxCompile>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)Bin\CompiledShaders\%(Filename).h</HeaderFileOutput>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">../../../RTModelViewer/Shaders;../../Model/Shaders</AdditionalIncludeDirectories>
     </FxCompile>
     <FxCompile>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">$(SolutionDir)Bin\CompiledShaders\%(Filename).h</HeaderFileOutput>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">../../../RTModelViewer/Shaders;../../Model/Shaders</AdditionalIncludeDirectories>
     </FxCompile>
     <FxCompile>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)Bin\CompiledShaders\%(Filename).h</HeaderFileOutput>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../../../RTModelViewer/Shaders;../../Model/Shaders</AdditionalIncludeDirectories>
     </FxCompile>
   </ItemDefinitionGroup>
   <ImportGroup Label="ExtensionTargets">

@@ -3,6 +3,9 @@
 
 #define PBR_LIGHTING
 
+#include "Shadows.hlsli"
+#include "Lighting.hlsli"
+
 // Numeric constants
 static const float PI = 3.14159265;
 static const float3 kDielectricSpecular = float3(0.04, 0.04, 0.04);
@@ -129,31 +132,6 @@ float3 Specular_IBL(SurfaceProperties Surface)
 }
 #endif
 
-float GetDirectionalShadowPBR(float3 ShadowCoord, Texture2D<float> texShadow)
-{
-#ifdef SINGLE_SAMPLE
-	float result = texShadow.SampleCmpLevelZero(shadowSampler, ShadowCoord.xy, ShadowCoord.z);
-#else
-	const float Dilation = 2.0;
-	float d1 = Dilation * ShadowTexelSize.x * 0.125;
-	float d2 = Dilation * ShadowTexelSize.x * 0.875;
-	float d3 = Dilation * ShadowTexelSize.x * 0.625;
-	float d4 = Dilation * ShadowTexelSize.x * 0.375;
-	float result = (
-		2.0 * texShadow.SampleCmpLevelZero(shadowSampler, ShadowCoord.xy, ShadowCoord.z) +
-		texShadow.SampleCmpLevelZero(shadowSampler, ShadowCoord.xy + float2(-d2, d1), ShadowCoord.z) +
-		texShadow.SampleCmpLevelZero(shadowSampler, ShadowCoord.xy + float2(-d1, -d2), ShadowCoord.z) +
-		texShadow.SampleCmpLevelZero(shadowSampler, ShadowCoord.xy + float2(d2, -d1), ShadowCoord.z) +
-		texShadow.SampleCmpLevelZero(shadowSampler, ShadowCoord.xy + float2(d1, d2), ShadowCoord.z) +
-		texShadow.SampleCmpLevelZero(shadowSampler, ShadowCoord.xy + float2(-d4, d3), ShadowCoord.z) +
-		texShadow.SampleCmpLevelZero(shadowSampler, ShadowCoord.xy + float2(-d3, -d4), ShadowCoord.z) +
-		texShadow.SampleCmpLevelZero(shadowSampler, ShadowCoord.xy + float2(d4, -d3), ShadowCoord.z) +
-		texShadow.SampleCmpLevelZero(shadowSampler, ShadowCoord.xy + float2(d3, d4), ShadowCoord.z)
-		) / 10.0;
-#endif
-	return result * result;
-}
-
 float GetShadowConeLightPBR(uint lightIndex, float3 shadowCoord)
 {
 	float result = lightShadowArrayTex.SampleCmpLevelZero(shadowSampler, float3(shadowCoord.xy, lightIndex), shadowCoord.z);
@@ -190,7 +168,7 @@ float3 ApplyDirectionalLightPBR(
 	Texture2D<float> ShadowMap
 )
 {
-	float shadow = GetDirectionalShadowPBR(shadowCoord, ShadowMap);
+	float shadow = GetSampledShadow(shadowCoord, ShadowTexelSize.x, ShadowMap);
 
 	return shadow * ApplyLightCommonPBR(Surface, L, c_light);
 }
@@ -265,7 +243,51 @@ float3 ApplyConeShadowedLightPBR(SurfaceProperties Surface, float3 c_light,
 }
 
 #ifdef RAY_TRACING
-#include "../../RTModelViewer/Shaders/LightingRT.hlsli"
+float3 ApplyDirectionalLightRT(
+	SurfaceProperties Surface,
+	float3 L,
+	float3 c_light,
+	float3  shadowOrigin    // pos
+)
+{
+	float shadow = GetShadowRT(L, shadowOrigin, FLT_MAX);
+
+	return shadow * ApplyLightCommonPBR(Surface, L, c_light);
+}
+
+
+float3 ApplyConeShadowedLightRT(SurfaceProperties Surface, float3 c_light,
+	float3	worldPos,		// World-space fragment position
+	float3	lightPos,		// World-space light position
+	float	lightRadiusSq,
+	float3	coneDir,
+	float2	coneAngles
+)
+{
+	float3 lightDir = lightPos - worldPos;
+	float lightDistSq = dot(lightDir, lightDir);
+	float invLightDist = rsqrt(lightDistSq);
+	float lightDist = 1.0f / invLightDist;
+	lightDir *= invLightDist;
+
+	// modify 1/d^2 * R^2 to fall off at a fixed radius
+	// (R/d)^2 - d/R = [(1/d^2) - (1/R^2)*(d/R)] * R^2
+	float distanceFalloff = lightRadiusSq * (invLightDist * invLightDist);
+	distanceFalloff = max(0, distanceFalloff - rsqrt(distanceFalloff));
+
+	float coneFalloff = dot(-lightDir, coneDir);
+	coneFalloff = saturate((coneFalloff - coneAngles.y) * coneAngles.x);
+
+	float shadow = 1.0;
+
+	if (coneFalloff && distanceFalloff)
+	{
+		shadow = GetShadowRT(lightDir, worldPos, lightDist);
+	}
+
+	return shadow * (coneFalloff * distanceFalloff) *
+		ApplyLightCommonPBR(Surface, lightDir, c_light);
+}
 #endif
 
 #define POINT_LIGHT_ARGS_PBR \
@@ -342,6 +364,39 @@ void ShadeLightsPBR(inout float3 colorSum, uint2 pixelPos,
 #endif
 		{
 			colorSum += ApplyConeShadowedLightPBR(SHADOWED_LIGHT_ARGS_PBR);
+		}
+	}
+}
+
+void ShadeLightsPBR(inout float3 colorSum,
+	SurfaceProperties Surface,
+	float3 worldPos
+)
+{
+	for (uint lightIndex = 0; lightIndex < MAX_LIGHTS; lightIndex++)
+	{
+		LightData lightData = lightBuffer[lightIndex];
+
+		if (lightIndex < FirstLightIndex.x) // sphere
+		{
+			colorSum += ApplyPointLightPBR(POINT_LIGHT_ARGS_PBR);
+		}
+		else if (lightIndex < FirstLightIndex.y) // cone
+		{
+			colorSum += ApplyConeLightPBR(CONE_LIGHT_ARGS_PBR);
+		}
+		else if (lightIndex < FirstLightIndex.z)// cone w/ shadow map
+		{
+#ifdef RAY_TRACING
+			if (UseShadowRays)
+			{
+				colorSum += ApplyConeShadowedLightRT(CONE_LIGHT_ARGS_PBR);
+			}
+			else
+#endif
+			{
+				colorSum += ApplyConeShadowedLightPBR(SHADOWED_LIGHT_ARGS_PBR);
+			}
 		}
 	}
 }

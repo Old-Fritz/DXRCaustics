@@ -113,6 +113,7 @@
     <None Include="Shaders\LightingPBR.hlsli">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="Shaders\Shadows.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\DefaultVS.hlsl">

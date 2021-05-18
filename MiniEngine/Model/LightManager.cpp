@@ -47,6 +47,7 @@ namespace Lighting
 	ByteAddressBuffer m_LightGridBitMask;
 	uint32_t m_FirstConeLight;
 	uint32_t m_FirstConeShadowedLight;
+	uint32_t m_LastLight = MaxLights - 1;
 
 	enum {shadowDim = 512};
 	ShadowBuffer m_LightShadowArray;

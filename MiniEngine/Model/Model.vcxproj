@@ -76,12 +76,15 @@
     </Manifest>
     <FxCompile>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)Bin\CompiledShaders\%(Filename).h</HeaderFileOutput>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">../../../RTModelViewer/Shaders;../../Core/Shaders</AdditionalIncludeDirectories>
     </FxCompile>
     <FxCompile>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">$(SolutionDir)Bin\CompiledShaders\%(Filename).h</HeaderFileOutput>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">../../../RTModelViewer/Shaders;../../Core/Shaders</AdditionalIncludeDirectories>
     </FxCompile>
     <FxCompile>
       <HeaderFileOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)Bin\CompiledShaders\%(Filename).h</HeaderFileOutput>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../../../RTModelViewer/Shaders;../../Core/Shaders</AdditionalIncludeDirectories>
     </FxCompile>
     <ClCompile>
       <MultiProcessorCompilation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</MultiProcessorCompilation>
@@ -132,6 +135,7 @@
     <None Include="Shaders\LightGrid.hlsli" />
     <None Include="Shaders\Lighting.hlsli" />
     <None Include="Shaders\LightingPBR.hlsli" />
+    <None Include="Shaders\Shadows.hlsli" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\CutoutDepthPS.hlsl">

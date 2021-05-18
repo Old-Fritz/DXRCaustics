@@ -50,7 +50,7 @@
 #include "CompiledShaders/RayGenerationShaderSSRLib.h"
 #include "CompiledShaders/HitShaderLib.h"
 #include "CompiledShaders/MissShaderLib.h"
-#include "CompiledShaders/DiffuseHitShaderLib.h"
+#include "CompiledShaders/HitShaderDiffuseLib.h"
 #include "CompiledShaders/RayGenerationShadowsLib.h"
 #include "CompiledShaders/MissShadowsLib.h"
 

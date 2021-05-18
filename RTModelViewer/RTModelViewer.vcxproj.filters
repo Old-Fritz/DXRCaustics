@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClInclude Include="Shaders\RayTracingHlslCompat.h">
-      <Filter>Shaders</Filter>
-    </ClInclude>
-    <ClInclude Include="Shaders\Unpacking.hlsli">
-      <Filter>Shaders</Filter>
-    </ClInclude>
     <ClInclude Include="Src\DXSampleHelper.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="Src\RTModelViewer.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="Shaders\Unpacking.hlsli">
+      <Filter>Shaders\Includes</Filter>
+    </ClInclude>
     <ClInclude Include="Shaders\RayTracingInclude.hlsli">
-      <Filter>Shaders</Filter>
+      <Filter>Shaders\Includes</Filter>
+    </ClInclude>
+    <ClInclude Include="Shaders\RayTracingHlslCompat.h">
+      <Filter>Shaders\Includes</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -30,12 +30,27 @@
     <Filter Include="Source Files\RayTracing">
       <UniqueIdentifier>{ea2fcbb5-f761-4408-a44b-61f541f9bd72}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders\Includes">
+      <UniqueIdentifier>{41d87a61-e297-4bff-a678-654a6636f6a8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
     <None Include="..\readme.md" />
-    <None Include="Shaders\LightingRT.hlsli">
+    <None Include="Shaders\RayGenerationCausticLib.hlsl">
       <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\HitShaderCausticLib.hlsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\SceneRT.hlsli">
+      <Filter>Shaders\Includes</Filter>
+    </None>
+    <None Include="Shaders\MaterialsRT.hlsli">
+      <Filter>Shaders\Includes</Filter>
+    </None>
+    <None Include="Shaders\LightingRT.hlsli">
+      <Filter>Shaders\Includes</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -57,7 +72,7 @@
     <FxCompile Include="Shaders\hitShaderLib.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="Shaders\DiffuseHitShaderLib.hlsl">
+    <FxCompile Include="Shaders\HitShaderDiffuseLib.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

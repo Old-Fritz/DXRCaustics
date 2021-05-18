@@ -13,10 +13,14 @@
 //
 // Thanks to Michal Drobot for his feedback.
 
+#ifndef LIGHTING_H_INCLUDED
+#define LIGHTING_H_INCLUDED
+
 #ifndef RAY_TRACING
 #include "Common.hlsli"
-#include "LightGrid.hlsli"
 #endif
+#include "LightGrid.hlsli"
+
 
 StructuredBuffer<LightData> lightBuffer : register(t14);
 Texture2DArray<float> lightShadowArrayTex : register(t15);
@@ -598,3 +602,5 @@ void ShadeLights(inout float3 colorSum, uint2 pixelPos,
 	}
 #endif
 }
+
+#endif

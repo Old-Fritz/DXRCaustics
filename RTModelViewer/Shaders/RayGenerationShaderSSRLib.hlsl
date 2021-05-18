@@ -12,9 +12,6 @@
 #define HLSL
 #include "RayTracingInclude.hlsli"
 
-Texture2D<float>	depth	: register(t12);
-Texture2D<float4>   normals  : register(t13);
-
 [shader("raygeneration")]
 void RayGen()
 {

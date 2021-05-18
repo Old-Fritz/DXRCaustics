@@ -1,80 +1,45 @@
-#include "../../MiniEngine/Model/Shaders/LightingPBR.hlsli"
+#ifndef LIGHTING_RT_H_INCLUDED
+#define LIGHTING_RT_H_INCLUDED
 
 
-float GetDirectionalShadowRT(float3 shadowDirection, float3 shadowOrigin)
+// Shading
+void ShadeSunLight(inout float3 colorAccum, SurfaceProperties Surface, float3 worldPos)
 {
-	float shadow = 1.0;
-
-	RayDesc rayDesc = { shadowOrigin,
-		0.1f,
-		shadowDirection,
-		FLT_MAX };
-	RayPayload shadowPayload;
-	shadowPayload.SkipShading = true;
-	shadowPayload.RayHitT = FLT_MAX;
-	TraceRay(g_accel, RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH, ~0, 0, 1, 0, rayDesc, shadowPayload);
-	if (shadowPayload.RayHitT < FLT_MAX)
+	if (UseShadowRays)
 	{
-		shadow = 0.0;
+		colorAccum += ApplyDirectionalLightRT(Surface, SunDirection.xyz, SunIntensity.xyz, worldPos);
 	}
-
-
-	return shadow;
-}
-
-float3 ApplyDirectionalLightRT(
-	SurfaceProperties Surface,
-	float3 L,
-	float3 c_light,
-	float3  shadowOrigin    // pos
-)
-{
-	float shadow = GetDirectionalShadowRT(L, shadowOrigin);
-
-	return shadow * ApplyLightCommonPBR(Surface, L, c_light);
-}
-
-
-float3 ApplyConeShadowedLightRT(SurfaceProperties Surface, float3 c_light,
-	float3	worldPos,		// World-space fragment position
-	float3	lightPos,		// World-space light position
-	float	lightRadiusSq,
-	float3	coneDir,
-	float2	coneAngles
-)
-{
-	float3 lightDir = lightPos - worldPos;
-	float lightDistSq = dot(lightDir, lightDir);
-	float invLightDist = rsqrt(lightDistSq);
-	float lightDist = 1.0f / invLightDist;
-	lightDir *= invLightDist;
-
-	// modify 1/d^2 * R^2 to fall off at a fixed radius
-	// (R/d)^2 - d/R = [(1/d^2) - (1/R^2)*(d/R)] * R^2
-	float distanceFalloff = lightRadiusSq * (invLightDist * invLightDist);
-	distanceFalloff = max(0, distanceFalloff - rsqrt(distanceFalloff));
-
-	float coneFalloff = dot(-lightDir, coneDir);
-	coneFalloff = saturate((coneFalloff - coneAngles.y) * coneAngles.x);
-
-	float shadow = 1.0;
-
-	if (coneFalloff && distanceFalloff)
+	else
 	{
-		RayDesc rayDesc = { worldPos,
-			0.01f,
-			lightDir,
-			lightDist - 0.01f };
-		RayPayload shadowPayload;
-		shadowPayload.SkipShading = true;
-		shadowPayload.RayHitT = lightDist;
-		TraceRay(g_accel, RAY_FLAG_ACCEPT_FIRST_HIT_AND_END_SEARCH, ~0, 0, 1, 0, rayDesc, shadowPayload);
-		if (shadowPayload.RayHitT < lightDist)
-		{
-			shadow = 0.0;
-		}
+		float3 shadowCoord = mul(SunShadowMatrix, float4(worldPos, 1.0f)).xyz;
+		colorAccum += ApplyDirectionalLightPBR(Surface, SunDirection.xyz, SunIntensity.xyz, shadowCoord, texShadow);
 	}
-
-	return shadow * (coneFalloff * distanceFalloff) *
-		ApplyLightCommonPBR(Surface, lightDir, c_light);
 }
+
+void ApplySSAO(inout SurfaceProperties Surface, uint2 pixelPos)
+{
+	float ssao = texSSAO[pixelPos];
+
+	Surface.c_diff *= ssao;
+	Surface.c_spec *= ssao;
+}
+
+void AccumulateLights(inout float3 colorAccum, SurfaceProperties Surface, float3 worldPos, uint2 pixelPos)
+{
+	ApplySSAO(Surface, pixelPos);
+
+	colorAccum += Surface.c_diff * AmbientIntensity.xyz;
+
+	ShadeSunLight(colorAccum, Surface, worldPos);
+	ShadeLightsPBR(colorAccum, pixelPos, Surface, worldPos);
+}
+
+void AccumulateLights(inout float3 colorAccum, SurfaceProperties Surface, float3 worldPos)
+{
+	colorAccum += Surface.c_diff * AmbientIntensity.xyz;
+
+	ShadeSunLight(colorAccum, Surface, worldPos);
+	ShadeLightsPBR(colorAccum, Surface, worldPos);
+}
+
+#endif

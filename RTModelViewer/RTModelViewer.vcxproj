@@ -78,12 +78,20 @@
     <None Include="..\readme.md" />
     <None Include="packages.config" />
     <None Include="Shaders\LightingRT.hlsli" />
+    <None Include="Shaders\MaterialsRT.hlsli" />
+    <None Include="Shaders\SceneRT.hlsli" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Shaders\DiffuseHitShaderLib.hlsl" />
+    <FxCompile Include="Shaders\HitShaderDiffuseLib.hlsl" />
+    <None Include="Shaders\HitShaderCausticLib.hlsl">
+      <FileType>Document</FileType>
+    </None>
     <FxCompile Include="Shaders\hitShaderLib.hlsl" />
     <FxCompile Include="Shaders\missShaderLib.hlsl" />
     <FxCompile Include="Shaders\missShadowsLib.hlsl" />
+    <None Include="Shaders\RayGenerationCausticLib.hlsl">
+      <FileType>Document</FileType>
+    </None>
     <FxCompile Include="Shaders\RayGenerationShaderLib.hlsl" />
     <FxCompile Include="Shaders\RayGenerationShaderSSRLib.hlsl" />
     <FxCompile Include="Shaders\RayGenerationShadowsLib.hlsl" />
@@ -132,6 +140,15 @@
     <ClCompile>
       <MultiProcessorCompilation Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</MultiProcessorCompilation>
     </ClCompile>
+    <FxCompile>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">../MiniEngine/Model/Shaders;../MiniEngine/Core/Shaders</AdditionalIncludeDirectories>
+    </FxCompile>
+    <FxCompile>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">../MiniEngine/Model/Shaders;../MiniEngine/Core/Shaders</AdditionalIncludeDirectories>
+    </FxCompile>
+    <FxCompile>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../MiniEngine/Model/Shaders;../MiniEngine/Core/Shaders</AdditionalIncludeDirectories>
+    </FxCompile>
   </ItemDefinitionGroup>
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\Packages\zlib-msvc-x64.1.2.11.8900\build\native\zlib-msvc-x64.targets" Condition="Exists('..\Packages\zlib-msvc-x64.1.2.11.8900\build\native\zlib-msvc-x64.targets')" />
