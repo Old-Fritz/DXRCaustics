@@ -108,7 +108,6 @@ float3 Specular_BRDF(SurfaceProperties Surface, LightProperties Light)
 	return ND * GV * F;
 }
 
-#ifndef RAY_TRACING
 // Diffuse irradiance
 float3 Diffuse_IBL(SurfaceProperties Surface)
 {
@@ -120,7 +119,7 @@ float3 Diffuse_IBL(SurfaceProperties Surface)
 	float LdotH = saturate(dot(Surface.N, normalize(Surface.N + Surface.V)));
 	float fd90 = 0.5 + 2.0 * Surface.roughness * LdotH * LdotH;
 	float3 DiffuseBurley = Surface.c_diff * Fresnel_Shlick(1, fd90, Surface.NdotV);
-	return DiffuseBurley * irradianceIBLTexture.Sample(defaultSampler, Surface.N);
+	return DiffuseBurley * irradianceIBLTexture.SampleLevel(defaultSampler, Surface.N, 0);
 }
 
 // Approximate specular IBL by sampling lower mips according to roughness.  Then modulate by Fresnel. 
@@ -128,9 +127,9 @@ float3 Specular_IBL(SurfaceProperties Surface)
 {
 	float lod = Surface.roughness * IBLRange + IBLBias;
 	float3 specular = Fresnel_Shlick(Surface.c_spec, 1, Surface.NdotV);
-	return specular * radianceIBLTexture.SampleLevel(cubeMapSampler, reflect(-Surface.V, Surface.N), lod);
+	return specular * radianceIBLTexture.SampleLevel(defaultSampler, reflect(-Surface.V, Surface.N), lod);
 }
-#endif
+
 
 float GetShadowConeLightPBR(uint lightIndex, float3 shadowCoord)
 {
@@ -139,7 +138,7 @@ float GetShadowConeLightPBR(uint lightIndex, float3 shadowCoord)
 	return result * result;
 }
 
-float3 ApplyLightCommonPBR(SurfaceProperties Surface, float3 L, float3 c_light)
+void CalcReflectionFactors(SurfaceProperties Surface, float3 L, out float3 diffuse, out float3 specular)
 {
 	LightProperties Light;
 	Light.L = L;
@@ -153,11 +152,18 @@ float3 ApplyLightCommonPBR(SurfaceProperties Surface, float3 L, float3 c_light)
 	Light.NdotH = saturate(dot(Surface.N, H));
 
 	// Diffuse & specular factors
-	float3 diffuse = Diffuse_Burley(Surface, Light);
-	float3 specular = Specular_BRDF(Surface, Light);
+	diffuse = Diffuse_Burley(Surface, Light) * Light.NdotL;
+	specular = Specular_BRDF(Surface, Light) * Light.NdotL;
+}
+
+float3 ApplyLightCommonPBR(SurfaceProperties Surface, float3 L, float3 c_light)
+{
+	// Diffuse & specular factors
+	float3 diffuse, specular;
+	CalcReflectionFactors(Surface, L, diffuse, specular);
 
 	// Directional light
-	return Light.NdotL * c_light * (diffuse + specular);
+	return c_light * (diffuse + specular);
 }
 
 float3 ApplyDirectionalLightPBR(

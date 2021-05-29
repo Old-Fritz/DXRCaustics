@@ -114,6 +114,7 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="Shaders\Shadows.hlsli" />
+    <None Include="Shaders\GBuffer.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Shaders\DefaultVS.hlsl">
@@ -197,5 +198,6 @@
     <FxCompile Include="Shaders\DefaultNoUV1SkinVS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="Shaders\DeferredLightingCS.hlsl" />
   </ItemGroup>
 </Project>

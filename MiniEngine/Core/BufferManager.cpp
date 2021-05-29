@@ -20,9 +20,10 @@
 
 namespace Graphics
 {
-	DepthBuffer g_SceneDepthBuffer;
+	GeometryBuffer g_SceneGBuffer;
+	//DepthBuffer g_SceneDepthBuffer;
 	ColorBuffer g_SceneColorBuffer;
-	ColorBuffer g_SceneNormalBuffer;
+	//ColorBuffer g_SceneNormalBuffer;
 	ColorBuffer g_PostEffectsBuffer;
 	ColorBuffer g_VelocityBuffer;
 	ColorBuffer g_OverlayBuffer;
@@ -111,7 +112,8 @@ void Graphics::InitializeRenderingBuffers( uint32_t bufferWidth, uint32_t buffer
 	esram.PushStack();
 
 		g_SceneColorBuffer.Create( L"Main Color Buffer", bufferWidth, bufferHeight, 1, DefaultHdrColorFormat, esram );
-		g_SceneNormalBuffer.Create( L"Normals Buffer", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R16G16B16A16_FLOAT, esram );
+		g_SceneGBuffer.Create(L"Scene", bufferWidth, bufferHeight, 1);
+		//g_SceneNormalBuffer.Create( L"Normals Buffer", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R16G16B16A16_FLOAT, esram );
 		g_VelocityBuffer.Create( L"Motion Vectors", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R32_UINT );
 		g_PostEffectsBuffer.Create( L"Post Effects Buffer", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R32_UINT );
 
@@ -123,7 +125,7 @@ void Graphics::InitializeRenderingBuffers( uint32_t bufferWidth, uint32_t buffer
 			g_MinMaxDepth16.Create(L"MinMaxDepth 16x16", bufferWidth4, bufferHeight4, 1, DXGI_FORMAT_R32_UINT, esram );
 			g_MinMaxDepth32.Create(L"MinMaxDepth 32x32", bufferWidth5, bufferHeight5, 1, DXGI_FORMAT_R32_UINT, esram );
 
-			g_SceneDepthBuffer.Create( L"Scene Depth Buffer", bufferWidth, bufferHeight, DSV_FORMAT, esram );
+			//g_SceneDepthBuffer.Create( L"Scene Depth Buffer", bufferWidth, bufferHeight, DSV_FORMAT, esram );
 
 			esram.PushStack(); // Begin opaque geometry
 
@@ -243,9 +245,8 @@ void Graphics::ResizeDisplayDependentBuffers(uint32_t NativeWidth, uint32_t Nati
 
 void Graphics::DestroyRenderingBuffers()
 {
-	g_SceneDepthBuffer.Destroy();
+	g_SceneGBuffer.Destroy();
 	g_SceneColorBuffer.Destroy();
-	g_SceneNormalBuffer.Destroy();
 	g_VelocityBuffer.Destroy();
 	g_OverlayBuffer.Destroy();
 	g_HorizontalBuffer.Destroy();
@@ -313,4 +314,173 @@ void Graphics::DestroyRenderingBuffers()
 	g_FXAAColorQueue.Destroy();
 
 	g_GenMipsBuffer.Destroy();
+}
+
+
+void Graphics::GeometryBuffer::Create(const std::wstring& Name, uint32_t Width, uint32_t Height, uint32_t ArrayCount)
+{
+	m_DepthBuffer.CreateArray(Name + L" Depth GBuffer", Width, Height, ArrayCount, DSV_FORMAT);
+	
+	for (int i = 0; i < uint32_t(GBTarget::NumTargets); ++i)
+	{
+		m_ColorBuffers[i].CreateArray(Name + L" " + c_GBufferNames[i] + L" GBuffer", Width, Height, ArrayCount, c_GBufferFormats[i]);
+	}
+}
+void Graphics::GeometryBuffer::Destroy()
+{
+	m_DepthBuffer.Destroy();
+
+	for (int i = 0; i < uint32_t(GBTarget::NumTargets); ++i)
+	{
+		m_ColorBuffers[i].Destroy();
+	}
+}
+
+void Graphics::GeometryBuffer::Setup(GraphicsContext& context, GBSet flags)
+{
+	D3D12_RESOURCE_STATES rtState = ((flags & GBSet::RTWrite) != GBSet::None ? D3D12_RESOURCE_STATE_RENDER_TARGET : D3D12_RESOURCE_STATE_COMMON) |
+		((flags & GBSet::Pixel) != GBSet::None ? D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE : D3D12_RESOURCE_STATE_COMMON) |
+		((flags & GBSet::NonPixel) != GBSet::None ? D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE : D3D12_RESOURCE_STATE_COMMON)
+		;
+
+	D3D12_RESOURCE_STATES dsState = ((flags & GBSet::DSWrite) != GBSet::None ? D3D12_RESOURCE_STATE_DEPTH_WRITE : D3D12_RESOURCE_STATE_COMMON) |
+		((flags & GBSet::Pixel) != GBSet::None ? D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE : D3D12_RESOURCE_STATE_COMMON) |
+		((flags & GBSet::NonPixel) != GBSet::None ? D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE : D3D12_RESOURCE_STATE_COMMON) |
+		((flags & GBSet::DSRead) != GBSet::None ? D3D12_RESOURCE_STATE_DEPTH_READ : D3D12_RESOURCE_STATE_COMMON)
+		;
+
+	bool doClear = (flags & GBSet::Clear) != GBSet::None;
+	bool doSetup = (flags & GBSet::Setup) != GBSet::None;
+	D3D12_CPU_DESCRIPTOR_HANDLE rtvs[(uint32_t)GBTarget::NumTargets];
+	D3D12_CPU_DESCRIPTOR_HANDLE dsv = { 0 };
+	uint32_t rtvCount = 0;
+
+
+	// perform transitions
+	for (uint32_t i = 0; i < uint32_t(GBTarget::NumTargets); ++i)
+	{
+		if ((flags & (GBSet)(1 << i)) != GBSet::None)
+		{
+			context.TransitionResource(m_ColorBuffers[i], rtState, doClear);
+			if (doClear) context.ClearColor(m_ColorBuffers[i]);
+			if (doSetup) rtvs[rtvCount++] = m_ColorBuffers[i].GetRTV();
+		}
+	}
+
+	if ((flags & GBSet::Depth) != GBSet::None)
+	{
+		context.TransitionResource(m_DepthBuffer, dsState, doClear);
+		if (doClear) context.ClearDepth(m_DepthBuffer);
+		if (doSetup) dsv = dsState == D3D12_RESOURCE_STATE_DEPTH_WRITE ? m_DepthBuffer.GetDSV() : m_DepthBuffer.GetDSV_DepthReadOnly();
+	}
+
+	if (rtvCount > 0)
+	{
+		if (dsv.ptr != 0)
+		{
+			context.SetRenderTargets(rtvCount, rtvs, dsv);
+		}
+		else
+		{
+			context.SetRenderTargets(rtvCount, rtvs);
+		}
+	}
+	else if (dsv.ptr != 0)
+	{
+		context.SetDepthStencilTarget(dsv);
+	}
+}
+
+void Graphics::GeometryBuffer::Setup(CommandContext& context, GBSet flags)
+{
+	D3D12_RESOURCE_STATES rtState = ((flags & GBSet::RTWrite) != GBSet::None ? D3D12_RESOURCE_STATE_RENDER_TARGET : D3D12_RESOURCE_STATE_COMMON) |
+		((flags & GBSet::Pixel) != GBSet::None ? D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE : D3D12_RESOURCE_STATE_COMMON) |
+		((flags & GBSet::NonPixel) != GBSet::None ? D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE : D3D12_RESOURCE_STATE_COMMON)
+		;
+
+	D3D12_RESOURCE_STATES dsState = ((flags & GBSet::DSWrite) != GBSet::None ? D3D12_RESOURCE_STATE_DEPTH_WRITE : D3D12_RESOURCE_STATE_COMMON) |
+		((flags & GBSet::Pixel) != GBSet::None ? D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE : D3D12_RESOURCE_STATE_COMMON) |
+		((flags & GBSet::NonPixel) != GBSet::None ? D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE : D3D12_RESOURCE_STATE_COMMON) |
+		((flags & GBSet::DSRead) != GBSet::None ? D3D12_RESOURCE_STATE_DEPTH_READ : D3D12_RESOURCE_STATE_COMMON)
+		;
+
+	bool doClear = (flags & GBSet::Clear) != GBSet::None;
+
+
+	// perform transitions
+	for (uint32_t i = 0; i < uint32_t(GBTarget::NumTargets); ++i)
+	{
+		if ((flags & (GBSet)(1 << i)) != GBSet::None)
+		{
+			context.TransitionResource(m_ColorBuffers[i], rtState, doClear);
+		}
+	}
+
+	if ((flags & GBSet::Depth) != GBSet::None)
+	{
+		context.TransitionResource(m_DepthBuffer, dsState, doClear);
+	}
+}
+
+void Graphics::GeometryBuffer::Bind(GraphicsContext& context, uint32_t rootIndex, uint32_t offset, GBSet flags)
+{
+	if ((flags & GBSet::Depth) != GBSet::None)
+	{
+		context.SetDynamicDescriptor(rootIndex, offset++, m_DepthBuffer.GetDepthSRV());
+	}
+
+	for (uint32_t i = 0; i < uint32_t(GBTarget::NumTargets); ++i)
+	{
+		if ((flags & (GBSet)(1 << i)) != GBSet::None)
+		{
+			context.SetDynamicDescriptor(rootIndex, offset++, m_ColorBuffers[i].GetSRV());
+		}
+	}
+}
+
+void Graphics::GeometryBuffer::Bind(ComputeContext& context, uint32_t rootIndex, uint32_t offset, GBSet flags)
+{
+	if ((flags & GBSet::Depth) != GBSet::None)
+	{
+		context.SetDynamicDescriptor(rootIndex, offset++, m_DepthBuffer.GetDepthSRV());
+	}
+
+	for (uint32_t i = 0; i < uint32_t(GBTarget::NumTargets); ++i)
+	{
+		if ((flags & (GBSet)(1 << i)) != GBSet::None)
+		{
+			context.SetDynamicDescriptor(rootIndex, offset++, m_ColorBuffers[i].GetSRV());
+		}
+	}
+}
+
+
+uint32_t Graphics::GeometryBuffer::GetWidth()
+{
+	return m_DepthBuffer.GetWidth();
+}
+
+uint32_t Graphics::GeometryBuffer::GetHeight()
+{
+	return m_DepthBuffer.GetHeight();
+}
+
+DepthBuffer& Graphics::GeometryBuffer::GetDepthBuffer()
+{
+	return m_DepthBuffer;
+}
+
+ColorBuffer& Graphics::GeometryBuffer::GetColorBuffer(GBTarget target)
+{
+	return m_ColorBuffers[(uint32_t)target];
+}
+
+D3D12_GPU_DESCRIPTOR_HANDLE Graphics::GeometryBuffer::GetRTHandle()
+{
+	return m_RTDescriptorHandle;
+}
+
+void Graphics::GeometryBuffer::SetRTHandle(D3D12_GPU_DESCRIPTOR_HANDLE handle)
+{
+	m_RTDescriptorHandle = handle;
 }

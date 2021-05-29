@@ -94,6 +94,7 @@
     <ClInclude Include="DepthOfField.h" />
     <ClInclude Include="DynamicDescriptorHeap.h" />
     <ClInclude Include="DescriptorHeap.h" />
+    <ClInclude Include="GeometryBuffer.h" />
     <ClInclude Include="GpuBuffer.h" />
     <ClInclude Include="EngineProfiling.h" />
     <ClInclude Include="EsramAllocator.h" />

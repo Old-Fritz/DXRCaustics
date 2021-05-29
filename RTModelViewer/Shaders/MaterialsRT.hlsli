@@ -15,19 +15,19 @@ struct GBuffer
 // sample textures
 float4 TexSample(Texture2D<float4> tex, TextureCoords coords)
 {
-	return tex.SampleGrad(g_s0, coords.uv, coords.ddxUV, coords.ddyUV);
+	return tex.SampleGrad(defaultSampler, coords.uv, coords.ddxUV, coords.ddyUV);
 }
 float3 TexSample(Texture2D<float3> tex, TextureCoords coords)
 {
-	return tex.SampleGrad(g_s0, coords.uv, coords.ddxUV, coords.ddyUV);
+	return tex.SampleGrad(defaultSampler, coords.uv, coords.ddxUV, coords.ddyUV);
 }
 float2 TexSample(Texture2D<float2> tex, TextureCoords coords)
 {
-	return tex.SampleGrad(g_s0, coords.uv, coords.ddxUV, coords.ddyUV);
+	return tex.SampleGrad(defaultSampler, coords.uv, coords.ddxUV, coords.ddyUV);
 }
 float1 TexSample(Texture2D<float1> tex, TextureCoords coords)
 {
-	return tex.SampleGrad(g_s0, coords.uv, coords.ddxUV, coords.ddyUV);
+	return tex.SampleGrad(defaultSampler, coords.uv, coords.ddxUV, coords.ddyUV);
 }
 
 GBuffer ExtractGBuffer(VertexData vertex)
@@ -53,12 +53,12 @@ GBuffer ExtractGBuffer(VertexData vertex)
 }
 
 
-SurfaceProperties BuildSurface(GBuffer gBuf, float3 worldPos)
+SurfaceProperties BuildSurface(GBuffer gBuf, float3 viewDirection)
 {
 	SurfaceProperties Surface;
 
 	Surface.N = gBuf.normal;
-	Surface.V = normalize(ViewerPos.xyz - worldPos);
+	Surface.V = viewDirection;
 	Surface.NdotV = saturate(dot(Surface.N, Surface.V));
 	Surface.c_diff = gBuf.baseColor.rgb * (1 - kDielectricSpecular) * (1 - gBuf.metallicRoughness.x) * gBuf.occlusion;
 	Surface.c_spec = lerp(kDielectricSpecular, gBuf.baseColor.rgb, gBuf.metallicRoughness.x) * gBuf.occlusion;
@@ -69,4 +69,4 @@ SurfaceProperties BuildSurface(GBuffer gBuf, float3 worldPos)
 	return Surface;
 }
 
-#endif MATERIALS_RT_H_INCLUDED
+#endif // MATERIALS_RT_H_INCLUDED

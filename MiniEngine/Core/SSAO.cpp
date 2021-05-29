@@ -292,7 +292,7 @@ namespace SSAO
 
 void SSAO::LinearizeZ(ComputeContext& Context, const Camera& camera, uint32_t FrameIndex)
 {
-	DepthBuffer& Depth = g_SceneDepthBuffer;
+	DepthBuffer& Depth = g_SceneGBuffer.GetDepthBuffer();
 	ColorBuffer& LinearDepth = g_LinearDepth[FrameIndex];
 	const float NearClipDist = camera.GetNearClip();
 	const float FarClipDist = camera.GetFarClip();
@@ -323,7 +323,7 @@ void SSAO::Render( GraphicsContext& GfxContext, const float* ProjMat, float Near
 {
 	uint32_t FrameIndex = TemporalEffects::GetFrameIndexMod2();
 
-	DepthBuffer& Depth = g_SceneDepthBuffer;
+	DepthBuffer& Depth = g_SceneGBuffer.GetDepthBuffer();
 	ColorBuffer& LinearDepth = g_LinearDepth[ FrameIndex ];
 
 	const float zMagic = (FarClipDist - NearClipDist) / NearClipDist;

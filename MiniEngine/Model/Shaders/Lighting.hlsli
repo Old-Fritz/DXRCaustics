@@ -18,14 +18,13 @@
 
 #ifndef RAY_TRACING
 #include "Common.hlsli"
-#endif
 #include "LightGrid.hlsli"
-
 
 StructuredBuffer<LightData> lightBuffer : register(t14);
 Texture2DArray<float> lightShadowArrayTex : register(t15);
 ByteAddressBuffer lightGrid : register(t16);
 ByteAddressBuffer lightGridBitMask : register(t17);
+#endif
 
 void AntiAliasSpecular( inout float3 texNormal, inout float gloss )
 {

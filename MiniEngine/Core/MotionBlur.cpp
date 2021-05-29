@@ -134,10 +134,10 @@ void MotionBlur::GenerateCameraVelocityBuffer( CommandContext& BaseContext, cons
 	if (UseLinearZ)
 		Context.TransitionResource(LinearDepth, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 	else
-		Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+		Context.TransitionResource(g_SceneGBuffer.GetDepthBuffer(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 
 	Context.SetPipelineState(s_CameraVelocityCS[UseLinearZ ? 1 : 0]);
-	Context.SetDynamicDescriptor(1, 0, UseLinearZ ? LinearDepth.GetSRV() : g_SceneDepthBuffer.GetDepthSRV());
+	Context.SetDynamicDescriptor(1, 0, UseLinearZ ? LinearDepth.GetSRV() : g_SceneGBuffer.GetDepthBuffer().GetDepthSRV());
 	Context.SetDynamicDescriptor(2, 0, g_VelocityBuffer.GetUAV());
 	Context.Dispatch2D(Width, Height);
 }
@@ -187,7 +187,7 @@ void MotionBlur::RenderCameraBlur( CommandContext& BaseContext, const Matrix4& r
 	if (UseLinearZ)
 		Context.TransitionResource(LinearDepth, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 	else
-		Context.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+		Context.TransitionResource(g_SceneGBuffer.GetDepthBuffer(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 
 	if (Enable)
 	{
@@ -197,7 +197,7 @@ void MotionBlur::RenderCameraBlur( CommandContext& BaseContext, const Matrix4& r
 
 		Context.SetPipelineState(s_CameraMotionBlurPrePassCS[UseLinearZ ? 1 : 0]);
 		Context.SetDynamicDescriptor(1, 0, g_SceneColorBuffer.GetSRV());
-		Context.SetDynamicDescriptor(1, 1, UseLinearZ ? LinearDepth.GetSRV() : g_SceneDepthBuffer.GetDepthSRV());
+		Context.SetDynamicDescriptor(1, 1, UseLinearZ ? LinearDepth.GetSRV() : g_SceneGBuffer.GetDepthBuffer().GetDepthSRV());
 		Context.SetDynamicDescriptor(2, 0, g_MotionPrepBuffer.GetUAV());
 		Context.SetDynamicDescriptor(2, 1, g_VelocityBuffer.GetUAV());
 		Context.Dispatch2D(g_MotionPrepBuffer.GetWidth(), g_MotionPrepBuffer.GetHeight());
@@ -237,7 +237,7 @@ void MotionBlur::RenderCameraBlur( CommandContext& BaseContext, const Matrix4& r
 	else
 	{
 		Context.SetPipelineState(s_CameraVelocityCS[UseLinearZ ? 1 : 0]);
-		Context.SetDynamicDescriptor(1, 0, UseLinearZ ? LinearDepth.GetSRV() : g_SceneDepthBuffer.GetDepthSRV());
+		Context.SetDynamicDescriptor(1, 0, UseLinearZ ? LinearDepth.GetSRV() : g_SceneGBuffer.GetDepthBuffer().GetDepthSRV());
 		Context.SetDynamicDescriptor(2, 0, g_VelocityBuffer.GetUAV());
 		Context.Dispatch2D(Width, Height);
 	}

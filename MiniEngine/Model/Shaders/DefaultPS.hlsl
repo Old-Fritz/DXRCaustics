@@ -102,7 +102,35 @@ float3 ComputeNormal(VSOutput vsOutput)
 	return mul(normal, tangentFrame);
 #endif
 }
+#define USE_GBUFFER
+#ifdef USE_GBUFFER
 
+struct MRT
+{
+	float4 BaseColor : SV_Target0;
+	float2 MetallicRoughness : SV_Target1;
+	float  Occlusion : SV_Target2;
+	float3 Emissive : SV_Target3;
+	float3 Normal : SV_Target4;
+};
+
+[RootSignature(Renderer_RootSig)]
+MRT main(VSOutput vsOutput)
+{
+	MRT mrt;
+
+	// Load and modulate textures
+	mrt.BaseColor = baseColorFactor * baseColorTexture.Sample(baseColorSampler, UVSET(BASECOLOR));
+	mrt.MetallicRoughness = metallicRoughnessFactor *
+		metallicRoughnessTexture.Sample(metallicRoughnessSampler, UVSET(METALLICROUGHNESS)).bg;
+	mrt.Occlusion = occlusionTexture.Sample(occlusionSampler, UVSET(OCCLUSION));
+	mrt.Emissive = emissiveFactor * emissiveTexture.Sample(emissiveSampler, UVSET(EMISSIVE));
+	mrt.Normal = ComputeNormal(vsOutput);
+
+	return mrt;
+}
+
+#else
 [RootSignature(Renderer_RootSig)]
 float4 main(VSOutput vsOutput) : SV_Target0
 {
@@ -177,5 +205,6 @@ float4 main(VSOutput vsOutput) : SV_Target0
 	}
 #endif
 
-	return float4(colorAccum, baseColor.a);
+	return float4(colorAccum, baseColor.a);;
 }
+#endif

@@ -19,6 +19,7 @@
 #include "../Core/CommandContext.h"
 #include "../Core/UploadBuffer.h"
 #include "../Core/TextureManager.h"
+#include "../Core/BufferManager.h"
 #include <cstdint>
 #include <vector>
 
@@ -66,6 +67,7 @@ namespace Renderer
 	void SetIBLBias(float LODBias);
 	void UpdateGlobalDescriptors(void);
 	void DrawSkybox( GraphicsContext& gfxContext, const Camera& camera, const D3D12_VIEWPORT& viewport, const D3D12_RECT& scissor );
+	void RenderDeferredLigting(GraphicsContext& context, GlobalConstants& globalConstants, const Math::Camera& camera, ColorBuffer& colorTarget, Graphics::GeometryBuffer& GBuffer);
 
 	class MeshSorter
 	{
@@ -79,7 +81,6 @@ namespace Renderer
 			m_Camera = nullptr;
 			m_Viewport = {};
 			m_Scissor = {};
-			m_NumRTVs = 0;
 			m_DSV = nullptr;
 			m_SortObjects.clear();
 			m_SortKeys.clear();
@@ -91,12 +92,8 @@ namespace Renderer
 		void SetCamera( const BaseCamera& camera ) { m_Camera = &camera; }
 		void SetViewport( const D3D12_VIEWPORT& viewport ) { m_Viewport = viewport; }
 		void SetScissor( const D3D12_RECT& scissor ) { m_Scissor = scissor; }
-		void AddRenderTarget( ColorBuffer& RTV )
-		{ 
-			ASSERT(m_NumRTVs < 8);
-			m_RTV[m_NumRTVs++] = &RTV;
-		}
-		void SetDepthStencilTarget( DepthBuffer& DSV ) { m_DSV = &DSV; }
+		void SetGBuffer(Graphics::GeometryBuffer& GBuffer) { m_GBuffer = &GBuffer; m_DSV = &m_GBuffer->GetDepthBuffer();}
+		void SetDepthStencilTarget(DepthBuffer& DSV) { m_DSV = &DSV; m_GBuffer = nullptr; }
 
 		const Frustum& GetWorldFrustum() const { return m_Camera->GetWorldSpaceFrustum(); }
 		const Frustum& GetViewFrustum() const { return m_Camera->GetViewSpaceFrustum(); }
@@ -111,7 +108,6 @@ namespace Renderer
 		void Sort();
 
 		void RenderMeshes(DrawPass pass, GraphicsContext& context, GlobalConstants& globals);
-
 	private:
 
 		struct SortKey
@@ -149,8 +145,8 @@ namespace Renderer
 		D3D12_VIEWPORT m_Viewport;
 		D3D12_RECT m_Scissor;
 		uint32_t m_NumRTVs;
-		ColorBuffer* m_RTV[8];
 		DepthBuffer* m_DSV;
+		Graphics::GeometryBuffer* m_GBuffer;
 	};
 
 } // namespace Renderer

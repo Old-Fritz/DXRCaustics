@@ -12,23 +12,32 @@ void ShadeSunLight(inout float3 colorAccum, SurfaceProperties Surface, float3 wo
 	else
 	{
 		float3 shadowCoord = mul(SunShadowMatrix, float4(worldPos, 1.0f)).xyz;
-		colorAccum += ApplyDirectionalLightPBR(Surface, SunDirection.xyz, SunIntensity.xyz, shadowCoord, texShadow);
+		colorAccum += ApplyDirectionalLightPBR(Surface, SunDirection.xyz, SunIntensity.xyz, shadowCoord, lightSunShadow);
 	}
 }
 
 void ApplySSAO(inout SurfaceProperties Surface, uint2 pixelPos)
 {
-	float ssao = texSSAO[pixelPos];
+	float ssao = lightSSAO[pixelPos];
 
 	Surface.c_diff *= ssao;
 	Surface.c_spec *= ssao;
+}
+
+void AccumulateAmbient(inout float3 colorAccum, SurfaceProperties Surface)
+{
+	// Add IBL
+	colorAccum += Diffuse_IBL(Surface);
+	colorAccum += Specular_IBL(Surface);
+
+	//colorAccum += Surface.c_diff * AmbientIntensity.xyz;
 }
 
 void AccumulateLights(inout float3 colorAccum, SurfaceProperties Surface, float3 worldPos, uint2 pixelPos)
 {
 	ApplySSAO(Surface, pixelPos);
 
-	colorAccum += Surface.c_diff * AmbientIntensity.xyz;
+	AccumulateAmbient(colorAccum, Surface);
 
 	ShadeSunLight(colorAccum, Surface, worldPos);
 	ShadeLightsPBR(colorAccum, pixelPos, Surface, worldPos);
@@ -36,7 +45,7 @@ void AccumulateLights(inout float3 colorAccum, SurfaceProperties Surface, float3
 
 void AccumulateLights(inout float3 colorAccum, SurfaceProperties Surface, float3 worldPos)
 {
-	colorAccum += Surface.c_diff * AmbientIntensity.xyz;
+	AccumulateAmbient(colorAccum, Surface);
 
 	ShadeSunLight(colorAccum, Surface, worldPos);
 	ShadeLightsPBR(colorAccum, Surface, worldPos);

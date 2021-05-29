@@ -74,15 +74,15 @@ void RTModelViewer::RenderSunShadow(GraphicsContext& gfxContext, GlobalConstants
 void RTModelViewer::RenderZPass(GraphicsContext& gfxContext, MeshSorter& sorter, GlobalConstants& globals)
 {
 	// Begin rendering depth
-	gfxContext.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE, true);
-	gfxContext.ClearDepth(g_SceneDepthBuffer);
+	gfxContext.TransitionResource(g_SceneGBuffer.GetDepthBuffer(), D3D12_RESOURCE_STATE_DEPTH_WRITE, true);
+	gfxContext.ClearDepth(g_SceneGBuffer.GetDepthBuffer());
 
 
 	sorter.SetCamera(m_Camera);
 	sorter.SetViewport(m_MainViewport);
 	sorter.SetScissor(m_MainScissor);
-	sorter.SetDepthStencilTarget(g_SceneDepthBuffer);
-	sorter.AddRenderTarget(g_SceneColorBuffer);
+	//sorter.SetGBuffer(g_SceneGBuffer);
+	sorter.SetDepthStencilTarget(g_SceneGBuffer.GetDepthBuffer());
 
 	m_ModelInst.Render(sorter);
 
@@ -104,8 +104,10 @@ void RTModelViewer::RenderColor(GraphicsContext& gfxContext, MeshSorter& sorter,
 		ScopedTimer _prof(L"Render Color", gfxContext);
 
 		gfxContext.TransitionResource(g_SSAOFullScreen, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
-		gfxContext.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_READ);
-		gfxContext.SetRenderTarget(g_SceneColorBuffer.GetRTV(), g_SceneDepthBuffer.GetDSV_DepthReadOnly());
+		gfxContext.TransitionResource(g_SceneGBuffer.GetDepthBuffer(), D3D12_RESOURCE_STATE_DEPTH_READ);
+		gfxContext.SetRenderTarget(g_SceneColorBuffer.GetRTV(), g_SceneGBuffer.GetDepthBuffer().GetDSV_DepthReadOnly());
+		sorter.SetDepthStencilTarget(g_SceneGBuffer.GetDepthBuffer());
+
 		gfxContext.SetViewportAndScissor(m_MainViewport, m_MainScissor);
 
 		sorter.RenderMeshes(MeshSorter::kOpaque, gfxContext, globals);
@@ -114,6 +116,26 @@ void RTModelViewer::RenderColor(GraphicsContext& gfxContext, MeshSorter& sorter,
 	Renderer::DrawSkybox(gfxContext, m_Camera, m_MainViewport, m_MainScissor);
 
 	sorter.RenderMeshes(MeshSorter::kTransparent, gfxContext, globals);
+}
+
+void RTModelViewer::RenderGBuffer(GraphicsContext& gfxContext, Renderer::MeshSorter& sorter, GlobalConstants& globals)
+{
+	ScopedTimer _prof(L"Render GBuffer main", gfxContext);
+
+	sorter.SetGBuffer(g_SceneGBuffer);
+
+	gfxContext.SetViewportAndScissor(m_MainViewport, m_MainScissor);
+
+	sorter.RenderMeshes(MeshSorter::kOpaque, gfxContext, globals);
+	sorter.RenderMeshes(MeshSorter::kTransparent, gfxContext, globals);
+}
+
+void RTModelViewer::RenderDeferred(GraphicsContext& gfxContext, GlobalConstants& globals)
+{
+	ScopedTimer _prof(L"Render deferred main", gfxContext);
+
+	Renderer::RenderDeferredLigting(gfxContext, globals, m_Camera, g_SceneColorBuffer, g_SceneGBuffer);
+	//Renderer::DrawSkybox(gfxContext, m_Camera, m_MainViewport, m_MainScissor);
 }
 
 void RTModelViewer::RenderPostProces(GraphicsContext& gfxContext)
@@ -125,7 +147,7 @@ void RTModelViewer::RenderPostProces(GraphicsContext& gfxContext)
 
 	TemporalEffects::ResolveImage(gfxContext);
 
-	ParticleEffectManager::Render(gfxContext, m_Camera, g_SceneColorBuffer, g_SceneDepthBuffer, g_LinearDepth[TemporalEffects::GetFrameIndexMod2()]);
+	ParticleEffectManager::Render(gfxContext, m_Camera, g_SceneColorBuffer, g_SceneGBuffer.GetDepthBuffer(), g_LinearDepth[TemporalEffects::GetFrameIndexMod2()]);
 
 	// Until I work out how to couple these two, it's "either-or".
 	if (DepthOfField::Enable)
@@ -146,6 +168,8 @@ void RTModelViewer::RenderScene(void)
 		rayTracingMode == RTM_DIFFUSE_WITH_SHADOWRAYS ||
 		rayTracingMode == RTM_TRAVERSAL ||
 		rayTracingMode == RTM_SSR;
+
+	const bool renderDeferred = !skipDiffusePass;
 
 	GraphicsContext& gfxContext = GraphicsContext::Begin(L"Scene Render");
 
@@ -174,13 +198,26 @@ void RTModelViewer::RenderScene(void)
 
 		if (!skipDiffusePass)
 		{
-			RenderColor(gfxContext, sorter, globals);
+			if (!renderDeferred)
+			{
+				RenderColor(gfxContext, sorter, globals);
+			}
+			else
+			{
+				RenderGBuffer(gfxContext, sorter, globals);
+			}
 		}
 	}
 
 	UpdateGlobalConstants(globals);
-
 	RenderRaytrace(gfxContext, globals);
+
+	if (renderDeferred)
+	{
+		UpdateGlobalConstants(globals);
+		RenderDeferred(gfxContext, globals);
+	}
+	Renderer::DrawSkybox(gfxContext, m_Camera, m_MainViewport, m_MainScissor);
 
 	RenderPostProces(gfxContext);
 

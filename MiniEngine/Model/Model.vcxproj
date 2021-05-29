@@ -180,6 +180,7 @@
     <FxCompile Include="Shaders\DefaultVS.hlsl">
       <ShaderType>Vertex</ShaderType>
     </FxCompile>
+    <FxCompile Include="Shaders\DeferredLightingCS.hlsl" />
     <FxCompile Include="Shaders\DepthOnlySkinVS.hlsl">
       <ShaderType>Vertex</ShaderType>
     </FxCompile>
@@ -199,6 +200,9 @@
     <FxCompile Include="Shaders\DefaultPS.hlsl">
       <ShaderType>Pixel</ShaderType>
     </FxCompile>
+    <None Include="Shaders\GBuffer.hlsl">
+      <FileType>Document</FileType>
+    </None>
     <FxCompile Include="Shaders\ModelViewerPS.hlsl">
       <ShaderType>Pixel</ShaderType>
     </FxCompile>

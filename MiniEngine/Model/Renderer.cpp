@@ -41,6 +41,8 @@
 #include "CompiledShaders/CutoutDepthPS.h"
 #include "CompiledShaders/SkyboxVS.h"
 #include "CompiledShaders/SkyboxPS.h"
+#include "CompiledShaders/DeferredLightingCS.h"
+
 
 #pragma warning(disable:4319) // '~': zero extending 'uint32_t' to 'uint64_t' of greater size
 
@@ -68,6 +70,9 @@ namespace Renderer
 	RootSignature m_RootSig;
 	GraphicsPSO m_SkyboxPSO(L"Renderer: Skybox PSO");
 	GraphicsPSO m_DefaultPSO(L"Renderer: Default PSO"); // Not finalized.  Used as a template.
+	GraphicsPSO m_GBufferPSO(L"Renderer: GBuffer PSO");
+	RootSignature m_DeferredLightingSig;
+	ComputePSO m_DeferredLightingCS(L"Deferred Lighting CS PSO");
 
 	DescriptorHandle m_CommonTextures;
 }
@@ -97,7 +102,7 @@ void Renderer::Initialize(void)
 	m_RootSig.Finalize(L"RootSig", D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
 	DXGI_FORMAT ColorFormat = g_SceneColorBuffer.GetFormat();
-	DXGI_FORMAT DepthFormat = g_SceneDepthBuffer.GetFormat();
+	DXGI_FORMAT DepthFormat = g_SceneGBuffer.GetDepthBuffer().GetFormat();
 
 	D3D12_INPUT_ELEMENT_DESC posOnly[] =
 	{
@@ -196,7 +201,8 @@ void Renderer::Initialize(void)
 	m_DefaultPSO.SetDepthStencilState(DepthStateReadWrite);
 	m_DefaultPSO.SetInputLayout(0, nullptr);
 	m_DefaultPSO.SetPrimitiveTopologyType(D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE);
-	m_DefaultPSO.SetRenderTargetFormats(1, &ColorFormat, DepthFormat);
+	m_DefaultPSO.SetRenderTargetFormats((uint32_t)Graphics::GBTarget::NumTargets, Graphics::GeometryBuffer::c_GBufferFormats, DepthFormat);
+	//m_DefaultPSO.SetRenderTargetFormats(1, &ColorFormat, DepthFormat);
 	m_DefaultPSO.SetVertexShader(g_pDefaultVS, sizeof(g_pDefaultVS));
 	m_DefaultPSO.SetPixelShader(g_pDefaultPS, sizeof(g_pDefaultPS));
 
@@ -205,9 +211,32 @@ void Renderer::Initialize(void)
 	m_SkyboxPSO = m_DefaultPSO;
 	m_SkyboxPSO.SetDepthStencilState(DepthStateReadOnly);
 	m_SkyboxPSO.SetInputLayout(0, nullptr);
+	m_SkyboxPSO.SetRenderTargetFormats(1, &ColorFormat, DepthFormat);
 	m_SkyboxPSO.SetVertexShader(g_pSkyboxVS, sizeof(g_pSkyboxVS));
 	m_SkyboxPSO.SetPixelShader(g_pSkyboxPS, sizeof(g_pSkyboxPS));
+
 	m_SkyboxPSO.Finalize();
+
+
+	// GBuffer CS
+	m_DeferredLightingSig.Reset(5, 3);
+	m_DeferredLightingSig.InitStaticSampler(10, DefaultSamplerDesc, D3D12_SHADER_VISIBILITY_ALL);
+	m_DeferredLightingSig.InitStaticSampler(11, SamplerShadowDesc, D3D12_SHADER_VISIBILITY_ALL);
+	m_DeferredLightingSig.InitStaticSampler(12, CubeMapSamplerDesc, D3D12_SHADER_VISIBILITY_ALL);
+	m_DeferredLightingSig[0].InitAsConstantBuffer(0);
+	m_DeferredLightingSig[1].InitAsConstantBuffer(1);
+	m_DeferredLightingSig[2].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 0, (uint32_t)GBTarget::NumTargets + 1);
+	m_DeferredLightingSig[3].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 10, 8);
+	m_DeferredLightingSig[4].InitAsDescriptorRange(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 0, 1);
+	m_DeferredLightingSig.Finalize(L"DeffLightCSRS");
+
+	m_DeferredLightingCS.SetRootSignature(m_DeferredLightingSig);
+	m_DeferredLightingCS.SetComputeShader(g_pDeferredLightingCS, sizeof(g_pDeferredLightingCS));
+	m_DeferredLightingCS.Finalize();
+
+	//m_GBufferPSO = m_DefaultPSO;
+	//m_GBufferPSO.SetRenderTargetFormats((uint32_t)Graphics::GBTarget::NumTargets, Graphics::GeometryBuffer::c_GBufferFormats, DepthFormat);
+	//m_GBufferPSO.Finalize();
 
 	TextureManager::Initialize(L"");
 
@@ -457,9 +486,9 @@ void Renderer::DrawSkybox( GraphicsContext& gfxContext, const Camera& Camera, co
 	gfxContext.SetRootSignature(m_RootSig);
 	gfxContext.SetPipelineState(m_SkyboxPSO);
 
-	gfxContext.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_READ);
+	gfxContext.TransitionResource(g_SceneGBuffer.GetDepthBuffer(), D3D12_RESOURCE_STATE_DEPTH_READ);
 	gfxContext.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, true);
-	gfxContext.SetRenderTarget(g_SceneColorBuffer.GetRTV(), g_SceneDepthBuffer.GetDSV_DepthReadOnly());
+	gfxContext.SetRenderTarget(g_SceneColorBuffer.GetRTV(), g_SceneGBuffer.GetDepthBuffer().GetDSV_DepthReadOnly());
 	gfxContext.SetViewportAndScissor(viewport, scissor);
 
 	gfxContext.SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, s_TextureHeap.GetHeapPointer());
@@ -543,7 +572,7 @@ void MeshSorter::RenderMeshes(
 	GraphicsContext& context,
 	GlobalConstants& globals)
 {
-	ASSERT(m_DSV != nullptr);
+	ASSERT(m_GBuffer != nullptr || m_DSV != nullptr);
 
 	Renderer::UpdateGlobalDescriptors();
 
@@ -564,47 +593,47 @@ void MeshSorter::RenderMeshes(
 
 	if (m_BatchType == kShadows)
 	{
-		context.TransitionResource(*m_DSV, D3D12_RESOURCE_STATE_DEPTH_WRITE, true);
-		context.ClearDepth(*m_DSV);
-		context.SetDepthStencilTarget(m_DSV->GetDSV());
+		if (m_GBuffer)
+		{
+			m_GBuffer->Setup(context, GBSet::Depth | GBSet::Clear | GBSet::DSWrite | GBSet::Setup);
+		}
+		else
+		{
+			context.TransitionResource(*m_DSV, D3D12_RESOURCE_STATE_DEPTH_WRITE, true);
+			context.ClearDepth(*m_DSV);
+			context.SetDepthStencilTarget(m_DSV->GetDSV());
+		}
 
 		if (m_Viewport.Width == 0)
 		{
 			m_Viewport.TopLeftX = 0.0f;
 			m_Viewport.TopLeftY = 0.0f;
-			m_Viewport.Width = (float)m_DSV->GetWidth();
-			m_Viewport.Height = (float)m_DSV->GetHeight();
+			m_Viewport.Width = m_GBuffer ? (float)m_GBuffer->GetWidth() : m_DSV->GetWidth();
+			m_Viewport.Height = m_GBuffer ? (float)m_GBuffer->GetHeight() : m_DSV->GetHeight();
 			m_Viewport.MaxDepth = 1.0f;
 			m_Viewport.MinDepth = 0.0f;
 
 			m_Scissor.left = 1;
-			m_Scissor.right = m_DSV->GetWidth() - 2;
+			m_Scissor.right = m_Viewport.Width - 2;
 			m_Scissor.top = 1;
-			m_Scissor.bottom = m_DSV->GetHeight() - 2;
+			m_Scissor.bottom = m_Viewport.Height - 2;
 		}
 	}
 	else
 	{
-		for (uint32_t i = 0; i < m_NumRTVs; ++i)
-		{
-			ASSERT(m_RTV[i] != nullptr);
-			ASSERT(m_DSV->GetWidth() == m_RTV[i]->GetWidth());
-			ASSERT(m_DSV->GetHeight() == m_RTV[i]->GetHeight());
-		}
-
 		if (m_Viewport.Width == 0)
 		{
 			m_Viewport.TopLeftX = 0.0f;
 			m_Viewport.TopLeftY = 0.0f;
-			m_Viewport.Width = (float)m_DSV->GetWidth();
-			m_Viewport.Height = (float)m_DSV->GetHeight();
+			m_Viewport.Width = (float)m_GBuffer->GetWidth();
+			m_Viewport.Height = (float)m_GBuffer->GetHeight();
 			m_Viewport.MaxDepth = 1.0f;
 			m_Viewport.MinDepth = 0.0f;
 
 			m_Scissor.left = 0;
-			m_Scissor.right = m_DSV->GetWidth();
+			m_Scissor.right = m_GBuffer->GetWidth();
 			m_Scissor.top = 0;
-			m_Scissor.bottom = m_DSV->GetWidth();
+			m_Scissor.bottom = m_GBuffer->GetWidth();
 		}
 	}
 
@@ -619,27 +648,55 @@ void MeshSorter::RenderMeshes(
 			switch (m_CurrentPass)
 			{
 			case kZPass:
-				context.TransitionResource(*m_DSV, D3D12_RESOURCE_STATE_DEPTH_WRITE);
-				context.SetDepthStencilTarget(m_DSV->GetDSV());
+				if (m_GBuffer)
+				{
+					m_GBuffer->Setup(context, GBSet::Depth | GBSet::DSWrite | GBSet::Setup);
+				}
+				else
+				{
+					context.TransitionResource(*m_DSV, D3D12_RESOURCE_STATE_DEPTH_WRITE);
+					context.SetDepthStencilTarget(m_DSV->GetDSV());
+				}
 				break;
 			case kOpaque:
 				if (SeparateZPass)
+				{
+					if (m_GBuffer)
+					{
+						m_GBuffer->Setup(context, GBSet::Depth | GBSet::AllRTs | GBSet::DSRead | GBSet::RTWrite | GBSet::Setup);
+					}
+					else
+					{
+						context.TransitionResource(*m_DSV, D3D12_RESOURCE_STATE_DEPTH_READ);
+						context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET);
+						context.SetRenderTarget(g_SceneColorBuffer.GetRTV(), m_DSV->GetDSV_DepthReadOnly());
+					}
+				}
+				else
+				{
+					if(m_GBuffer)
+					{
+						m_GBuffer->Setup(context, GBSet::Depth | GBSet::AllRTs | GBSet::DSWrite | GBSet::RTWrite | GBSet::Setup);
+					}
+					else
+					{
+						context.TransitionResource(*m_DSV, D3D12_RESOURCE_STATE_DEPTH_WRITE);
+						context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET);
+						context.SetRenderTarget(g_SceneColorBuffer.GetRTV(), m_DSV->GetDSV());
+					}
+				}
+				break;
+			case kTransparent:
+				if (m_GBuffer)
+				{
+					m_GBuffer->Setup(context, GBSet::Depth | GBSet::AllRTs | GBSet::DSRead | GBSet::RTWrite | GBSet::Setup);
+				}
+				else
 				{
 					context.TransitionResource(*m_DSV, D3D12_RESOURCE_STATE_DEPTH_READ);
 					context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET);
 					context.SetRenderTarget(g_SceneColorBuffer.GetRTV(), m_DSV->GetDSV_DepthReadOnly());
 				}
-				else
-				{
-					context.TransitionResource(*m_DSV, D3D12_RESOURCE_STATE_DEPTH_WRITE);
-					context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET);
-					context.SetRenderTarget(g_SceneColorBuffer.GetRTV(), m_DSV->GetDSV());
-				}
-				break;
-			case kTransparent:
-				context.TransitionResource(*m_DSV, D3D12_RESOURCE_STATE_DEPTH_READ);
-				context.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET);
-				context.SetRenderTarget(g_SceneColorBuffer.GetRTV(), m_DSV->GetDSV_DepthReadOnly());
 				break;
 			}
 		}
@@ -691,6 +748,72 @@ void MeshSorter::RenderMeshes(
 
 	if (m_BatchType == kShadows)
 	{
-		context.TransitionResource(*m_DSV, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+		if (m_GBuffer)
+		{
+			m_GBuffer->Setup(context, GBSet::Depth | GBSet::NonPixel);
+		}
+		else
+		{
+			context.TransitionResource(*m_DSV, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+		}
 	}
+}
+
+void Renderer::RenderDeferredLigting(GraphicsContext& context, GlobalConstants& globalConstants, const Math::Camera& camera, ColorBuffer& colorTarget, GeometryBuffer& GBuffer)
+{
+	ScopedTimer _prof(L"Deferred Lighting", context);
+
+	ComputeContext& Context = context.GetComputeContext();
+
+	Context.SetRootSignature(m_DeferredLightingSig);
+	Context.SetPipelineState(m_DeferredLightingCS);
+
+	/// TRANSITION ///
+	// GBuffer
+	GBuffer.Setup(Context, GBSet::AllRTs | GBSet::Depth | GBSet::NonPixel);
+	// lighting
+	Context.TransitionResource(g_ShadowBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+	Context.TransitionResource(g_SSAOFullScreen, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+	Context.TransitionResource(Lighting::m_LightBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+	Context.TransitionResource(Lighting::m_LightShadowArray, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+	Context.TransitionResource(Lighting::m_LightGrid, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+	Context.TransitionResource(Lighting::m_LightGridBitMask, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+	// output
+	Context.TransitionResource(colorTarget, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+	Context.FlushResourceBarriers();
+
+	/// BIND ///
+	// cbv
+	struct
+	{
+		Matrix4 m1;
+		Vector4 resolution;
+	} cb0 = { Transpose(Invert(camera.GetViewProjMatrix())), Vector4(g_SceneColorBuffer.GetWidth(), g_SceneColorBuffer.GetHeight(), 0,0) };
+
+	Context.SetDynamicConstantBufferView(0, sizeof(cb0), &cb0);
+
+	// Set common shader constants
+	globalConstants.ViewProjMatrix = camera.GetViewProjMatrix();
+	globalConstants.CameraPos = Vector4(camera.GetPosition(), 0.0f);
+	globalConstants.IBLRange = s_SpecularIBLRange - s_SpecularIBLBias;
+	globalConstants.IBLBias = s_SpecularIBLBias;
+	//globalConstants.SunShadowMatrix = Transpose(globalConstants.SunShadowMatrix);
+	Context.SetDynamicConstantBufferView(1, sizeof(GlobalConstants), &globalConstants);
+	
+	// gbuffer srv
+	GBuffer.Bind(Context, 2, 0, GBSet::Depth | GBSet::AllRTs);
+	
+	// lighting srv
+	Context.SetDescriptorTable(3, m_CommonTextures);
+	// uav
+	Context.SetDynamicDescriptor(4, 0, colorTarget.GetUAV());
+
+	//////////////////
+
+	// todo: assumes 1920x1080 resolution
+	uint32_t tileCountX = Math::DivideByMultiple(g_SceneColorBuffer.GetWidth(), 8);
+	uint32_t tileCountY = Math::DivideByMultiple(g_SceneColorBuffer.GetHeight(), 8);
+
+	Context.Dispatch(tileCountX, tileCountY, 1);
+
 }

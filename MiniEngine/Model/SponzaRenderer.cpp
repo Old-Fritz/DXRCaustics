@@ -71,8 +71,8 @@ namespace Sponza
 void Sponza::Startup( Camera& Camera )
 {
 	DXGI_FORMAT ColorFormat = g_SceneColorBuffer.GetFormat();
-	DXGI_FORMAT NormalFormat = g_SceneNormalBuffer.GetFormat();
-	DXGI_FORMAT DepthFormat = g_SceneDepthBuffer.GetFormat();
+	DXGI_FORMAT NormalFormat = g_SceneGBuffer.GetColorBuffer(Graphics::GBTarget::Normal).GetFormat();
+	DXGI_FORMAT DepthFormat = g_SceneGBuffer.GetDepthBuffer().GetFormat();
 	//DXGI_FORMAT ShadowFormat = g_ShadowBuffer.GetFormat();
 
 	D3D12_INPUT_ELEMENT_DESC vertElem[] =
@@ -306,10 +306,10 @@ void Sponza::RenderScene(
 		{
 			ScopedTimer _prof2(L"Opaque", gfxContext);
 			{
-				gfxContext.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_WRITE, true);
-				gfxContext.ClearDepth(g_SceneDepthBuffer);
+				gfxContext.TransitionResource(g_SceneGBuffer.GetDepthBuffer(), D3D12_RESOURCE_STATE_DEPTH_WRITE, true);
+				gfxContext.ClearDepth(g_SceneGBuffer.GetDepthBuffer());
 				gfxContext.SetPipelineState(m_DepthPSO);
-				gfxContext.SetDepthStencilTarget(g_SceneDepthBuffer.GetDSV());
+				gfxContext.SetDepthStencilTarget(g_SceneGBuffer.GetDepthBuffer().GetDSV());
 				gfxContext.SetViewportAndScissor(viewport, scissor);
 			}
 			RenderObjects(gfxContext, camera.GetViewProjMatrix(), camera.GetPosition(), kOpaque );
@@ -335,7 +335,7 @@ void Sponza::RenderScene(
 			ScopedTimer _prof(L"Main Render", gfxContext);
 			{
 				gfxContext.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, true);
-				gfxContext.TransitionResource(g_SceneNormalBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, true);
+				gfxContext.TransitionResource(g_SceneGBuffer.GetColorBuffer(Graphics::GBTarget::Normal), D3D12_RESOURCE_STATE_RENDER_TARGET, true);
 				gfxContext.ClearColor(g_SceneColorBuffer);
 			}
 		}
@@ -385,9 +385,9 @@ void Sponza::RenderScene(
 
 				{
 					gfxContext.SetPipelineState(m_ModelPSO);
-					gfxContext.TransitionResource(g_SceneDepthBuffer, D3D12_RESOURCE_STATE_DEPTH_READ);
-					D3D12_CPU_DESCRIPTOR_HANDLE rtvs[]{ g_SceneColorBuffer.GetRTV(), g_SceneNormalBuffer.GetRTV() };
-					gfxContext.SetRenderTargets(ARRAYSIZE(rtvs), rtvs, g_SceneDepthBuffer.GetDSV_DepthReadOnly());
+					gfxContext.TransitionResource(g_SceneGBuffer.GetDepthBuffer(), D3D12_RESOURCE_STATE_DEPTH_READ);
+					D3D12_CPU_DESCRIPTOR_HANDLE rtvs[]{ g_SceneColorBuffer.GetRTV(), g_SceneGBuffer.GetColorBuffer(Graphics::GBTarget::Normal).GetRTV() };
+					gfxContext.SetRenderTargets(ARRAYSIZE(rtvs), rtvs, g_SceneGBuffer.GetDepthBuffer().GetDSV_DepthReadOnly());
 					gfxContext.SetViewportAndScissor(viewport, scissor);
 				}
 				RenderObjects( gfxContext, camera.GetViewProjMatrix(), camera.GetPosition(), Sponza::kOpaque );

@@ -129,16 +129,23 @@ void RTModelViewer::InitGlobalRootSignature()
 	// scene srv
 	D3D12_DESCRIPTOR_RANGE1 sceneBuffersDescriptorRange = {};
 	sceneBuffersDescriptorRange.BaseShaderRegister = 1;
-	sceneBuffersDescriptorRange.NumDescriptors = 6;
+	sceneBuffersDescriptorRange.NumDescriptors = 4;
 	sceneBuffersDescriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 	sceneBuffersDescriptorRange.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_NONE;
 
-	// depth/normals
+	// lighting
 	D3D12_DESCRIPTOR_RANGE1 lightingBuffersDescriptorRange = {};
-	lightingBuffersDescriptorRange.BaseShaderRegister = 12;
-	lightingBuffersDescriptorRange.NumDescriptors = 6;
+	lightingBuffersDescriptorRange.BaseShaderRegister = 10;
+	lightingBuffersDescriptorRange.NumDescriptors = 8;
 	lightingBuffersDescriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 	lightingBuffersDescriptorRange.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_NONE;
+
+	// gbuffer
+	D3D12_DESCRIPTOR_RANGE1 GBufferDescriptorRange = {};
+	GBufferDescriptorRange.BaseShaderRegister = 18;
+	GBufferDescriptorRange.NumDescriptors = (uint32_t)GBTarget::NumTargets + 1;
+	GBufferDescriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+	GBufferDescriptorRange.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_NONE;
 
 	// outputs
 	D3D12_DESCRIPTOR_RANGE1 uavDescriptorRange = {};
@@ -147,15 +154,14 @@ void RTModelViewer::InitGlobalRootSignature()
 	uavDescriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
 	uavDescriptorRange.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_NONE;
 
-	CD3DX12_ROOT_PARAMETER1 globalRootSignatureParameters[8];
+	CD3DX12_ROOT_PARAMETER1 globalRootSignatureParameters[7];
 	globalRootSignatureParameters[0].InitAsDescriptorTable(1, &sceneBuffersDescriptorRange); // scene srv
 	globalRootSignatureParameters[1].InitAsConstantBufferView(0); // hit CB
 	globalRootSignatureParameters[2].InitAsConstantBufferView(1); // dyn CB
 	globalRootSignatureParameters[3].InitAsDescriptorTable(1, &lightingBuffersDescriptorRange); // lighting
 	globalRootSignatureParameters[4].InitAsDescriptorTable(1, &uavDescriptorRange); // outputs
-	globalRootSignatureParameters[5].InitAsUnorderedAccessView(0);
-	globalRootSignatureParameters[6].InitAsUnorderedAccessView(1);
-	globalRootSignatureParameters[7].InitAsShaderResourceView(0);
+	globalRootSignatureParameters[5].InitAsDescriptorTable(1, &GBufferDescriptorRange); // gbuffer
+	globalRootSignatureParameters[6].InitAsShaderResourceView(0);
 	auto globalRootSignatureDesc = CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC(
 		ARRAYSIZE(globalRootSignatureParameters), globalRootSignatureParameters,
 		ARRAYSIZE(staticSamplerDescs), staticSamplerDescs);
@@ -176,7 +182,7 @@ void RTModelViewer::InitGlobalRootSignature()
 void RTModelViewer::InitLocalRootSignature()
 {
 	D3D12_DESCRIPTOR_RANGE1 localTextureDescriptorRange = {};
-	localTextureDescriptorRange.BaseShaderRegister = 7;
+	localTextureDescriptorRange.BaseShaderRegister = 5;
 	localTextureDescriptorRange.NumDescriptors = kNumTextures;
 	localTextureDescriptorRange.RegisterSpace = 0;
 	localTextureDescriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
@@ -185,7 +191,7 @@ void RTModelViewer::InitLocalRootSignature()
 	CD3DX12_ROOT_PARAMETER1 localRootSignatureParameters[2];
 	UINT sizeOfRootConstantInDwords = (sizeof(MaterialRootConstant) - 1) / sizeof(DWORD) + 1;
 	localRootSignatureParameters[0].InitAsDescriptorTable(1, &localTextureDescriptorRange);
-	localRootSignatureParameters[1].InitAsConstants(sizeOfRootConstantInDwords, 3);
+	localRootSignatureParameters[1].InitAsConstants(sizeOfRootConstantInDwords, 2);
 	auto localRootSignatureDesc = CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC(ARRAYSIZE(localRootSignatureParameters), localRootSignatureParameters, 0, nullptr, D3D12_ROOT_SIGNATURE_FLAG_LOCAL_ROOT_SIGNATURE);
 
 	CComPtr<ID3DBlob> pLocalRootSignatureBlob;

@@ -18,12 +18,96 @@
 #include "ShadowBuffer.h"
 #include "GpuBuffer.h"
 #include "GraphicsCore.h"
-
+#define FLAG(x) 1<<(x)
 namespace Graphics
 {
-	extern DepthBuffer g_SceneDepthBuffer;  // D32_FLOAT_S8_UINT
+	enum class GBTarget
+	{
+		BaseColor,
+		MetallicRoughness,
+		Occlusion,
+		Emissive,
+		Normal,
+		NumTargets
+	};
+	enum class GBSet
+	{
+		None =					0,
+
+		// resources
+		Normal =				FLAG((uint32_t)GBTarget::Normal),
+		MetallicRoughness =		FLAG((uint32_t)GBTarget::MetallicRoughness),
+		Occlusion =				FLAG((uint32_t)GBTarget::Occlusion),
+		BaseColor =				FLAG((uint32_t)GBTarget::BaseColor),
+		Emissive =				FLAG((uint32_t)GBTarget::Emissive),
+		Depth =					FLAG((uint32_t)GBTarget::NumTargets),
+		AllRTs = Normal | MetallicRoughness | Occlusion | Emissive | BaseColor,
+		
+		// states
+		DSWrite =					FLAG((uint32_t)GBTarget::NumTargets + 1),
+		DSRead =					FLAG((uint32_t)GBTarget::NumTargets + 2),
+		Pixel =						FLAG((uint32_t)GBTarget::NumTargets + 3),
+		NonPixel =					FLAG((uint32_t)GBTarget::NumTargets + 4),
+		RTWrite =					FLAG((uint32_t)GBTarget::NumTargets + 5),
+
+		// action
+		Setup =					FLAG((uint32_t)GBTarget::NumTargets + 6),
+		Clear =					FLAG((uint32_t)GBTarget::NumTargets + 7),
+
+	};
+	DEFINE_ENUM_FLAG_OPERATORS(GBSet);
+
+	class GeometryBuffer
+	{
+	public:
+
+		void Create(const std::wstring& Name, uint32_t Width, uint32_t Height, uint32_t ArrayCount);
+		void Destroy();
+
+		void Setup(GraphicsContext& context, GBSet flags);
+		void Setup(CommandContext& context, GBSet flags);
+
+		void Bind(GraphicsContext& context, uint32_t rootIndex, uint32_t offset, GBSet flags);
+		void Bind(ComputeContext& context, uint32_t rootIndex, uint32_t offset, GBSet flags);
+
+
+		uint32_t GetWidth();
+		uint32_t GetHeight();
+
+		DepthBuffer& GetDepthBuffer();
+		ColorBuffer& GetColorBuffer(GBTarget target);
+
+		D3D12_GPU_DESCRIPTOR_HANDLE GetRTHandle();
+		void SetRTHandle(D3D12_GPU_DESCRIPTOR_HANDLE handle);
+
+	public:
+		static constexpr DXGI_FORMAT c_GBufferFormats[(uint32_t)GBTarget::NumTargets] =
+		{
+			DXGI_FORMAT_R16G16B16A16_FLOAT,
+			DXGI_FORMAT_R16G16_FLOAT,
+			DXGI_FORMAT_R16_FLOAT,
+			DXGI_FORMAT_R16G16B16A16_FLOAT,
+			DXGI_FORMAT_R16G16B16A16_FLOAT
+		};
+
+		static constexpr wchar_t* const c_GBufferNames[(uint32_t)GBTarget::NumTargets] =
+		{
+			L"BaseColor",
+			L"MetallicRoughness",
+			L"Occlusion",
+			L"Emissive",
+			L"Normal"
+		};
+	private:
+		D3D12_GPU_DESCRIPTOR_HANDLE m_RTDescriptorHandle;
+
+		DepthBuffer m_DepthBuffer;  // D32_FLOAT_S8_UINT
+
+		ColorBuffer m_ColorBuffers[(uint32_t)GBTarget::NumTargets];
+	};
+
+	extern GeometryBuffer g_SceneGBuffer;
 	extern ColorBuffer g_SceneColorBuffer;  // R11G11B10_FLOAT
-	extern ColorBuffer g_SceneNormalBuffer; // R16G16B16A16_FLOAT
 	extern ColorBuffer g_PostEffectsBuffer; // R32_UINT (to support Read-Modify-Write with a UAV)
 	extern ColorBuffer g_OverlayBuffer;	 // R8G8B8A8_UNORM
 	extern ColorBuffer g_HorizontalBuffer;  // For separable (bicubic) upsampling

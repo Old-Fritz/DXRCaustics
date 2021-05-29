@@ -31,7 +31,7 @@ void Hit(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attr
 
 	VertexData vertex = ExtractVertexData(attr, worldPos);
 	GBuffer gBuf = ExtractGBuffer(vertex);
-	SurfaceProperties Surface = BuildSurface(gBuf, worldPos);
+	SurfaceProperties Surface = BuildSurface(gBuf, normalize(ViewerPos.xyz - worldPos));
 
 	  // ---------------------------------------------- //
 	 // ----------------- SHADING -------------------- //

@@ -76,6 +76,8 @@ __declspec(align(256)) struct HitShaderConstants
 	UintVector4		TileCount;
 	UintVector4		FirstLightIndex;
 	float			ModelScale;
+	float			IBLRange;
+	float			IBLBias;
 	uint			IsReflection;
 	uint			UseShadowRays;
 };
@@ -197,6 +199,8 @@ public:
 
 	void RenderZPass(GraphicsContext& gfxContext, Renderer::MeshSorter& sorter, GlobalConstants& globals);
 	void RenderColor(GraphicsContext& gfxContext, Renderer::MeshSorter& sorter, GlobalConstants& globals);
+	void RenderGBuffer(GraphicsContext& gfxContext, Renderer::MeshSorter& sorter, GlobalConstants& globals);
+	void RenderDeferred(GraphicsContext& gfxContext, GlobalConstants& globals);
 
 	void RenderPostProces(GraphicsContext& gfxContext);
 
@@ -230,12 +234,12 @@ private:
 	void CreateTLAS();
 
 	// RT Render
-	void RaytraceDiffuse(GraphicsContext& context, const GlobalConstants& globalConstants, 
-		const Math::Camera& camera, ColorBuffer& colorTarget);
-	void RaytraceShadows(GraphicsContext& context, const GlobalConstants& globalConstants, 
-		const Math::Camera& camera, ColorBuffer& colorTarget, DepthBuffer& depth);
-	void RaytraceReflections(GraphicsContext& context, const GlobalConstants& globalConstants,
-		const Math::Camera& camera, ColorBuffer& colorTarget, DepthBuffer& depth, ColorBuffer& normals);
+	void RaytraceDiffuse(CommandContext& context, const GlobalConstants& globalConstants,
+		const Math::Camera& camera, ColorBuffer& colorTarget, GeometryBuffer& GBuffer);
+	void RaytraceShadows(CommandContext& context, const GlobalConstants& globalConstants,
+		const Math::Camera& camera, ColorBuffer& colorTarget, GeometryBuffer& GBuffer);
+	void RaytraceReflections(CommandContext& context, const GlobalConstants& globalConstants,
+		const Math::Camera& camera, ColorBuffer& colorTarget, GeometryBuffer& GBuffer);
 
 	Camera m_Camera;
 	std::unique_ptr<CameraController> m_CameraController;
