@@ -54,6 +54,10 @@
 #include "CompiledShaders/RayGenerationShadowsLib.h"
 #include "CompiledShaders/MissShadowsLib.h"
 
+#include "CompiledShaders/RGS_Backward.h"
+#include "CompiledShaders/CHS_Backward.h"
+#include "CompiledShaders/MS_Backward.h"
+
 #include "Shaders/RaytracingHlslCompat.h"
 
 using namespace GameCore;
@@ -75,9 +79,13 @@ __declspec(align(256)) struct HitShaderConstants
 	Vector4			InvTileDim;
 	UintVector4		TileCount;
 	UintVector4		FirstLightIndex;
+
 	float			ModelScale;
 	float			IBLRange;
 	float			IBLBias;
+	uint			AdditiveRecurrenceSequenceIndexBasis;
+
+	float2			AdditiveRecurrenceSequenceAlpha;
 	uint			IsReflection;
 	uint			UseShadowRays;
 };
@@ -111,6 +119,7 @@ enum RaytracingTypes
 	Shadows,
 	DiffuseHitShader,
 	Reflection,
+	Backward,
 	NumTypes
 };
 
@@ -240,6 +249,8 @@ private:
 		const Math::Camera& camera, ColorBuffer& colorTarget, GeometryBuffer& GBuffer);
 	void RaytraceReflections(CommandContext& context, const GlobalConstants& globalConstants,
 		const Math::Camera& camera, ColorBuffer& colorTarget, GeometryBuffer& GBuffer);
+	void RaytraceBackward(CommandContext& context, const GlobalConstants& globalConstants,
+		const Math::Camera& camera, ColorBuffer& colorTarget, GeometryBuffer& GBuffer);
 
 	Camera m_Camera;
 	std::unique_ptr<CameraController> m_CameraController;
@@ -352,6 +363,8 @@ enum RaytracingMode
 	RTM_DIFFUSE_WITH_SHADOWMAPS,
 	RTM_DIFFUSE_WITH_SHADOWRAYS,
 	RTM_REFLECTIONS,
+	RTM_BACKWARD,
+	RTM_BACKWARD_WITH_SHADOWRAYS
 };
 extern EnumVar								rayTracingMode;
 
@@ -400,3 +413,9 @@ extern ExpVar g_SunLightIntensity;
 extern ExpVar g_AmbientIntensity;
 extern NumVar g_SunOrientation;
 extern NumVar g_SunInclination;
+
+extern TextureRef g_BlueNoiseRGBA;
+
+extern NumVar g_RTAdditiveRecurrenceSequenceAlphaX;
+extern NumVar g_RTAdditiveRecurrenceSequenceAlphaY;
+extern ExpVar g_RTAdditiveRecurrenceSequenceIndexLimit;

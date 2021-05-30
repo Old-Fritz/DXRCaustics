@@ -54,4 +54,12 @@ float4 UnPackColor(PT_COLOR val)
 	return UnPackUByte4N(val);
 }
 
+PT_DEC4 PackDec4(float4 val)
+{
+	float4 limit = float4(1023, 1023, 1023, 3);
+	uint4 vi = (uint4)clamp(saturate(val) * limit, 0, limit);
+	return (vi.x) | (vi.y << 10) | (vi.z << 20) | (vi.w << 30);
+
+}
+
 #endif //UNPACKING_H_INCLUDED

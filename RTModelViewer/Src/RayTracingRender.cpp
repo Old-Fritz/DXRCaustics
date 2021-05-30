@@ -7,9 +7,10 @@ const char* rayTracingModes[] = {
 	"Shadow Rays",
 	"Diffuse&ShadowMaps",
 	"Diffuse&ShadowRays",
-	"Reflection Rays"
+	"Reflection Rays",
+	"Backward Rays"
 };
-EnumVar rayTracingMode("Viewer/Raytracing/RayTraceMode", RTM_OFF, _countof(rayTracingModes), rayTracingModes);
+EnumVar rayTracingMode("Viewer/Raytracing/RayTraceMode", RTM_BACKWARD, _countof(rayTracingModes), rayTracingModes);
 
 void UpdateHitShaderConstants(HitShaderConstants& hitShaderConstants, const GlobalConstants& globalConstants)
 {
@@ -25,6 +26,8 @@ void UpdateHitShaderConstants(HitShaderConstants& hitShaderConstants, const Glob
 	hitShaderConstants.ModelScale = g_ModelScale;
 	hitShaderConstants.IBLRange = globalConstants.IBLRange;
 	hitShaderConstants.IBLBias = globalConstants.IBLBias;
+	hitShaderConstants.AdditiveRecurrenceSequenceAlpha = { g_RTAdditiveRecurrenceSequenceAlphaX,  g_RTAdditiveRecurrenceSequenceAlphaY };
+	hitShaderConstants.AdditiveRecurrenceSequenceIndexBasis = GetFrameCount() % (uint32_t)g_RTAdditiveRecurrenceSequenceIndexLimit;
 	hitShaderConstants.IsReflection = false;
 	hitShaderConstants.UseShadowRays = false;
 }
@@ -179,6 +182,28 @@ void RTModelViewer::RaytraceReflections(CommandContext& context, const GlobalCon
 	pCommandList->DispatchRays(&dispatchRaysDesc);
 }
 
+void RTModelViewer::RaytraceBackward(CommandContext& context, const GlobalConstants& globalConstants, const Math::Camera& camera, ColorBuffer& colorTarget, GeometryBuffer& GBuffer)
+{
+	ScopedTimer _p0(L"RaytracingWithHitShader", context);
+
+	// Prepare constants
+	DynamicCB inputs = g_dynamicCb;
+	HitShaderConstants hitShaderConstants = {};
+	UpdateDynamicConstants(inputs, camera, colorTarget);
+	UpdateHitShaderConstants(hitShaderConstants, globalConstants);
+	hitShaderConstants.UseShadowRays = rayTracingMode == RTM_BACKWARD_WITH_SHADOWRAYS;
+
+	//hitShaderConstants.IsReflection = true;
+
+	SetupResources(context, inputs, hitShaderConstants, colorTarget, GBuffer);
+	CComPtr<ID3D12GraphicsCommandList4> pCommandList;
+	context.GetCommandList()->QueryInterface(IID_PPV_ARGS(&pCommandList));
+
+	D3D12_DISPATCH_RAYS_DESC dispatchRaysDesc = g_RaytracingInputs[Backward].GetDispatchRayDesc(colorTarget.GetWidth(), colorTarget.GetHeight());
+	pCommandList->SetPipelineState1(g_RaytracingInputs[Backward].m_pPSO);
+	pCommandList->DispatchRays(&dispatchRaysDesc);
+}
+
 void RTModelViewer::RenderRaytrace(GraphicsContext& gfxContext, const GlobalConstants& globalConstants)
 {
 	ScopedTimer _prof(L"Raytrace", gfxContext);
@@ -206,6 +231,11 @@ void RTModelViewer::RenderRaytrace(GraphicsContext& gfxContext, const GlobalCons
 
 	case RTM_REFLECTIONS:
 		RaytraceReflections(gfxContext, globalConstants, m_Camera, g_SceneColorBuffer, g_SceneGBuffer);
+		break;
+
+	case RTM_BACKWARD_WITH_SHADOWRAYS:
+	case RTM_BACKWARD:
+		RaytraceBackward(gfxContext, globalConstants, m_Camera, g_SceneColorBuffer, g_SceneGBuffer);
 		break;
 	}
 

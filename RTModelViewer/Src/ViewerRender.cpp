@@ -128,12 +128,16 @@ void RTModelViewer::RenderGBuffer(GraphicsContext& gfxContext, Renderer::MeshSor
 
 	sorter.RenderMeshes(MeshSorter::kOpaque, gfxContext, globals);
 	sorter.RenderMeshes(MeshSorter::kTransparent, gfxContext, globals);
+
+	gfxContext.TransitionResource(g_SceneColorBuffer, D3D12_RESOURCE_STATE_RENDER_TARGET, true);
+	gfxContext.ClearColor(g_SceneColorBuffer);
 }
 
 void RTModelViewer::RenderDeferred(GraphicsContext& gfxContext, GlobalConstants& globals)
 {
 	ScopedTimer _prof(L"Render deferred main", gfxContext);
 
+	gfxContext.InsertUAVBarrier(g_SceneColorBuffer, true);
 	Renderer::RenderDeferredLigting(gfxContext, globals, m_Camera, g_SceneColorBuffer, g_SceneGBuffer);
 	//Renderer::DrawSkybox(gfxContext, m_Camera, m_MainViewport, m_MainScissor);
 }
@@ -150,10 +154,10 @@ void RTModelViewer::RenderPostProces(GraphicsContext& gfxContext)
 	ParticleEffectManager::Render(gfxContext, m_Camera, g_SceneColorBuffer, g_SceneGBuffer.GetDepthBuffer(), g_LinearDepth[TemporalEffects::GetFrameIndexMod2()]);
 
 	// Until I work out how to couple these two, it's "either-or".
-	if (DepthOfField::Enable)
-		DepthOfField::Render(gfxContext, m_Camera.GetNearClip(), m_Camera.GetFarClip());
-	else
-		MotionBlur::RenderObjectBlur(gfxContext, g_VelocityBuffer);
+	//if (DepthOfField::Enable)
+	//	DepthOfField::Render(gfxContext, m_Camera.GetNearClip(), m_Camera.GetFarClip());
+	//else
+	//	MotionBlur::RenderObjectBlur(gfxContext, g_VelocityBuffer);
 
 }
 
@@ -169,7 +173,11 @@ void RTModelViewer::RenderScene(void)
 		rayTracingMode == RTM_TRAVERSAL ||
 		rayTracingMode == RTM_SSR;
 
-	const bool renderDeferred = !skipDiffusePass;
+	const bool renderGBuffer = true;
+	const bool renderDeferred = 
+		!skipDiffusePass &&
+		!(rayTracingMode == RTM_BACKWARD) &&
+		!(rayTracingMode == RTM_BACKWARD_WITH_SHADOWRAYS);
 
 	GraphicsContext& gfxContext = GraphicsContext::Begin(L"Scene Render");
 
@@ -198,7 +206,7 @@ void RTModelViewer::RenderScene(void)
 
 		if (!skipDiffusePass)
 		{
-			if (!renderDeferred)
+			if (!renderGBuffer)
 			{
 				RenderColor(gfxContext, sorter, globals);
 			}
@@ -209,15 +217,22 @@ void RTModelViewer::RenderScene(void)
 		}
 	}
 
-	UpdateGlobalConstants(globals);
-	RenderRaytrace(gfxContext, globals);
+
 
 	if (renderDeferred)
 	{
 		UpdateGlobalConstants(globals);
 		RenderDeferred(gfxContext, globals);
 	}
-	Renderer::DrawSkybox(gfxContext, m_Camera, m_MainViewport, m_MainScissor);
+
+	UpdateGlobalConstants(globals);
+	RenderRaytrace(gfxContext, globals);
+
+	//if (renderDeferred)
+	{
+		Renderer::DrawSkybox(gfxContext, m_Camera, m_MainViewport, m_MainScissor);
+	}
+
 
 	RenderPostProces(gfxContext);
 

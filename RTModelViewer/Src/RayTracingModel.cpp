@@ -96,6 +96,12 @@ void RTModelViewer::InitializeRTViews()
 		// light grid bit mask t17
 		g_pRaytracingDescriptorHeap->AllocateDescriptor(srvHandle, unused);
 		Graphics::g_Device->CopyDescriptorsSimple(1, srvHandle, Lighting::m_LightGridBitMask.GetSRV(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);;
+
+		// blue noise t18
+		g_pRaytracingDescriptorHeap->AllocateDescriptor(srvHandle, unused);
+		Graphics::g_Device->CopyDescriptorsSimple(1, srvHandle, g_BlueNoiseRGBA.GetSRV(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);;
+
+
 	}
 
 	// Global: scene srv
@@ -131,7 +137,7 @@ void RTModelViewer::InitializeRTViews()
 
 			D3D12_CPU_DESCRIPTOR_HANDLE srvHandle;
 			UINT srvDescriptorIndex;
-			// depth t16
+			// depth t19
 			g_pRaytracingDescriptorHeap->AllocateDescriptor(srvHandle, srvDescriptorIndex);
 			Graphics::g_Device->CopyDescriptorsSimple(1, srvHandle, GBuffer->GetDepthBuffer().GetDepthSRV(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 			GBuffer->SetRTHandle(g_pRaytracingDescriptorHeap->GetGpuHandle(srvDescriptorIndex));

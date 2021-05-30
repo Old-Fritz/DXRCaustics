@@ -52,6 +52,19 @@ GBuffer ExtractGBuffer(VertexData vertex)
 	return gBuf;
 }
 
+GBuffer ExtractScreenSpaceGBuffer(float2 readGBufferAt)
+{
+	GBuffer gBuf;
+
+	// Load and modulate textures
+	gBuf.baseColor =			g_GBBaseColor.Load(int3(readGBufferAt, 0));
+	gBuf.metallicRoughness =	g_GBMetallicRoughness.Load(int3(readGBufferAt, 0));
+	gBuf.occlusion =			g_GBOcclusion.Load(int3(readGBufferAt, 0));
+	gBuf.emissive =				g_GBEmissive.Load(int3(readGBufferAt, 0));
+	gBuf.normal =				g_GBNormal.Load(int3(readGBufferAt, 0));
+
+	return gBuf;
+}
 
 SurfaceProperties BuildSurface(GBuffer gBuf, float3 viewDirection)
 {

@@ -12,6 +12,13 @@ struct RayPayload
 	float RayHitT;
 };
 
+struct BackwardRayPayload
+{
+	//bool SkipShading;
+	uint Color;
+	//float  RayHitT;
+};
+
 #ifndef SINGLE
 static const float FLT_MAX = asfloat(0x7F7FFFFF);
 #endif
@@ -44,14 +51,16 @@ StructuredBuffer<LightData>				lightBuffer					: register(t14);
 Texture2DArray<float>					lightShadowArrayTex			: register(t15);
 ByteAddressBuffer						lightGrid					: register(t16);
 ByteAddressBuffer						lightGridBitMask			: register(t17);
+Texture2D<float4>						BlueNoiseRGBA				: register(t18);
+
 
 // GBuffer (16 - 21)
-Texture2D<float>						g_GBDepth					: register(t18);
-Texture2D<float4>						g_GBBaseColor				: register(t19);
-Texture2D<float3>						g_GBMetallicRoughness		: register(t20);
-Texture2D<float1>						g_GBOcclusion				: register(t21);
-Texture2D<float3>						g_GBEmissive				: register(t22);
-Texture2D<float4>						g_GBNormal					: register(t23);
+Texture2D<float>						g_GBDepth					: register(t19);
+Texture2D<float4>						g_GBBaseColor				: register(t20);
+Texture2D<float3>						g_GBMetallicRoughness		: register(t21);
+Texture2D<float1>						g_GBOcclusion				: register(t22);
+Texture2D<float3>						g_GBEmissive				: register(t23);
+Texture2D<float4>						g_GBNormal					: register(t24);
 
 
 // OUTPUTS ( global range 2-10)
@@ -69,9 +78,13 @@ cbuffer HitShaderConstants : register(b0)
 	float4					InvTileDim;
 	uint4					TileCount;
 	uint4					FirstLightIndex;
+
 	float					ModelScale;
 	float					IBLRange;
 	float					IBLBias;
+	uint					AdditiveRecurrenceSequenceIndexBasis;
+
+	float2					AdditiveRecurrenceSequenceAlpha;
 	uint					IsReflection;
 	uint					UseShadowRays;
 
@@ -104,8 +117,11 @@ inline void GenerateCameraRay(uint2 index, out float3 origin, out float3 directi
 	direction = normalize(world - origin);
 }
 
+#include "RandomRT.hlsli"
 #include "SceneRT.hlsli"
 #include "MaterialsRT.hlsli"
 #include "LightingRT.hlsli"
+#include "ReflectRT.hlsli"
+
 
 #endif // RAYTRACING_INPUT_H_INCLUDED

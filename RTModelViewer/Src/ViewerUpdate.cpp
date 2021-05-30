@@ -28,6 +28,10 @@ void RTModelViewer::Update(float deltaT)
 		rayTracingMode = RTM_DIFFUSE_WITH_SHADOWRAYS;
 	else if (GameInput::IsFirstPressed(GameInput::kKey_7))
 		rayTracingMode = RTM_REFLECTIONS;
+	else if (GameInput::IsFirstPressed(GameInput::kKey_8))
+		rayTracingMode = RTM_BACKWARD;
+	else if (GameInput::IsFirstPressed(GameInput::kKey_9))
+		rayTracingMode = RTM_BACKWARD_WITH_SHADOWRAYS;
 
 	static bool freezeCamera = false;
 

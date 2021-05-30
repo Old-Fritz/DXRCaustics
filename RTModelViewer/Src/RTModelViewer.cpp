@@ -38,6 +38,12 @@ D3D12_CPU_DESCRIPTOR_HANDLE g_bvh_attributeSrvs[34];
 CComPtr<ID3D12Device5> g_pRaytracingDevice;
 
 std::vector<std::pair<TextureRef, TextureRef>> g_IBLTextures;
+TextureRef g_BlueNoiseRGBA;
+
+NumVar g_RTAdditiveRecurrenceSequenceAlphaX("Viewer/Raytracing/AdditiveRecurrenceSequenceAlphaX", 0.78539816339744830961566084581988f, 0, 1.0f, 0.0152799f);
+NumVar g_RTAdditiveRecurrenceSequenceAlphaY("Viewer/Raytracing/AdditiveRecurrenceSequenceAlphaY", 0.61803398874989484820458683436564f, 0, 1.0f, 0.0143562f);
+ExpVar g_RTAdditiveRecurrenceSequenceIndexLimit("Viewer/Raytracing/AdditiveRecurrenceSequenceIndexLimit", 16777216, 0, 16777216*2, 1);
+
 
 
 DynamicEnumVar g_IBLSet("Viewer/Lighting/Environment", ChangeIBLSet);

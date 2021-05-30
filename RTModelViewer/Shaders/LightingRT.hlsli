@@ -51,4 +51,9 @@ void AccumulateLights(inout float3 colorAccum, SurfaceProperties Surface, float3
 	ShadeLightsPBR(colorAccum, Surface, worldPos);
 }
 
+float3 GetSkybox(float3 dir)
+{
+	return radianceIBLTexture.SampleLevel(defaultSampler, dir, IBLBias);
+}
+
 #endif

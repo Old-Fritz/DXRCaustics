@@ -47,11 +47,11 @@ void Hit(inout RayPayload payload, in BuiltInTriangleIntersectionAttributes attr
 	// ---------------------------------------------- //
 
 	// TODO: Should be passed in via material info
-	//if (IsReflection)
-	//{
-	//	float reflectivity = normals[DispatchRaysIndex().xy].w;
-	//	colorAccum = g_screenOutput[DispatchRaysIndex().xy].rgb + reflectivity * colorAccum;
-	//}
+	if (IsReflection)
+	{
+		float reflectivity = 0.5;
+		colorAccum = g_screenOutput[DispatchRaysIndex().xy].rgb + reflectivity * colorAccum;
+	}
 
 	  // ---------------------------------------------- //
 	 // ----------------- OUTPUT --------------------- //

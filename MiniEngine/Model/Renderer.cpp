@@ -765,6 +765,9 @@ void Renderer::RenderDeferredLigting(GraphicsContext& context, GlobalConstants& 
 
 	ComputeContext& Context = context.GetComputeContext();
 
+	Context.SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, s_TextureHeap.GetHeapPointer());
+	Context.SetDescriptorHeap(D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, s_SamplerHeap.GetHeapPointer());
+
 	Context.SetRootSignature(m_DeferredLightingSig);
 	Context.SetPipelineState(m_DeferredLightingCS);
 

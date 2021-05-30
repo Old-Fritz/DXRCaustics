@@ -45,11 +45,16 @@ void LoadIBLTextures()
 		g_IBLSet.Increment();
 }
 
+void LoadNoise()
+{
+	g_BlueNoiseRGBA = TextureManager::LoadDDSFromFile(L"../Data/BlueNoiseRGBA.dds");
+}
+
 void RTModelViewer::Startup(void)
 {
 	MotionBlur::Enable = true;
 	TemporalEffects::EnableTAA = true;
-	FXAA::Enable = false;
+	FXAA::Enable = true;
 	PostEffects::EnableHDR = true;
 	PostEffects::EnableAdaptation = true;
 	SSAO::Enable = true;
@@ -57,6 +62,7 @@ void RTModelViewer::Startup(void)
 	Renderer::Initialize();
 
 	LoadIBLTextures();
+	LoadNoise();
 
 	std::wstring gltfFileName;
 

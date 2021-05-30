@@ -136,13 +136,13 @@ void RTModelViewer::InitGlobalRootSignature()
 	// lighting
 	D3D12_DESCRIPTOR_RANGE1 lightingBuffersDescriptorRange = {};
 	lightingBuffersDescriptorRange.BaseShaderRegister = 10;
-	lightingBuffersDescriptorRange.NumDescriptors = 8;
+	lightingBuffersDescriptorRange.NumDescriptors = 9;
 	lightingBuffersDescriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 	lightingBuffersDescriptorRange.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_NONE;
 
 	// gbuffer
 	D3D12_DESCRIPTOR_RANGE1 GBufferDescriptorRange = {};
-	GBufferDescriptorRange.BaseShaderRegister = 18;
+	GBufferDescriptorRange.BaseShaderRegister = 19;
 	GBufferDescriptorRange.NumDescriptors = (uint32_t)GBTarget::NumTargets + 1;
 	GBufferDescriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 	GBufferDescriptorRange.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_NONE;
@@ -323,5 +323,16 @@ void RTModelViewer::InitRayTraceInputs(std::function<void(ID3D12StateObject*, by
 		g_pRaytracingDevice->CreateStateObject(&stateObject, IID_PPV_ARGS(&pReflectionPSO));
 		GetShaderTable(pReflectionPSO, pHitShaderTable.data());
 		g_RaytracingInputs[Reflection] = RaytracingDispatchRayInputs(*g_pRaytracingDevice, pReflectionPSO, pHitShaderTable.data(), shaderRecordSizeInBytes, (UINT)pHitShaderTable.size(), exports[SEN_RayGen].exportName, exports[SEN_Miss].exportName);
+	}
+
+	{
+		*exports[SEN_RayGen].pSubObject = CreateDxilLibrary(exports[SEN_RayGen].exportName, g_pRGS_Backward, sizeof(g_pRGS_Backward), exports[SEN_RayGen].dxilLibDesc, exports[SEN_RayGen].exportDesc);
+		*exports[SEN_Hit].pSubObject = CreateDxilLibrary(exports[SEN_Hit].exportName, g_pCHS_Backward, sizeof(g_pCHS_Backward), exports[SEN_Hit].dxilLibDesc, exports[SEN_Hit].exportDesc);
+		*exports[SEN_Miss].pSubObject = CreateDxilLibrary(exports[SEN_Miss].exportName, g_pMS_Backward, sizeof(g_pMS_Backward), exports[SEN_Miss].dxilLibDesc, exports[SEN_Miss].exportDesc);
+
+		CComPtr<ID3D12StateObject> pBackwardPSO;
+		g_pRaytracingDevice->CreateStateObject(&stateObject, IID_PPV_ARGS(&pBackwardPSO));
+		GetShaderTable(pBackwardPSO, pHitShaderTable.data());
+		g_RaytracingInputs[Backward] = RaytracingDispatchRayInputs(*g_pRaytracingDevice, pBackwardPSO, pHitShaderTable.data(), shaderRecordSizeInBytes, (UINT)pHitShaderTable.size(), exports[SEN_RayGen].exportName, exports[SEN_Miss].exportName);
 	}
 }
