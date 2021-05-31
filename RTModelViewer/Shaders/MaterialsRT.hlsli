@@ -66,13 +66,12 @@ GBuffer ExtractScreenSpaceGBuffer(float2 readGBufferAt)
 	return gBuf;
 }
 
-SurfaceProperties BuildSurface(GBuffer gBuf, float3 viewDirection)
+
+SurfaceProperties BuildSurface(GBuffer gBuf)
 {
 	SurfaceProperties Surface;
 
 	Surface.N = gBuf.normal;
-	Surface.V = viewDirection;
-	Surface.NdotV = saturate(dot(Surface.N, Surface.V));
 	Surface.c_diff = gBuf.baseColor.rgb * (1 - kDielectricSpecular) * (1 - gBuf.metallicRoughness.x) * gBuf.occlusion;
 	Surface.c_spec = lerp(kDielectricSpecular, gBuf.baseColor.rgb, gBuf.metallicRoughness.x) * gBuf.occlusion;
 	Surface.roughness = gBuf.metallicRoughness.y;
@@ -81,5 +80,23 @@ SurfaceProperties BuildSurface(GBuffer gBuf, float3 viewDirection)
 
 	return Surface;
 }
+
+void SetSurfaceView(inout SurfaceProperties Surface, float3 viewDirection)
+{
+	Surface.V = viewDirection;
+	Surface.NdotV = saturate(dot(Surface.N, Surface.V));
+}
+
+SurfaceProperties BuildSurface(GBuffer gBuf, float3 viewDirection)
+{
+	SurfaceProperties Surface = BuildSurface(gBuf);
+	SetSurfaceView(Surface, viewDirection);
+
+	return Surface;
+}
+
+
+
+
 
 #endif // MATERIALS_RT_H_INCLUDED

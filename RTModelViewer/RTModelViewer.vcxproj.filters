@@ -37,12 +37,6 @@
   <ItemGroup>
     <None Include="packages.config" />
     <None Include="..\readme.md" />
-    <None Include="Shaders\RayGenerationCausticLib.hlsl">
-      <Filter>Shaders</Filter>
-    </None>
-    <None Include="Shaders\HitShaderCausticLib.hlsl">
-      <Filter>Shaders</Filter>
-    </None>
     <None Include="Shaders\SceneRT.hlsli">
       <Filter>Shaders\Includes</Filter>
     </None>
@@ -50,6 +44,15 @@
       <Filter>Shaders\Includes</Filter>
     </None>
     <None Include="Shaders\LightingRT.hlsli">
+      <Filter>Shaders\Includes</Filter>
+    </None>
+    <None Include="Shaders\CausticRT.hlsli">
+      <Filter>Shaders\Includes</Filter>
+    </None>
+    <None Include="Shaders\RandomRT.hlsli">
+      <Filter>Shaders\Includes</Filter>
+    </None>
+    <None Include="Shaders\ReflectRT.hlsli">
       <Filter>Shaders\Includes</Filter>
     </None>
   </ItemGroup>
@@ -73,6 +76,24 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\HitShaderDiffuseLib.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\MS_Backward.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\CHS_Backward.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\RGS_Backward.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\CHS_Caustic.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\MS_Caustic.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\RGS_Caustic.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

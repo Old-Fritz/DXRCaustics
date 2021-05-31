@@ -17,21 +17,24 @@ void RTModelViewer::Update(float deltaT)
 	else if (GameInput::IsFirstPressed(GameInput::kKey_1))
 		rayTracingMode = RTM_OFF;
 	else if (GameInput::IsFirstPressed(GameInput::kKey_2))
-		rayTracingMode = RTM_TRAVERSAL;
+		rayTracingMode = RTM_OFF_WITH_CAUSTICS;
 	else if (GameInput::IsFirstPressed(GameInput::kKey_3))
-		rayTracingMode = RTM_SSR;
+		rayTracingMode = RTM_BACKWARD_WITH_CAUSTICS;
 	else if (GameInput::IsFirstPressed(GameInput::kKey_4))
-		rayTracingMode = RTM_SHADOWS;
+		rayTracingMode = RTM_CAUSTIC;
 	else if (GameInput::IsFirstPressed(GameInput::kKey_5))
-		rayTracingMode = RTM_DIFFUSE_WITH_SHADOWMAPS;
+		rayTracingMode = RTM_BACKWARD;
 	else if (GameInput::IsFirstPressed(GameInput::kKey_6))
-		rayTracingMode = RTM_DIFFUSE_WITH_SHADOWRAYS;
+		rayTracingMode = RTM_DIFFUSE_WITH_SHADOWMAPS;
 	else if (GameInput::IsFirstPressed(GameInput::kKey_7))
 		rayTracingMode = RTM_REFLECTIONS;
 	else if (GameInput::IsFirstPressed(GameInput::kKey_8))
-		rayTracingMode = RTM_BACKWARD;
+		rayTracingMode = RTM_SSR;
 	else if (GameInput::IsFirstPressed(GameInput::kKey_9))
-		rayTracingMode = RTM_BACKWARD_WITH_SHADOWRAYS;
+		rayTracingMode = RTM_TRAVERSAL;
+	else if (GameInput::IsFirstPressed(GameInput::kKey_0))
+		rayTracingMode = RTM_DIFFUSE_WITH_SHADOWRAYS;
+
 
 	static bool freezeCamera = false;
 
@@ -81,6 +84,9 @@ void RTModelViewer::Update(float deltaT)
 	m_MainScissor.top = 0;
 	m_MainScissor.right = (LONG)g_SceneColorBuffer.GetWidth();
 	m_MainScissor.bottom = (LONG)g_SceneColorBuffer.GetHeight();
+
+	UpdateLight();
+
 }
 
 void RTModelViewer::SetCameraToPredefinedPosition(int cameraPosition)
@@ -94,3 +100,67 @@ void RTModelViewer::SetCameraToPredefinedPosition(int cameraPosition)
 		m_CameraPosArray[m_CameraPosArrayCurrentPosition].position);
 }
 
+NumVar g_LightPosX(			"App/LightSource/Pos/PosX",					315,		-10000.0f,	10000.0f,	25.0f);
+NumVar g_LightPosY(			"App/LightSource/Pos/PosY",					315.0f,		-10000.0f,	10000.0f,	25.0f);
+NumVar g_LightPosZ(			"App/LightSource/Pos/PosZ",					-54.0f,		-10000.0f,	10000.0f,	25.0f);
+NumVar g_ConeDirX(			"App/LightSource/Pos/ConeDirX",				-0.86f,		-1.0f,		1.0f,		0.05f);
+NumVar g_ConeDirY(			"App/LightSource/Pos/ConeDirY",				-0.31f,		-1.0f,		1.0f,		0.05f);
+NumVar g_ConeDirZ(			"App/LightSource/Pos/ConeDirZ",				0.4f,		-1.0f,		1.0f,		0.05f);
+
+NumVar g_LightColorR(		"App/LightSource/Power/ColorR",				1.0f,		0.0f,		1.0f,		0.05f);
+NumVar g_LightColorG(		"App/LightSource/Power/ColorG",				0.5f,		0.0f,		1.0f,		0.05f);
+NumVar g_LightColorB(		"App/LightSource/Power/ColorB",				1.0f,		0.0f,		1.0f,		0.05f);
+NumVar g_LightIntensity(	"App/LightSource/Power/LightIntensity",		0.05f,		0.0f,		300.0f,		0.005f);
+
+NumVar g_ConeInner(			"App/LightSource/Size/ConeInner",			0.2f,		0.0f,		3.1415/2,	0.02f);
+NumVar g_ConeOuter(			"App/LightSource/Size/ConeOuter",			0.3f,		0.0f,		3.1415/2,	0.02f);
+
+ExpVar g_LightRadius(		"App/LightSource/Size/LightRadius",			1500.0f,		0.0f,		10000.0f,	0.05f);
+
+LightSource g_LightSource;
+
+void RTModelViewer::UpdateLight()
+{
+	if (GameInput::IsFirstPressed(GameInput::kKey_l))
+	{
+		g_LightSource.Pos		= m_Camera.GetPosition();
+		g_LightSource.ConeDir	= m_Camera.GetForwardVec();
+
+		g_LightPosX = g_LightSource.Pos.GetX();
+		g_LightPosY = g_LightSource.Pos.GetY();
+		g_LightPosZ = g_LightSource.Pos.GetZ();
+
+		g_ConeDirX = g_LightSource.ConeDir.GetX();
+		g_ConeDirY = g_LightSource.ConeDir.GetY();
+		g_ConeDirZ = g_LightSource.ConeDir.GetZ();
+	}
+	else
+	{
+		g_LightSource.Pos.SetX(static_cast<float>(g_LightPosX));
+		g_LightSource.Pos.SetY(static_cast<float>(g_LightPosY));
+		g_LightSource.Pos.SetZ(static_cast<float>(g_LightPosZ));
+
+		g_LightSource.ConeDir.SetX(static_cast<float>(g_ConeDirX));
+		g_LightSource.ConeDir.SetY(static_cast<float>(g_ConeDirY));
+		g_LightSource.ConeDir.SetZ(static_cast<float>(g_ConeDirZ));
+
+		Math::Normalize(g_LightSource.ConeDir);
+		g_ConeDirX = g_LightSource.ConeDir.GetX();
+		g_ConeDirY = g_LightSource.ConeDir.GetY();
+		g_ConeDirZ = g_LightSource.ConeDir.GetZ();
+	}
+
+	g_LightSource.Color.SetX(static_cast<float>(g_LightColorR));
+	g_LightSource.Color.SetY(static_cast<float>(g_LightColorG));
+	g_LightSource.Color.SetZ(static_cast<float>(g_LightColorB));
+
+	g_LightSource.ConeInner = g_ConeInner;
+	g_LightSource.ConeOuter = g_ConeOuter;
+
+	g_LightSource.LightIntensity = g_LightIntensity;
+	g_LightSource.LightRadius = g_LightRadius;
+
+
+	Lighting::UpdateLightData(0, g_LightSource.Pos, g_LightSource.LightRadius, g_LightSource.Color * g_LightSource.LightIntensity, g_LightSource.ConeDir, g_LightSource.ConeInner, g_LightSource.ConeOuter);
+	Lighting::UpdateLightBuffer();
+}

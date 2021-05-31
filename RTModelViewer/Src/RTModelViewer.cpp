@@ -23,39 +23,39 @@ D3D12_GPU_DESCRIPTOR_HANDLE g_OutputUAV;
 D3D12_GPU_DESCRIPTOR_HANDLE g_LightingSrvs;
 D3D12_GPU_DESCRIPTOR_HANDLE g_SceneSrvs;
 
-std::vector<CComPtr<ID3D12Resource>>   g_bvh_bottomLevelAccelerationStructures;
-CComPtr<ID3D12Resource>   g_bvh_topLevelAccelerationStructure;
+std::vector<ComPtr<ID3D12Resource>>   g_bvh_bottomLevelAccelerationStructures;
+ComPtr<ID3D12Resource>   g_bvh_topLevelAccelerationStructure;
 
 DynamicCB		   g_dynamicCb;
-CComPtr<ID3D12RootSignature> g_GlobalRaytracingRootSignature;
-CComPtr<ID3D12RootSignature> g_LocalRaytracingRootSignature;
+ComPtr<ID3D12RootSignature> g_GlobalRaytracingRootSignature;
+ComPtr<ID3D12RootSignature> g_LocalRaytracingRootSignature;
 
 StructuredBuffer	g_hitShaderMeshInfoBuffer;
 
 RaytracingDispatchRayInputs g_RaytracingInputs[RaytracingTypes::NumTypes];
 D3D12_CPU_DESCRIPTOR_HANDLE g_bvh_attributeSrvs[34];
 
-CComPtr<ID3D12Device5> g_pRaytracingDevice;
+ComPtr<ID3D12Device5> g_pRaytracingDevice;
 
 std::vector<std::pair<TextureRef, TextureRef>> g_IBLTextures;
-TextureRef g_BlueNoiseRGBA;
+TextureRef* g_BlueNoiseRGBA;
 
-NumVar g_RTAdditiveRecurrenceSequenceAlphaX("Viewer/Raytracing/AdditiveRecurrenceSequenceAlphaX", 0.78539816339744830961566084581988f, 0, 1.0f, 0.0152799f);
-NumVar g_RTAdditiveRecurrenceSequenceAlphaY("Viewer/Raytracing/AdditiveRecurrenceSequenceAlphaY", 0.61803398874989484820458683436564f, 0, 1.0f, 0.0143562f);
-ExpVar g_RTAdditiveRecurrenceSequenceIndexLimit("Viewer/Raytracing/AdditiveRecurrenceSequenceIndexLimit", 16777216, 0, 16777216*2, 1);
+NumVar g_RTAdditiveRecurrenceSequenceAlphaX("App/Raytracing/AdditiveRecurrenceSequenceAlphaX", 0.78539816339744830961566084581988f, 0, 1.0f, 0.0152799f);
+NumVar g_RTAdditiveRecurrenceSequenceAlphaY("App/Raytracing/AdditiveRecurrenceSequenceAlphaY", 0.61803398874989484820458683436564f, 0, 1.0f, 0.0143562f);
+ExpVar g_RTAdditiveRecurrenceSequenceIndexLimit("App/Raytracing/AdditiveRecurrenceSequenceIndexLimit", 16777216, 0, 16777216*2, 1);
 
 
 
-DynamicEnumVar g_IBLSet("Viewer/Lighting/Environment", ChangeIBLSet);
-NumVar g_IBLBias("Viewer/Lighting/Gloss Reduction", 4.0f, 0.0f, 10.0f, 1.0f, ChangeIBLBias);
+DynamicEnumVar g_IBLSet("App/Lighting/Environment", ChangeIBLSet);
+NumVar g_IBLBias("App/Lighting/Gloss Reduction", 4.0f, 0.0f, 10.0f, 1.0f, ChangeIBLBias);
 
-ExpVar g_SunLightIntensity("Viewer/Lighting/Sun Light Intensity", 4.0f, 0.0f, 16.0f, 0.1f);
-ExpVar g_AmbientIntensity("Viewer/Lighting/Ambient Intensity", 0.1f, -16.0f, 16.0f, 0.1f);
+ExpVar g_SunLightIntensity("App/Lighting/Sun Light Intensity", 0.4f, 0.0f, 16.0f, 0.1f);
+ExpVar g_AmbientIntensity("App/Lighting/Ambient Intensity", 0.6f, -16.0f, 16.0f, 0.1f);
 
-NumVar g_SunOrientation("Viewer/Lighting/Sun Orientation", -0.5f, -100.0f, 100.0f, 0.1f);
-NumVar g_SunInclination("Viewer/Lighting/Sun Inclination", 0.75f, 0.0f, 1.0f, 0.01f);
+NumVar g_SunOrientation("App/Lighting/Sun Orientation", -0.5f, -100.0f, 100.0f, 0.1f);
+NumVar g_SunInclination("App/Lighting/Sun Inclination", 0.75f, 0.0f, 1.0f, 0.01f);
 
-NumVar g_ModelScale("Viewer/Raytracing/ModelScale", 100.0f, 1.0f, 1000.0f);
+NumVar g_ModelScale("App/Raytracing/ModelScale", 100.0f, 1.0f, 1000.0f);
 
 void ChangeIBLSet(EngineVar::ActionType)
 {
@@ -79,16 +79,16 @@ void ChangeIBLBias(EngineVar::ActionType)
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance*/, _In_ LPWSTR /*lpCmdLine*/, _In_ int nCmdShow)
 {
 #if _DEBUG
-	CComPtr<ID3D12Debug> debugInterface;
+	ComPtr<ID3D12Debug> debugInterface;
 	if (SUCCEEDED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugInterface))))
 	{
 		debugInterface->EnableDebugLayer();
 	}
 #endif
 
-	CComPtr<ID3D12Device> pDevice;
-	CComPtr<IDXGIAdapter1> pAdapter;
-	CComPtr<IDXGIFactory2> pFactory;
+	ComPtr<ID3D12Device> pDevice;
+	ComPtr<IDXGIAdapter1> pAdapter;
+	ComPtr<IDXGIFactory2> pFactory;
 	CreateDXGIFactory2(0, IID_PPV_ARGS(&pFactory));
 	bool validDeviceFound = false;
 	for (uint32_t Idx = 0; !validDeviceFound && DXGI_ERROR_NOT_FOUND != pFactory->EnumAdapters1(Idx, &pAdapter); ++Idx)
@@ -96,7 +96,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE /*hPrevInstance
 		DXGI_ADAPTER_DESC1 desc;
 		pAdapter->GetDesc1(&desc);
 
-		if (IsDirectXRaytracingSupported(pAdapter))
+		if (IsDirectXRaytracingSupported(pAdapter.Get()))
 		{
 			validDeviceFound = true;
 		}

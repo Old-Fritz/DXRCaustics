@@ -112,7 +112,7 @@ void Graphics::InitializeRenderingBuffers( uint32_t bufferWidth, uint32_t buffer
 	esram.PushStack();
 
 		g_SceneColorBuffer.Create( L"Main Color Buffer", bufferWidth, bufferHeight, 1, DefaultHdrColorFormat, esram );
-		g_SceneGBuffer.Create(L"Scene", bufferWidth, bufferHeight, 1);
+		g_SceneGBuffer.Create(L"Scene", bufferWidth, bufferHeight, 1, DSV_FORMAT);
 		//g_SceneNormalBuffer.Create( L"Normals Buffer", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R16G16B16A16_FLOAT, esram );
 		g_VelocityBuffer.Create( L"Motion Vectors", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R32_UINT );
 		g_PostEffectsBuffer.Create( L"Post Effects Buffer", bufferWidth, bufferHeight, 1, DXGI_FORMAT_R32_UINT );
@@ -317,9 +317,9 @@ void Graphics::DestroyRenderingBuffers()
 }
 
 
-void Graphics::GeometryBuffer::Create(const std::wstring& Name, uint32_t Width, uint32_t Height, uint32_t ArrayCount)
+void Graphics::GeometryBuffer::Create(const std::wstring& Name, uint32_t Width, uint32_t Height, uint32_t ArrayCount, DXGI_FORMAT dsFormat)
 {
-	m_DepthBuffer.CreateArray(Name + L" Depth GBuffer", Width, Height, ArrayCount, DSV_FORMAT);
+	m_DepthBuffer.CreateArray(Name + L" Depth GBuffer", Width, Height, ArrayCount, dsFormat);
 	
 	for (int i = 0; i < uint32_t(GBTarget::NumTargets); ++i)
 	{

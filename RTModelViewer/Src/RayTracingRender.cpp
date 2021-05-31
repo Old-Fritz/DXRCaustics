@@ -2,18 +2,22 @@
 
 const char* rayTracingModes[] = {
 	"Off",
-	"Bary Rays",
-	"Refl Bary",
-	"Shadow Rays",
+	"Off with cautic",
+	"Backward Rays With caustics",
+	"Caustic"	
+	"Backward Rays",
 	"Diffuse&ShadowMaps",
-	"Diffuse&ShadowRays",
 	"Reflection Rays",
-	"Backward Rays"
+	"Refl Bary",
+	"Bary Rays",
+	"Shadow Rays",
+	"Diffuse&ShadowRays",
 };
-EnumVar rayTracingMode("Viewer/Raytracing/RayTraceMode", RTM_BACKWARD, _countof(rayTracingModes), rayTracingModes);
+EnumVar rayTracingMode("App/Raytracing/RayTraceMode", RTM_BACKWARD_WITH_CAUSTICS, _countof(rayTracingModes), rayTracingModes);
 
 void UpdateHitShaderConstants(HitShaderConstants& hitShaderConstants, const GlobalConstants& globalConstants)
 {
+	hitShaderConstants.ViewProjMatrix = globalConstants.ViewProjMatrix;
 	hitShaderConstants.SunShadowMatrix = globalConstants.SunShadowMatrix;
 	hitShaderConstants.ViewerPos = globalConstants.CameraPos;
 	hitShaderConstants.SunDirection = globalConstants.SunDirection;
@@ -34,7 +38,6 @@ void UpdateHitShaderConstants(HitShaderConstants& hitShaderConstants, const Glob
 
 void UpdateDynamicConstants(DynamicCB& inputs, const Math::Camera& camera, ColorBuffer& colorTarget)
 {
-
 	auto m0 = camera.GetViewProjMatrix();
 	auto m1 = Transpose(Invert(m0));
 	memcpy(&inputs.cameraToWorld, &m1, sizeof(inputs.cameraToWorld));
@@ -56,7 +59,11 @@ void SetupResources(CommandContext& context, DynamicCB& dynamicCB, HitShaderCons
 	context.TransitionResource(g_ShadowBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 	context.TransitionResource(g_SSAOFullScreen, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 	context.TransitionResource(Lighting::m_LightBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+#ifdef USE_LIGHT_GBUFFER
+	Lighting::m_LightGBufferArray.Setup(context, GBSet::Depth | GBSet::NonPixel);
+#else
 	context.TransitionResource(Lighting::m_LightShadowArray, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+#endif
 	context.TransitionResource(Lighting::m_LightGrid, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 	context.TransitionResource(Lighting::m_LightGridBitMask, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 	// outputUAV (4)
@@ -67,13 +74,13 @@ void SetupResources(CommandContext& context, DynamicCB& dynamicCB, HitShaderCons
 	context.FlushResourceBarriers();
 
 	// setup signature
-	CComPtr<ID3D12GraphicsCommandList4> pCommandList;
-	context.GetCommandList()->QueryInterface(IID_PPV_ARGS(&pCommandList));
+	ComPtr<ID3D12GraphicsCommandList4> pCommandList;
+	context.GetCommandList()->QueryInterface(IID_PPV_ARGS_(pCommandList));
 
 	ID3D12DescriptorHeap* pDescriptorHeaps[] = { &g_pRaytracingDescriptorHeap->GetDescriptorHeap() };
 	pCommandList->SetDescriptorHeaps(ARRAYSIZE(pDescriptorHeaps), pDescriptorHeaps);
 
-	pCommandList->SetComputeRootSignature(g_GlobalRaytracingRootSignature);
+	pCommandList->SetComputeRootSignature(g_GlobalRaytracingRootSignature.Get());
 	pCommandList->SetComputeRootDescriptorTable(0, g_SceneSrvs); // t1-4
 	pCommandList->SetComputeRootConstantBufferView(1, g_hitConstantBuffer.GetGpuVirtualAddress()); // b0
 	pCommandList->SetComputeRootConstantBufferView(2, g_dynamicConstantBuffer.GetGpuVirtualAddress()); // b1
@@ -96,11 +103,11 @@ void Raytracebarycentrics(CommandContext& context, const GlobalConstants& global
 	UpdateHitShaderConstants(hitShaderConstants, globalConstants);
 
 	SetupResources(context, inputs, hitShaderConstants, colorTarget, GBuffer);
-	CComPtr<ID3D12GraphicsCommandList4> pCommandList;
-	context.GetCommandList()->QueryInterface(IID_PPV_ARGS(&pCommandList));
+	ComPtr<ID3D12GraphicsCommandList4> pCommandList;
+	context.GetCommandList()->QueryInterface(IID_PPV_ARGS_(pCommandList));
 
 	D3D12_DISPATCH_RAYS_DESC dispatchRaysDesc = g_RaytracingInputs[Primarybarycentric].GetDispatchRayDesc(colorTarget.GetWidth(), colorTarget.GetHeight());
-	pCommandList->SetPipelineState1(g_RaytracingInputs[Primarybarycentric].m_pPSO);
+	pCommandList->SetPipelineState1(g_RaytracingInputs[Primarybarycentric].m_pPSO.Get());
 	pCommandList->DispatchRays(&dispatchRaysDesc);
 }
 
@@ -115,11 +122,11 @@ void RaytracebarycentricsSSR(CommandContext& context, const GlobalConstants& glo
 	UpdateHitShaderConstants(hitShaderConstants, globalConstants);
 
 	SetupResources(context, inputs, hitShaderConstants, colorTarget, GBuffer);
-	CComPtr<ID3D12GraphicsCommandList4> pCommandList;
-	context.GetCommandList()->QueryInterface(IID_PPV_ARGS(&pCommandList));
+	ComPtr<ID3D12GraphicsCommandList4> pCommandList;
+	context.GetCommandList()->QueryInterface(IID_PPV_ARGS_(pCommandList));
 
 	D3D12_DISPATCH_RAYS_DESC dispatchRaysDesc = g_RaytracingInputs[Reflectionbarycentric].GetDispatchRayDesc(colorTarget.GetWidth(), colorTarget.GetHeight());
-	pCommandList->SetPipelineState1(g_RaytracingInputs[Reflectionbarycentric].m_pPSO);
+	pCommandList->SetPipelineState1(g_RaytracingInputs[Reflectionbarycentric].m_pPSO.Get());
 	pCommandList->DispatchRays(&dispatchRaysDesc);
 }
 
@@ -134,11 +141,11 @@ void RTModelViewer::RaytraceShadows(CommandContext& context, const GlobalConstan
 	UpdateHitShaderConstants(hitShaderConstants, globalConstants);
 
 	SetupResources(context, inputs, hitShaderConstants, colorTarget, GBuffer);
-	CComPtr<ID3D12GraphicsCommandList4> pCommandList;
-	context.GetCommandList()->QueryInterface(IID_PPV_ARGS(&pCommandList));
+	ComPtr<ID3D12GraphicsCommandList4> pCommandList;
+	context.GetCommandList()->QueryInterface(IID_PPV_ARGS_(pCommandList));
 
 	D3D12_DISPATCH_RAYS_DESC dispatchRaysDesc = g_RaytracingInputs[Shadows].GetDispatchRayDesc(colorTarget.GetWidth(), colorTarget.GetHeight());
-	pCommandList->SetPipelineState1(g_RaytracingInputs[Shadows].m_pPSO);
+	pCommandList->SetPipelineState1(g_RaytracingInputs[Shadows].m_pPSO.Get());
 	pCommandList->DispatchRays(&dispatchRaysDesc);
 }
 
@@ -154,11 +161,11 @@ void RTModelViewer::RaytraceDiffuse(CommandContext& context, const GlobalConstan
 	hitShaderConstants.UseShadowRays = rayTracingMode == RTM_DIFFUSE_WITH_SHADOWRAYS;
 
 	SetupResources(context, inputs, hitShaderConstants, colorTarget, GBuffer);
-	CComPtr<ID3D12GraphicsCommandList4> pCommandList;
-	context.GetCommandList()->QueryInterface(IID_PPV_ARGS(&pCommandList));
+	ComPtr<ID3D12GraphicsCommandList4> pCommandList;
+	context.GetCommandList()->QueryInterface(IID_PPV_ARGS_(pCommandList));
 
 	D3D12_DISPATCH_RAYS_DESC dispatchRaysDesc = g_RaytracingInputs[DiffuseHitShader].GetDispatchRayDesc(colorTarget.GetWidth(), colorTarget.GetHeight());
-	pCommandList->SetPipelineState1(g_RaytracingInputs[DiffuseHitShader].m_pPSO);
+	pCommandList->SetPipelineState1(g_RaytracingInputs[DiffuseHitShader].m_pPSO.Get());
 	pCommandList->DispatchRays(&dispatchRaysDesc);
 }
 
@@ -174,33 +181,56 @@ void RTModelViewer::RaytraceReflections(CommandContext& context, const GlobalCon
 	hitShaderConstants.IsReflection = true;
 
 	SetupResources(context, inputs, hitShaderConstants, colorTarget, GBuffer);
-	CComPtr<ID3D12GraphicsCommandList4> pCommandList;
-	context.GetCommandList()->QueryInterface(IID_PPV_ARGS(&pCommandList));
+	ComPtr<ID3D12GraphicsCommandList4> pCommandList;
+	context.GetCommandList()->QueryInterface(IID_PPV_ARGS_(pCommandList));
 
 	D3D12_DISPATCH_RAYS_DESC dispatchRaysDesc = g_RaytracingInputs[Reflection].GetDispatchRayDesc(colorTarget.GetWidth(), colorTarget.GetHeight());
-	pCommandList->SetPipelineState1(g_RaytracingInputs[Reflection].m_pPSO);
+	pCommandList->SetPipelineState1(g_RaytracingInputs[Reflection].m_pPSO.Get());
 	pCommandList->DispatchRays(&dispatchRaysDesc);
 }
 
 void RTModelViewer::RaytraceBackward(CommandContext& context, const GlobalConstants& globalConstants, const Math::Camera& camera, ColorBuffer& colorTarget, GeometryBuffer& GBuffer)
 {
-	ScopedTimer _p0(L"RaytracingWithHitShader", context);
+	ScopedTimer _p0(L"RaytracingBackward", context);
 
 	// Prepare constants
 	DynamicCB inputs = g_dynamicCb;
 	HitShaderConstants hitShaderConstants = {};
 	UpdateDynamicConstants(inputs, camera, colorTarget);
 	UpdateHitShaderConstants(hitShaderConstants, globalConstants);
-	hitShaderConstants.UseShadowRays = rayTracingMode == RTM_BACKWARD_WITH_SHADOWRAYS;
+	hitShaderConstants.UseShadowRays = false;
 
 	//hitShaderConstants.IsReflection = true;
 
 	SetupResources(context, inputs, hitShaderConstants, colorTarget, GBuffer);
-	CComPtr<ID3D12GraphicsCommandList4> pCommandList;
-	context.GetCommandList()->QueryInterface(IID_PPV_ARGS(&pCommandList));
+	ComPtr<ID3D12GraphicsCommandList4> pCommandList;
+	context.GetCommandList()->QueryInterface(IID_PPV_ARGS_(pCommandList));
 
 	D3D12_DISPATCH_RAYS_DESC dispatchRaysDesc = g_RaytracingInputs[Backward].GetDispatchRayDesc(colorTarget.GetWidth(), colorTarget.GetHeight());
-	pCommandList->SetPipelineState1(g_RaytracingInputs[Backward].m_pPSO);
+	pCommandList->SetPipelineState1(g_RaytracingInputs[Backward].m_pPSO.Get());
+	pCommandList->DispatchRays(&dispatchRaysDesc);
+}
+
+void RTModelViewer::RaytraceCaustic(CommandContext& context, const GlobalConstants& globalConstants,
+	const Math::Camera& camera, ColorBuffer& colorTarget, GeometryBuffer& GBuffer)
+{
+	ScopedTimer _p0(L"RaytracingCaustic", context);
+
+	// Prepare constants
+	DynamicCB inputs = g_dynamicCb;
+	HitShaderConstants hitShaderConstants = {};
+	UpdateDynamicConstants(inputs, camera, colorTarget);
+	UpdateHitShaderConstants(hitShaderConstants, globalConstants);
+	//hitShaderConstants.UseShadowRays = rayTracingMode == RTM_BACKWARD_WITH_SHADOWRAYS;
+	//hitShaderConstants.IsReflection = true;
+	inputs.resolution = { 512.0f, 512.0f };
+
+	SetupResources(context, inputs, hitShaderConstants, colorTarget, GBuffer);
+	ComPtr<ID3D12GraphicsCommandList4> pCommandList;
+	context.GetCommandList()->QueryInterface(IID_PPV_ARGS_(pCommandList));
+
+	D3D12_DISPATCH_RAYS_DESC dispatchRaysDesc = g_RaytracingInputs[Caustic].GetDispatchRayDesc(512,512);
+	pCommandList->SetPipelineState1(g_RaytracingInputs[Caustic].m_pPSO.Get());
 	pCommandList->DispatchRays(&dispatchRaysDesc);
 }
 
@@ -233,9 +263,15 @@ void RTModelViewer::RenderRaytrace(GraphicsContext& gfxContext, const GlobalCons
 		RaytraceReflections(gfxContext, globalConstants, m_Camera, g_SceneColorBuffer, g_SceneGBuffer);
 		break;
 
-	case RTM_BACKWARD_WITH_SHADOWRAYS:
 	case RTM_BACKWARD:
 		RaytraceBackward(gfxContext, globalConstants, m_Camera, g_SceneColorBuffer, g_SceneGBuffer);
+		break;
+	case RTM_BACKWARD_WITH_CAUSTICS:
+		RaytraceBackward(gfxContext, globalConstants, m_Camera, g_SceneColorBuffer, g_SceneGBuffer);
+	case RTM_OFF_WITH_CAUSTICS:
+	case RTM_CAUSTIC:
+		//RaytraceCaustic(gfxContext, globalConstants, m_Camera, g_SceneColorBuffer, g_SceneGBuffer);
+		RaytraceCaustic(gfxContext, globalConstants, Lighting::m_LightShadowCamera[0], g_SceneColorBuffer, g_SceneGBuffer);
 		break;
 	}
 

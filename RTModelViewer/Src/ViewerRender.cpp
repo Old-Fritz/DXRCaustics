@@ -39,7 +39,7 @@ void RTModelViewer::RenderLightShadows(GraphicsContext& gfxContext, GlobalConsta
 
 	ScopedTimer _prof(L"RenderLightShadows", gfxContext);
 
-	for (int i = 0; i < MaxLights; i++)
+	for (int i = 0; i <= Lighting::m_LastLight; i++)
 	{
 		wchar_t str[1024];
 		wsprintf(str, L"RenderLightShadows: %d", i);
@@ -47,8 +47,14 @@ void RTModelViewer::RenderLightShadows(GraphicsContext& gfxContext, GlobalConsta
 		
 		MeshSorter shadowSorter(MeshSorter::kShadows);
 		shadowSorter.SetCamera(m_LightShadowCamera[i]);
+#ifdef USE_LIGHT_GBUFFER
+		Lighting::m_LightGBufferArray.GetDepthBuffer().SetArrayIndex(i);
+		shadowSorter.SetDepthStencilTarget(Lighting::m_LightGBufferArray.GetDepthBuffer());
+		//shadowSorter.SetGBuffer(m_LightGBufferArray);
+#else
 		m_LightShadowArray.SetArrayIndex(i);
 		shadowSorter.SetDepthStencilTarget(m_LightShadowArray);
+#endif
 
 		m_ModelInst.Render(shadowSorter);
 		shadowSorter.Sort();
@@ -166,7 +172,9 @@ void RTModelViewer::RenderScene(void)
 	const bool skipDiffusePass =
 		rayTracingMode == RTM_DIFFUSE_WITH_SHADOWMAPS ||
 		rayTracingMode == RTM_DIFFUSE_WITH_SHADOWRAYS ||
-		rayTracingMode == RTM_TRAVERSAL;
+		rayTracingMode == RTM_TRAVERSAL
+		//|| rayTracingMode == RTM_CAUSTIC
+		;
 
 	const bool skipShadowMap =
 		rayTracingMode == RTM_DIFFUSE_WITH_SHADOWRAYS ||
@@ -174,11 +182,12 @@ void RTModelViewer::RenderScene(void)
 		rayTracingMode == RTM_SSR;
 
 	const bool renderGBuffer = true;
-	const bool renderDeferred = 
+	const bool renderDeferred =
 		!skipDiffusePass &&
 		!(rayTracingMode == RTM_BACKWARD) &&
-		!(rayTracingMode == RTM_BACKWARD_WITH_SHADOWRAYS);
-
+		!(rayTracingMode == RTM_BACKWARD_WITH_CAUSTICS)
+		&& !(rayTracingMode == RTM_CAUSTIC)
+		;
 	GraphicsContext& gfxContext = GraphicsContext::Begin(L"Scene Render");
 
 	ParticleEffectManager::Update(gfxContext.GetComputeContext(), Graphics::GetFrameTime());

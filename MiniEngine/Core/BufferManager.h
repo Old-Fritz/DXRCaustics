@@ -61,7 +61,7 @@ namespace Graphics
 	{
 	public:
 
-		void Create(const std::wstring& Name, uint32_t Width, uint32_t Height, uint32_t ArrayCount);
+		void Create(const std::wstring& Name, uint32_t Width, uint32_t Height, uint32_t ArrayCount, DXGI_FORMAT dsFormat);
 		void Destroy();
 
 		void Setup(GraphicsContext& context, GBSet flags);

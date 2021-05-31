@@ -19,6 +19,14 @@ struct BackwardRayPayload
 	//float  RayHitT;
 };
 
+struct CausticRayPayload
+{
+	float3 Color;
+	uint Count;
+	float RayHitT;
+	bool SkipShading;
+};
+
 #ifndef SINGLE
 static const float FLT_MAX = asfloat(0x7F7FFFFF);
 #endif
@@ -69,6 +77,7 @@ RWTexture2D<float4> g_screenOutput : register(u2);
 // GLOBAL CONSTANT BUFFERS (0, 1)
 cbuffer HitShaderConstants : register(b0)
 {
+	column_major float4x4	ViewProjMatrix;
 	column_major float4x4	SunShadowMatrix;
 	float4					ViewerPos;
 	float4					SunDirection;

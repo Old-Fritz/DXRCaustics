@@ -40,7 +40,7 @@ void Hit(inout BackwardRayPayload payload, in BuiltInTriangleIntersectionAttribu
 	// Begin accumulating light starting with emissive
 	float3 colorAccum = gBuf.emissive;
 
-	AccumulateLights(colorAccum, Surface, worldPos, DispatchRaysIndex().xy);
+	AccumulateLights(colorAccum, Surface, worldPos);// , DispatchRaysIndex().xy);
 
 	  // ---------------------------------------------- //
 	 // ----------------- REFLECTIONS ---------------- //

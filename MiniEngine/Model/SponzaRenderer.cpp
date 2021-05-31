@@ -154,7 +154,7 @@ void Sponza::Startup( Camera& Camera )
 	const Vector3 eye = m_Model.GetBoundingBox().GetCenter() + Vector3(modelRadius * 0.5f, 0.0f, 0.0f);
 	Camera.SetEyeAtUp( eye, Vector3(kZero), Vector3(kYUnitVector) );
 
-	Lighting::CreateRandomLights(m_Model.GetBoundingBox().GetMin(), m_Model.GetBoundingBox().GetMax());
+	Lighting::CreateRandomLights(m_Model.GetBoundingBox().GetMin() / 2.0, m_Model.GetBoundingBox().GetMax() / 2.0, 10);
 }
 
 const ModelH3D& Sponza::GetModel()
@@ -231,11 +231,12 @@ void Sponza::RenderLightShadows(GraphicsContext& gfxContext, const Camera& camer
 	//m_LightShadowTempBuffer.EndRendering(gfxContext);
 
 	gfxContext.TransitionResource(m_LightShadowTempBuffer, D3D12_RESOURCE_STATE_COPY_SOURCE);
-	gfxContext.TransitionResource(m_LightShadowArray, D3D12_RESOURCE_STATE_COPY_DEST);
 
-	gfxContext.CopySubresource(m_LightShadowArray, LightIndex, m_LightShadowTempBuffer, 0);
+	//gfxContext.TransitionResource(m_LightShadowArray, D3D12_RESOURCE_STATE_COPY_DEST);
 
-	gfxContext.TransitionResource(m_LightShadowArray, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
+	//gfxContext.CopySubresource(m_LightShadowArray, LightIndex, m_LightShadowTempBuffer, 0);
+
+	//gfxContext.TransitionResource(m_LightShadowArray, D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE);
 
 	++LightIndex;
 }

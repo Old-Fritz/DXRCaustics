@@ -77,21 +77,26 @@
   <ItemGroup>
     <None Include="..\readme.md" />
     <None Include="packages.config" />
+    <None Include="Shaders\CausticRT.hlsli" />
     <None Include="Shaders\LightingRT.hlsli" />
     <None Include="Shaders\MaterialsRT.hlsli" />
+    <None Include="Shaders\ReflectRT.hlsli" />
     <None Include="Shaders\SceneRT.hlsli" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Shaders\HitShaderDiffuseLib.hlsl" />
-    <None Include="Shaders\HitShaderCausticLib.hlsl">
+    <FxCompile Include="Shaders\CHS_Caustic.hlsl" />
+    <FxCompile Include="Shaders\MS_Caustic.hlsl" />
+    <FxCompile Include="Shaders\RGS_Backward.hlsl" />
+    <FxCompile Include="Shaders\RGS_Caustic.hlsl" />
+    <None Include="Shaders\RandomRT.hlsli">
       <FileType>Document</FileType>
     </None>
+    <FxCompile Include="Shaders\CHS_Backward.hlsl" />
+    <FxCompile Include="Shaders\HitShaderDiffuseLib.hlsl" />
     <FxCompile Include="Shaders\hitShaderLib.hlsl" />
     <FxCompile Include="Shaders\missShaderLib.hlsl" />
     <FxCompile Include="Shaders\missShadowsLib.hlsl" />
-    <None Include="Shaders\RayGenerationCausticLib.hlsl">
-      <FileType>Document</FileType>
-    </None>
+    <FxCompile Include="Shaders\MS_Backward.hlsl" />
     <FxCompile Include="Shaders\RayGenerationShaderLib.hlsl" />
     <FxCompile Include="Shaders\RayGenerationShaderSSRLib.hlsl" />
     <FxCompile Include="Shaders\RayGenerationShadowsLib.hlsl" />

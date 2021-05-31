@@ -16,9 +16,10 @@
 #include "EsramAllocator.h"
 #include "CommandContext.h"
 
+
 void ShadowBuffer::Create( const std::wstring& Name, uint32_t Width, uint32_t Height, D3D12_GPU_VIRTUAL_ADDRESS VidMemPtr )
 {
-	DepthBuffer::Create( Name, Width, Height, DXGI_FORMAT_D16_UNORM, VidMemPtr );
+	DepthBuffer::Create( Name, Width, Height, SHADOW_FORMAT, VidMemPtr );
 
 	m_Viewport.TopLeftX = 0.0f;
 	m_Viewport.TopLeftY = 0.0f;
@@ -36,7 +37,7 @@ void ShadowBuffer::Create( const std::wstring& Name, uint32_t Width, uint32_t He
 
 void ShadowBuffer::Create( const std::wstring& Name, uint32_t Width, uint32_t Height, EsramAllocator& Allocator )
 {
-	DepthBuffer::Create( Name, Width, Height, DXGI_FORMAT_D16_UNORM, Allocator );
+	DepthBuffer::Create( Name, Width, Height, SHADOW_FORMAT, Allocator );
 
 	m_Viewport.TopLeftX = 0.0f;
 	m_Viewport.TopLeftY = 0.0f;
@@ -56,7 +57,7 @@ void ShadowBuffer::Create( const std::wstring& Name, uint32_t Width, uint32_t He
 void ShadowBuffer::CreateArray(const std::wstring& Name, uint32_t Width, uint32_t Height, uint32_t ArrayCount,
 	D3D12_GPU_VIRTUAL_ADDRESS VidMemPtr)
 {
-	DepthBuffer::CreateArray(Name, Width, Height, ArrayCount, DXGI_FORMAT_D16_UNORM, VidMemPtr);
+	DepthBuffer::CreateArray(Name, Width, Height, ArrayCount, SHADOW_FORMAT, VidMemPtr);
 
 	m_Viewport.TopLeftX = 0.0f;
 	m_Viewport.TopLeftY = 0.0f;

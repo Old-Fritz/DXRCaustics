@@ -27,8 +27,8 @@ void ApplySSAO(inout SurfaceProperties Surface, uint2 pixelPos)
 void AccumulateAmbient(inout float3 colorAccum, SurfaceProperties Surface)
 {
 	// Add IBL
-	colorAccum += Diffuse_IBL(Surface);
-	colorAccum += Specular_IBL(Surface);
+	colorAccum += Diffuse_IBL(Surface) * AmbientIntensity.xyz;
+	colorAccum += Specular_IBL(Surface) * AmbientIntensity.xyz;
 
 	//colorAccum += Surface.c_diff * AmbientIntensity.xyz;
 }

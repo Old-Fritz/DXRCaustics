@@ -58,18 +58,26 @@
 #include "CompiledShaders/CHS_Backward.h"
 #include "CompiledShaders/MS_Backward.h"
 
+
+#include "CompiledShaders/RGS_Caustic.h"
+#include "CompiledShaders/CHS_Caustic.h"
+#include  "CompiledShaders/MS_Caustic.h"
+
 #include "Shaders/RaytracingHlslCompat.h"
+
+#define IID_PPV_ARGS_(ptr) IID_PPV_ARGS(ptr.GetAddressOf())
 
 using namespace GameCore;
 using namespace Math;
 using namespace Graphics;
 
-constexpr UINT MaxRayRecursion = 2;
+constexpr UINT MaxRayRecursion = 16;
 constexpr UINT c_NumCameraPositions = 5;
 constexpr UINT MaxMaterials = 100;
 
 __declspec(align(256)) struct HitShaderConstants
 {
+	Matrix4			ViewProjMatrix;
 	Matrix4			SunShadowMatrix;
 	Vector4			ViewerPos;
 	Vector4			SunDirection; 
@@ -120,6 +128,7 @@ enum RaytracingTypes
 	DiffuseHitShader,
 	Reflection,
 	Backward,
+	Caustic,
 	NumTypes
 };
 
@@ -128,7 +137,7 @@ struct RaytracingDispatchRayInputs
 	RaytracingDispatchRayInputs() {}
 	RaytracingDispatchRayInputs(
 		ID3D12Device5& /*device*/,
-		ID3D12StateObject* pPSO,
+		ComPtr<ID3D12StateObject> pPSO,
 		void* pHitGroupShaderTable,
 		UINT HitGroupStride,
 		UINT HitGroupTableSize,
@@ -175,7 +184,7 @@ struct RaytracingDispatchRayInputs
 	}
 
 	UINT m_HitGroupStride;
-	CComPtr<ID3D12StateObject> m_pPSO;
+	ComPtr<ID3D12StateObject> m_pPSO;
 	ByteAddressBuffer   m_RayGenShaderTable;
 	ByteAddressBuffer   m_MissShaderTable;
 	ByteAddressBuffer   m_HitShaderTable;
@@ -200,6 +209,9 @@ public:
 	virtual void RenderUI(class GraphicsContext&) override;
 
 	void SetCameraToPredefinedPosition(int cameraPosition);
+
+	// update
+	void UpdateLight();
 
 	// scene render
 	void UpdateGlobalConstants(GlobalConstants& globals);
@@ -236,7 +248,7 @@ private:
 
 	void InitHitGroups(std::vector<D3D12_STATE_SUBOBJECT>& subObjects, D3D12_RAYTRACING_SHADER_CONFIG& shaderConfig, 
 		D3D12_HIT_GROUP_DESC& hitGroupDesc, LPCWSTR hitGroupNames[HG_NumGroups], ShaderExport exports[SEN_NumExports]);
-	void InitRayTraceInputs(std::function<void(ID3D12StateObject*, byte*)> GetShaderTable, D3D12_STATE_OBJECT_DESC& stateObject, 
+	void InitRayTraceInputs(std::function<void(ComPtr<ID3D12StateObject>, byte*)> GetShaderTable, D3D12_STATE_OBJECT_DESC& stateObject, 
 		std::vector<byte>& pHitShaderTable, UINT shaderRecordSizeInBytes, ShaderExport exports[SEN_NumExports]);
 
 	// RT TLAS
@@ -250,6 +262,8 @@ private:
 	void RaytraceReflections(CommandContext& context, const GlobalConstants& globalConstants,
 		const Math::Camera& camera, ColorBuffer& colorTarget, GeometryBuffer& GBuffer);
 	void RaytraceBackward(CommandContext& context, const GlobalConstants& globalConstants,
+		const Math::Camera& camera, ColorBuffer& colorTarget, GeometryBuffer& GBuffer);
+	void RaytraceCaustic(CommandContext& context, const GlobalConstants& globalConstants,
 		const Math::Camera& camera, ColorBuffer& colorTarget, GeometryBuffer& GBuffer);
 
 	Camera m_Camera;
@@ -269,6 +283,9 @@ private:
 
 	ModelInstance m_ModelInst;
 	ShadowCamera m_SunShadowCamera;
+
+	TextureRef m_BlueNoiseRGBA;
+
 };
 
 
@@ -302,7 +319,7 @@ public:
 		m_descriptorHeapCpuBase = m_pDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 	}
 
-	ID3D12DescriptorHeap& GetDescriptorHeap() { return *m_pDescriptorHeap; }
+	ID3D12DescriptorHeap& GetDescriptorHeap() { return *(m_pDescriptorHeap.Get()); }
 
 	void AllocateDescriptor(_Out_ D3D12_CPU_DESCRIPTOR_HANDLE& cpuHandle, _Out_ UINT& descriptorHeapIndex)
 	{
@@ -311,34 +328,34 @@ public:
 		m_descriptorsAllocated++;
 	}
 
-	UINT AllocateBufferSrv(_In_ ID3D12Resource& resource)
+	UINT AllocateBufferSrv(_In_  ComPtr<ID3D12Resource>resource)
 	{
 		UINT descriptorHeapIndex;
 		D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle;
 		AllocateDescriptor(cpuHandle, descriptorHeapIndex);
 		D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
 		srvDesc.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
-		srvDesc.Buffer.NumElements = (UINT)(resource.GetDesc().Width / sizeof(UINT32));
+		srvDesc.Buffer.NumElements = (UINT)(resource->GetDesc().Width / sizeof(UINT32));
 		srvDesc.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_RAW;
 		srvDesc.Format = DXGI_FORMAT_R32_TYPELESS;
 		srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 
-		m_device.CreateShaderResourceView(&resource, &srvDesc, cpuHandle);
+		m_device.CreateShaderResourceView(resource.Get(), &srvDesc, cpuHandle);
 		return descriptorHeapIndex;
 	}
 
-	UINT AllocateBufferUav(_In_ ID3D12Resource& resource)
+	UINT AllocateBufferUav(_In_ ComPtr<ID3D12Resource> resource)
 	{
 		UINT descriptorHeapIndex;
 		D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle;
 		AllocateDescriptor(cpuHandle, descriptorHeapIndex);
 		D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
 		uavDesc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
-		uavDesc.Buffer.NumElements = (UINT)(resource.GetDesc().Width / sizeof(UINT32));
+		uavDesc.Buffer.NumElements = (UINT)(resource->GetDesc().Width / sizeof(UINT32));
 		uavDesc.Buffer.Flags = D3D12_BUFFER_UAV_FLAG_RAW;
 		uavDesc.Format = DXGI_FORMAT_R32_TYPELESS;
 
-		m_device.CreateUnorderedAccessView(&resource, nullptr, &uavDesc, cpuHandle);
+		m_device.CreateUnorderedAccessView(resource.Get(), nullptr, &uavDesc, cpuHandle);
 		return descriptorHeapIndex;
 	}
 
@@ -348,23 +365,37 @@ public:
 	}
 private:
 	ID3D12Device& m_device;
-	CComPtr<ID3D12DescriptorHeap> m_pDescriptorHeap;
+	ComPtr<ID3D12DescriptorHeap> m_pDescriptorHeap;
 	UINT m_descriptorsAllocated = 0;
 	UINT m_descriptorSize;
 	D3D12_CPU_DESCRIPTOR_HANDLE m_descriptorHeapCpuBase;
 };
 
+struct LightSource
+{
+	float		LightRadius;
+	float		LightIntensity;
+	Vector3		Pos;
+	Vector3		Color;
+	Vector3		ConeDir;
+	float		ConeInner;
+	float		ConeOuter;
+};
+
 enum RaytracingMode
 {
 	RTM_OFF,
-	RTM_TRAVERSAL,
-	RTM_SSR,
-	RTM_SHADOWS,
-	RTM_DIFFUSE_WITH_SHADOWMAPS,
-	RTM_DIFFUSE_WITH_SHADOWRAYS,
-	RTM_REFLECTIONS,
+	RTM_OFF_WITH_CAUSTICS,
+	RTM_BACKWARD_WITH_CAUSTICS,
+	RTM_CAUSTIC,
 	RTM_BACKWARD,
-	RTM_BACKWARD_WITH_SHADOWRAYS
+	RTM_DIFFUSE_WITH_SHADOWMAPS,
+	RTM_REFLECTIONS,
+	RTM_SSR,
+	RTM_TRAVERSAL,
+	RTM_DIFFUSE_WITH_SHADOWRAYS,
+	RTM_SHADOWS,
+	
 };
 extern EnumVar								rayTracingMode;
 
@@ -382,23 +413,24 @@ extern D3D12_GPU_DESCRIPTOR_HANDLE			g_OutputUAV;
 extern D3D12_GPU_DESCRIPTOR_HANDLE			g_LightingSrvs;
 extern D3D12_GPU_DESCRIPTOR_HANDLE			g_SceneSrvs;
 
-extern std::vector<CComPtr<ID3D12Resource>>	g_bvh_bottomLevelAccelerationStructures;
-extern CComPtr<ID3D12Resource>				g_bvh_topLevelAccelerationStructure;
+extern std::vector<ComPtr<ID3D12Resource>>	g_bvh_bottomLevelAccelerationStructures;
+extern ComPtr<ID3D12Resource>				g_bvh_topLevelAccelerationStructure;
 
 extern DynamicCB							g_dynamicCb;
-extern CComPtr<ID3D12RootSignature>			g_GlobalRaytracingRootSignature;
-extern CComPtr<ID3D12RootSignature>			g_LocalRaytracingRootSignature;
+extern ComPtr<ID3D12RootSignature>			g_GlobalRaytracingRootSignature;
+extern ComPtr<ID3D12RootSignature>			g_LocalRaytracingRootSignature;
 
 extern StructuredBuffer						g_hitShaderMeshInfoBuffer;
 
 extern RaytracingDispatchRayInputs			g_RaytracingInputs[RaytracingTypes::NumTypes];
 extern D3D12_CPU_DESCRIPTOR_HANDLE			g_bvh_attributeSrvs[34];
 
+extern LightSource							g_LightSource;
 
 
 extern ByteAddressBuffer g_bvh_bottomLevelAccelerationStructure;
 
-extern CComPtr<ID3D12Device5> g_pRaytracingDevice;
+extern ComPtr<ID3D12Device5> g_pRaytracingDevice;
 
 
 void ChangeIBLSet(EngineVar::ActionType);
@@ -414,7 +446,7 @@ extern ExpVar g_AmbientIntensity;
 extern NumVar g_SunOrientation;
 extern NumVar g_SunInclination;
 
-extern TextureRef g_BlueNoiseRGBA;
+extern TextureRef* g_BlueNoiseRGBA;
 
 extern NumVar g_RTAdditiveRecurrenceSequenceAlphaX;
 extern NumVar g_RTAdditiveRecurrenceSequenceAlphaY;

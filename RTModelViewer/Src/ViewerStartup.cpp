@@ -45,10 +45,7 @@ void LoadIBLTextures()
 		g_IBLSet.Increment();
 }
 
-void LoadNoise()
-{
-	g_BlueNoiseRGBA = TextureManager::LoadDDSFromFile(L"../Data/BlueNoiseRGBA.dds");
-}
+
 
 void RTModelViewer::Startup(void)
 {
@@ -62,7 +59,8 @@ void RTModelViewer::Startup(void)
 	Renderer::Initialize();
 
 	LoadIBLTextures();
-	LoadNoise();
+	m_BlueNoiseRGBA = TextureManager::LoadDDSFromFile(L"../Data/BlueNoiseRGBA.dds");
+	g_BlueNoiseRGBA = &m_BlueNoiseRGBA;
 
 	std::wstring gltfFileName;
 
@@ -102,7 +100,12 @@ void RTModelViewer::Startup(void)
 
 	InitializeRTModel();
 
-	Lighting::CreateRandomLights(m_ModelInst.GetCenter() - m_ModelInst.GetBoundingBox().GetDimensions() / 2.0f, m_ModelInst.GetCenter() + m_ModelInst.GetBoundingBox().GetDimensions() / 2.0f);
+	float lightsRadius = 0.1f ;
+
+	Lighting::CreateRandomLights(
+		(m_ModelInst.GetCenter() - m_ModelInst.GetBoundingBox().GetDimensions() / 2.0f) * lightsRadius,
+		(m_ModelInst.GetCenter() + m_ModelInst.GetBoundingBox().GetDimensions() / 2.0f) * lightsRadius,
+		1);
 
 	SetupPredefinedCameraPositions();
 }
@@ -143,6 +146,7 @@ void RTModelViewer::Cleanup(void)
 	m_ModelInst = nullptr;
 
 	g_IBLTextures.clear();
+	m_BlueNoiseRGBA = 0;
 
 	Lighting::Shutdown();
 	Renderer::Shutdown();

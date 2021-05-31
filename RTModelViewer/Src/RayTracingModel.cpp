@@ -87,7 +87,11 @@ void RTModelViewer::InitializeRTViews()
 		
 		// light shadow array tex t15
 		g_pRaytracingDescriptorHeap->AllocateDescriptor(srvHandle, unused);
+#ifdef USE_LIGHT_GBUFFER
+		Graphics::g_Device->CopyDescriptorsSimple(1, srvHandle, Lighting::m_LightGBufferArray.GetDepthBuffer().GetDepthSRV(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+#else
 		Graphics::g_Device->CopyDescriptorsSimple(1, srvHandle, Lighting::m_LightShadowArray.GetSRV(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+#endif
 
 		// light grid t16
 		g_pRaytracingDescriptorHeap->AllocateDescriptor(srvHandle, unused);
@@ -99,7 +103,7 @@ void RTModelViewer::InitializeRTViews()
 
 		// blue noise t18
 		g_pRaytracingDescriptorHeap->AllocateDescriptor(srvHandle, unused);
-		Graphics::g_Device->CopyDescriptorsSimple(1, srvHandle, g_BlueNoiseRGBA.GetSRV(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);;
+		Graphics::g_Device->CopyDescriptorsSimple(1, srvHandle, g_BlueNoiseRGBA->GetSRV(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);;
 
 
 	}

@@ -260,7 +260,11 @@ void Renderer::Initialize(void)
 		g_SSAOFullScreen.GetSRV(),
 		g_ShadowBuffer.GetSRV(),
 		Lighting::m_LightBuffer.GetSRV(),
+#ifdef USE_LIGHT_GBUFFER
+		Lighting::m_LightGBufferArray.GetDepthBuffer().GetDepthSRV(),
+#else
 		Lighting::m_LightShadowArray.GetSRV(),
+#endif
 		Lighting::m_LightGrid.GetSRV(),
 		Lighting::m_LightGridBitMask.GetSRV(),
 	};
@@ -778,7 +782,11 @@ void Renderer::RenderDeferredLigting(GraphicsContext& context, GlobalConstants& 
 	Context.TransitionResource(g_ShadowBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 	Context.TransitionResource(g_SSAOFullScreen, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 	Context.TransitionResource(Lighting::m_LightBuffer, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+#ifdef USE_LIGHT_GBUFFER
+	Lighting::m_LightGBufferArray.Setup(Context, GBSet::Depth | GBSet::NonPixel);
+#else
 	Context.TransitionResource(Lighting::m_LightShadowArray, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
+#endif
 	Context.TransitionResource(Lighting::m_LightGrid, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 	Context.TransitionResource(Lighting::m_LightGridBitMask, D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 	// output

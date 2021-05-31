@@ -92,7 +92,7 @@ void RTModelViewer::CreateTLAS()
 		bottomLevelAccelerationStructureDescs[i].ScratchAccelerationStructureData = scratchBuffer.GetGpuVirtualAddress();
 
 		D3D12_RAYTRACING_INSTANCE_DESC& instanceDesc = instanceDescs[i];
-		g_pRaytracingDescriptorHeap->AllocateBufferUav(*bottomLevelStructure);
+		g_pRaytracingDescriptorHeap->AllocateBufferUav(bottomLevelStructure);
 
 		// Identity matrix
 		ZeroMemory(instanceDesc.Transform, sizeof(instanceDesc.Transform));
@@ -116,8 +116,8 @@ void RTModelViewer::CreateTLAS()
 	GraphicsContext& gfxContext = GraphicsContext::Begin(L"Create Acceleration Structure");
 	ID3D12GraphicsCommandList* pCommandList = gfxContext.GetCommandList();
 
-	CComPtr<ID3D12GraphicsCommandList4> pRaytracingCommandList;
-	pCommandList->QueryInterface(IID_PPV_ARGS(&pRaytracingCommandList));
+	ComPtr<ID3D12GraphicsCommandList4> pRaytracingCommandList;
+	pCommandList->QueryInterface(IID_PPV_ARGS_(pRaytracingCommandList));
 
 	ID3D12DescriptorHeap* descriptorHeaps[] = { &g_pRaytracingDescriptorHeap->GetDescriptorHeap() };
 	pRaytracingCommandList->SetDescriptorHeaps(ARRAYSIZE(descriptorHeaps), descriptorHeaps);

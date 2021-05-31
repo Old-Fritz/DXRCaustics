@@ -110,6 +110,11 @@ float3 GetScreenSpaceIntersectionPoint(float2 readGBufferAt)
 	return unprojected.xyz / unprojected.w;
 }
 
+float3 GetProjectWorldCoords(float3 worldPos)
+{
+	return mul(ViewProjMatrix, float4(worldPos, 1.0));
+}
+
 VertexData ExtractVertexData(in BuiltInTriangleIntersectionAttributes attr, float3 worldPos)
 {
 	VertexData vertex;

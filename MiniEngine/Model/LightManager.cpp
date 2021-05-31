@@ -50,12 +50,16 @@ namespace Lighting
 	uint32_t m_LastLight = MaxLights - 1;
 
 	enum {shadowDim = 512};
+#ifdef USE_LIGHT_GBUFFER
+	Graphics::GeometryBuffer m_LightGBufferArray;
+#else
 	ShadowBuffer m_LightShadowArray;
+#endif
 	ShadowBuffer m_LightShadowTempBuffer;
 	Math::Camera m_LightShadowCamera[MaxLights];
 
 	void InitializeResources(void);
-	void CreateRandomLights(const Vector3 minBound, const Vector3 maxBound);
+	void CreateRandomLights(const Vector3 minBound, const Vector3 maxBound, uint32_t count);
 	void FillLightGrid(GraphicsContext& gfxContext, const Camera& camera);
 	void Shutdown(void);
 }
@@ -92,16 +96,25 @@ void Lighting::InitializeResources( void )
 	uint32_t lightGridBitMaskSizeBytes = lightGridCells * 4 * 4;
 	m_LightGridBitMask.Create(L"m_LightGridBitMask", lightGridBitMaskSizeBytes, 1);
 
+#ifdef USE_LIGHT_GBUFFER
+	m_LightGBufferArray.Create(L"Lights", shadowDim, shadowDim, MaxLights, SHADOW_FORMAT);
+#else
 	m_LightShadowArray.CreateArray(L"m_LightShadowArray", shadowDim, shadowDim, MaxLights);
+#endif
+
 	m_LightShadowTempBuffer.Create(L"m_LightShadowTempBuffer", shadowDim, shadowDim);
 
 	m_LightBuffer.Create(L"m_LightBuffer", MaxLights, sizeof(LightData));
 }
 
-void Lighting::CreateRandomLights( const Vector3 minBound, const Vector3 maxBound )
+void Lighting::CreateRandomLights( const Vector3 minBound, const Vector3 maxBound, uint32_t count)
 {
 	Vector3 posScale = maxBound - minBound;
 	Vector3 posBias = minBound;
+	if (count >= MaxLights)
+	{
+		count = MaxLights;
+	}
 
 	// todo: replace this with MT
 	srand(126458);
@@ -151,7 +164,7 @@ void Lighting::CreateRandomLights( const Vector3 minBound, const Vector3 maxBoun
 	};
 
 	const float pi = 3.14159265359f;
-	for (uint32_t n = 0; n < MaxLights; n++)
+	for (uint32_t n = 0; n < count; n++)
 	{
 		Vector3 pos = randVecUniform() * posScale + posBias;
 		float lightRadius = randFloat() * 800.0f + 200.0f;
@@ -184,25 +197,8 @@ void Lighting::CreateRandomLights( const Vector3 minBound, const Vector3 maxBoun
 			color = color * 5.0f;
 		}
 
-		m_LightShadowCamera[n].SetEyeAtUp(pos, pos + coneDir, Vector3(0, 1, 0));
-		m_LightShadowCamera[n].SetPerspectiveMatrix(coneOuter * 2, 1.0f, lightRadius * .05f, lightRadius * 1.0f);
-		m_LightShadowCamera[n].Update();
-		Matrix4 shadowTextureMatrix = Matrix4(AffineTransform(Matrix3::MakeScale( 0.5f, -0.5f, 1.0f ), Vector3(0.5f, 0.5f, 0.0f))) * m_LightShadowCamera[n].GetViewProjMatrix();
+		UpdateLightData(n, pos, lightRadius, color, coneDir, coneInner, coneOuter, type);
 
-		m_LightData[n].pos[0] = pos.GetX();
-		m_LightData[n].pos[1] = pos.GetY();
-		m_LightData[n].pos[2] = pos.GetZ();
-		m_LightData[n].radiusSq = lightRadius * lightRadius;
-		m_LightData[n].color[0] = color.GetX();
-		m_LightData[n].color[1] = color.GetY();
-		m_LightData[n].color[2] = color.GetZ();
-		m_LightData[n].type = type;
-		m_LightData[n].coneDir[0] = coneDir.GetX();
-		m_LightData[n].coneDir[1] = coneDir.GetY();
-		m_LightData[n].coneDir[2] = coneDir.GetZ();
-		m_LightData[n].coneAngles[0] = 1.0f / (cosf(coneInner) - cosf(coneOuter));
-		m_LightData[n].coneAngles[1] = cosf(coneOuter);
-		std::memcpy(m_LightData[n].shadowTextureMatrix, &shadowTextureMatrix, sizeof(shadowTextureMatrix));
 		//*(Matrix4*)(m_LightData[n].shadowTextureMatrix) = shadowTextureMatrix;
 	}
 	// sort lights by type, needed for efficiency in the BIT_MASK approach
@@ -228,7 +224,7 @@ void Lighting::CreateRandomLights( const Vector3 minBound, const Vector3 maxBoun
 	m_LightData[n] = copyLightData[sortArray[n]];
 	}
 	}*/
-	for (uint32_t n = 0; n < MaxLights; n++)
+	for (uint32_t n = 0; n < count; n++)
 	{
 		if (m_LightData[n].type == 1)
 		{
@@ -236,7 +232,7 @@ void Lighting::CreateRandomLights( const Vector3 minBound, const Vector3 maxBoun
 			break;
 		}
 	}
-	for (uint32_t n = 0; n < MaxLights; n++)
+	for (uint32_t n = 0; n < count; n++)
 	{
 		if (m_LightData[n].type == 2)
 		{
@@ -245,15 +241,52 @@ void Lighting::CreateRandomLights( const Vector3 minBound, const Vector3 maxBoun
 		}
 	}
 
+	m_LastLight = count - 1;
+
 	CommandContext::InitializeBuffer(m_LightBuffer, m_LightData, MaxLights * sizeof(LightData));
 }
+
+void Lighting::UpdateLightBuffer(void)
+{
+	CommandContext::InitializeBuffer(m_LightBuffer, m_LightData, MaxLights * sizeof(LightData));
+}
+
+void Lighting::UpdateLightData(uint32_t lightId, const Math::Vector3 pos, float lightRadius, const Math::Vector3 color, const Math::Vector3 coneDir, float coneInner, float coneOuter, uint32_t type)
+{
+	m_LightData[lightId].type = type;
+	m_LightData[lightId].pos[0] = pos.GetX();
+	m_LightData[lightId].pos[1] = pos.GetY();
+	m_LightData[lightId].pos[2] = pos.GetZ();
+	m_LightData[lightId].radiusSq = lightRadius * lightRadius;
+	m_LightData[lightId].color[0] = color.GetX();
+	m_LightData[lightId].color[1] = color.GetY();
+	m_LightData[lightId].color[2] = color.GetZ();
+	m_LightData[lightId].coneDir[0] = coneDir.GetX();
+	m_LightData[lightId].coneDir[1] = coneDir.GetY();
+	m_LightData[lightId].coneDir[2] = coneDir.GetZ();
+	m_LightData[lightId].coneAngles[0] = 1.0f / (cosf(coneInner) - cosf(coneOuter));
+	m_LightData[lightId].coneAngles[1] = cosf(coneOuter);
+
+	m_LightShadowCamera[lightId].SetEyeAtUp(pos, pos + coneDir, Vector3(0, 1, 0));
+	m_LightShadowCamera[lightId].SetPerspectiveMatrix(coneOuter * 2, 1.0f, lightRadius * .05f, lightRadius * 1.0f);
+	m_LightShadowCamera[lightId].Update();
+
+	Matrix4 shadowTextureMatrix = Matrix4(AffineTransform(Matrix3::MakeScale(0.5f, -0.5f, 1.0f), Vector3(0.5f, 0.5f, 0.0f))) * m_LightShadowCamera[lightId].GetViewProjMatrix();
+
+	std::memcpy(m_LightData[lightId].shadowTextureMatrix, &shadowTextureMatrix, sizeof(shadowTextureMatrix));
+}
+
 
 void Lighting::Shutdown(void)
 {
 	m_LightBuffer.Destroy();
 	m_LightGrid.Destroy();
 	m_LightGridBitMask.Destroy();
+#ifdef USE_LIGHT_GBUFFER
+	m_LightGBufferArray.Destroy();
+#else
 	m_LightShadowArray.Destroy();
+#endif
 	m_LightShadowTempBuffer.Destroy();
 }
 

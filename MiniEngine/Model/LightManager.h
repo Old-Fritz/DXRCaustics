@@ -29,7 +29,11 @@ namespace Math
 	class Matrix4;
 	class Camera;
 }
-
+namespace Graphics
+{
+	class GeometryBuffer;
+}
+#define USE_LIGHT_GBUFFER
 namespace Lighting
 {
 	extern IntVar LightGridDim;
@@ -59,12 +63,19 @@ namespace Lighting
 	extern std::uint32_t m_FirstConeShadowedLight;
 	extern std::uint32_t m_LastLight;
 
+#ifdef USE_LIGHT_GBUFFER
+	extern Graphics::GeometryBuffer m_LightGBufferArray;
+#else
 	extern ShadowBuffer m_LightShadowArray;
+#endif
 	extern ShadowBuffer m_LightShadowTempBuffer;
 	extern Math::Camera m_LightShadowCamera[MaxLights];
 
 	void InitializeResources(void);
-	void CreateRandomLights(const Math::Vector3 minBound, const Math::Vector3 maxBound);
+	void CreateRandomLights(const Math::Vector3 minBound, const Math::Vector3 maxBound, uint32_t count = MaxLights);
 	void FillLightGrid(GraphicsContext& gfxContext, const Math::Camera& camera);
 	void Shutdown(void);
+	void UpdateLightBuffer(void);
+	void UpdateLightData(uint32_t lightId, const Math::Vector3 pos, float lightRadius, const Math::Vector3 color, const Math::Vector3 coneDir, float coneInner, float coneOuter, uint32_t type = 2);
+
 }
