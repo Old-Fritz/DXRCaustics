@@ -57,6 +57,10 @@ NumVar g_SunInclination("App/Lighting/Sun Inclination", 0.75f, 0.0f, 1.0f, 0.01f
 
 NumVar g_ModelScale("App/Raytracing/ModelScale", 100.0f, 1.0f, 1000.0f);
 
+NumVar g_CausticRaysPerPixel("App/Raytracing/Caustic/RaysPerPixel", 1, 0.25f, 16, 0.25f);
+NumVar g_CausticPowerScale("App/Raytracing/Caustic/PowerScale", 1, 0, 100.0f, 0.05f);
+NumVar g_CausticMaxRayRecursion("App/Raytracing/Caustic/MaxRaRecursion", 4, 1, 16, 1);
+
 void ChangeIBLSet(EngineVar::ActionType)
 {
 	int setIdx = g_IBLSet - 1;

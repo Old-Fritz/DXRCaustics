@@ -57,11 +57,11 @@ GBuffer ExtractScreenSpaceGBuffer(float2 readGBufferAt)
 	GBuffer gBuf;
 
 	// Load and modulate textures
-	gBuf.baseColor =			g_GBBaseColor.Load(int3(readGBufferAt, 0));
-	gBuf.metallicRoughness =	g_GBMetallicRoughness.Load(int3(readGBufferAt, 0));
-	gBuf.occlusion =			g_GBOcclusion.Load(int3(readGBufferAt, 0));
-	gBuf.emissive =				g_GBEmissive.Load(int3(readGBufferAt, 0));
-	gBuf.normal =				g_GBNormal.Load(int3(readGBufferAt, 0));
+	gBuf.baseColor =			g_GBBaseColor.Load(			int4(readGBufferAt, DispatchRaysIndex().z, 0));
+	gBuf.metallicRoughness =	g_GBMetallicRoughness.Load(	int4(readGBufferAt, DispatchRaysIndex().z, 0));
+	gBuf.occlusion =			g_GBOcclusion.Load(			int4(readGBufferAt, DispatchRaysIndex().z, 0));
+	gBuf.emissive =				g_GBEmissive.Load(			int4(readGBufferAt, DispatchRaysIndex().z, 0));
+	gBuf.normal =				g_GBNormal.Load(			int4(readGBufferAt, DispatchRaysIndex().z, 0));
 
 	return gBuf;
 }

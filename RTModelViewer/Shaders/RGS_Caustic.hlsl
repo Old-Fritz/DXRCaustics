@@ -1,6 +1,151 @@
 #define HLSL
 #include "RayTracingInclude.hlsli"
 
+
+#if 1
+[shader("raygeneration")]
+void RayGen()
+{
+	uint2 DTid = DispatchRaysIndex().xy;
+	float2 readGBufferAt = DTid.xy + 0.5;
+	LightData lightData = lightBuffer[DispatchRaysIndex().z];
+
+	  // ---------------------------------------------- //
+	 // ------------ SURFACE CREATION ---------------- //
+	// ---------------------------------------------- //
+
+	RandomHandle rh = RandomInit(g_dynamic.causticRaysPerPixel + 3);
+	float2 xy = GetNextRandom(rh); // gen random epsilon to calc posability
+	if (g_dynamic.causticRaysPerPixel < 1 && xy.y > g_dynamic.causticRaysPerPixel)
+	{
+		return;
+	}
+
+
+
+
+
+	float3 worldPos = GetScreenSpaceIntersectionPoint(readGBufferAt, lightData.cameraToWorld);
+	float3 primaryRayDirection = normalize(lightData.pos - worldPos); // normalize(ViewerPos.xyz - worldPos)
+
+	GBuffer gBuf = ExtractScreenSpaceGBuffer(readGBufferAt);
+	SurfaceProperties Surface = BuildSurface(gBuf, primaryRayDirection);
+	
+	  // ---------------------------------------------- //
+	 // ----------------- REFLEC --------------------- //
+	// ---------------------------------------------- //
+
+
+	float invRadius = rsqrt(lightData.radiusSq);
+	float lightRadius = 1 / invRadius;
+
+	float dist = length(lightData.pos - worldPos);
+	float maxDist = lightRadius - dist;
+
+
+	//float distanceFalloff = max(0, lightData.radiusSq / (dist * dist) - invRadius * dist);
+	float3 lightColor = lightData.color;
+
+	float radius = length(((float2)DispatchRaysIndex().xy / (float2)DispatchRaysDimensions().xy) * 2 - 1);
+	if (radius >= 1 || maxDist <= 0)
+	{
+		return;
+	}
+
+	const float PI_2 = 1.57079632679f;
+
+	float2 coneAngles = lightData.coneAngles;
+	float coneFalloff = cos(radius * acos(coneAngles.y));
+	coneFalloff = saturate((coneFalloff - coneAngles.y) * coneAngles.x);
+
+
+	float3 origin = worldPos - primaryRayDirection * 2.0f;	 // Lift off the surface a bit
+
+	/// gen ray
+	for (int i = 0; i < g_dynamic.causticRaysPerPixel; ++i)
+	{
+		float3 direction = GetReflectedDirection(Surface, primaryRayDirection, rh);
+
+
+		SetSurfaceView(Surface, direction);
+
+		float3 diffuse, specular;
+		CalcReflectionFactors(Surface, primaryRayDirection, diffuse, specular);
+
+		RayDesc rayDesc = { origin,
+			0.0f,
+			direction,
+			maxDist
+		};
+
+		CausticRayPayload payload;
+		payload.SkipShading = false;
+		payload.RayHitT = maxDist;
+		payload.Color = lightColor * specular * coneFalloff;
+		payload.Count = 1;
+		TraceRay(g_accel, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, ~0, 0, 1, 0, rayDesc, payload);
+	}
+
+
+	
+
+	//float3 origin, direction;
+	//GenerateCameraRay(DispatchRaysIndex().xy, origin, direction);
+	//
+	//RayDesc rayDesc = { origin,
+	//	0.0f,
+	//	direction,
+	//	maxDist
+	//};
+	//
+	//CausticRayPayload payload;
+	//payload.SkipShading = false;
+	//payload.RayHitT = 0;
+	//payload.Color = lightData.color * coneFalloff;
+	//payload.Count = 0;
+	//TraceRay(g_accel, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, ~0, 0, 1, 0, rayDesc, payload);
+	
+
+
+	// ---------------------------------------------- //
+   // ----------------- OUTPUT --------------------- //
+  // ---------------------------------------------- //
+
+}
+
+
+
+
+/*
+
+#define HLSL
+#include "RayTracingInclude.hlsli"
+
+[shader("raygeneration")]
+void RayGen()
+{
+	float3 origin, direction;
+	GenerateCameraRay(DispatchRaysIndex().xy, origin, direction);
+
+	RayDesc rayDesc = { origin,
+		0.0f,
+		direction,
+		FLT_MAX };
+	CausticRayPayload payload;
+	payload.SkipShading = false;
+	payload.RayHitT = FLT_MAX;
+	payload.Color = float3(1, 1, 1);
+	payload.Count = 0;
+	TraceRay(g_accel, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, ~0, 0, 1, 0, rayDesc, payload);
+}
+
+*/
+
+#else
+
+#define HLSL
+#include "RayTracingInclude.hlsli"
+
 [shader("raygeneration")]
 void RayGen()
 {
@@ -45,7 +190,7 @@ void RayGen()
 
 	const float PI_2 = 1.57079632679f;
 
-	LightData lightData = lightBuffer[0];
+	LightData lightData = lightBuffer[DispatchRaysIndex().z];
 
 	float2 coneAngles = lightData.coneAngles;
 	float coneFalloff = cos(radius * acos(coneAngles.y));
@@ -55,7 +200,7 @@ void RayGen()
 
 
 	float3 origin, direction;
-	GenerateCameraRay(DispatchRaysIndex().xy, origin, direction);
+	GenerateLightCameraRay(DispatchRaysIndex().xy, origin, direction);
 
 	RayDesc rayDesc = { origin,
 		0.0f,
@@ -96,7 +241,7 @@ void RayGen()
 }
 
 
-
+#endif
 /*
 
 #define HLSL

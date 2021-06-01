@@ -10,8 +10,10 @@ struct DynamicCB
 {
 	float4x4 cameraToWorld;
 	float3   worldCameraPosition;
-	uint	 padding;
+	uint causticMaxRayRecursion;
 	float2   resolution;
+	float causticRaysPerPixel;
+	float causticPowerScale;
 };
 
 struct RayTraceMeshInfo

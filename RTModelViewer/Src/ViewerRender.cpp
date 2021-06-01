@@ -30,6 +30,7 @@ void RTModelViewer::UpdateGlobalConstants(GlobalConstants& globals)
 	globals.FirstLightIndex.x = Lighting::m_FirstConeLight;
 	globals.FirstLightIndex.y = Lighting::m_FirstConeShadowedLight;
 	globals.FirstLightIndex.z = Lighting::m_LastLight;
+	globals.FirstLightIndex.w = g_LightsCount;
 	globals.FrameIndexMod2 = TemporalEffects::GetFrameIndexMod2();
 }
 
@@ -39,7 +40,7 @@ void RTModelViewer::RenderLightShadows(GraphicsContext& gfxContext, GlobalConsta
 
 	ScopedTimer _prof(L"RenderLightShadows", gfxContext);
 
-	for (int i = 0; i <= Lighting::m_LastLight; i++)
+	for (int i = 0; i < g_LightsCount; i++)
 	{
 		wchar_t str[1024];
 		wsprintf(str, L"RenderLightShadows: %d", i);
@@ -60,6 +61,36 @@ void RTModelViewer::RenderLightShadows(GraphicsContext& gfxContext, GlobalConsta
 		shadowSorter.Sort();
 
 		shadowSorter.RenderMeshes(MeshSorter::kZPass, gfxContext, globals);
+	}
+}
+
+void RTModelViewer::RenderCausticMaps(GraphicsContext& gfxContext, GlobalConstants& globals)
+{
+	using namespace Lighting;
+
+	ScopedTimer _prof(L"RenderLightShadows", gfxContext);
+
+	for (int i = 0; i <= g_LightsCount; i++)
+	{
+		wchar_t str[1024];
+		wsprintf(str, L"RenderCausticMaps: %d", i);
+		ScopedTimer _profLocal(str, gfxContext);
+
+		MeshSorter shadowSorter(MeshSorter::kCaustics);
+		shadowSorter.SetCamera(m_LightShadowCamera[i]);
+#ifdef USE_LIGHT_GBUFFER
+		Lighting::m_LightGBufferArray.SetArrayIndex(i);
+		//shadowSorter.SetDepthStencilTarget(Lighting::m_LightGBufferArray.GetDepthBuffer());
+		shadowSorter.SetGBuffer(m_LightGBufferArray);
+#else
+		m_LightShadowArray.SetArrayIndex(i);
+		shadowSorter.SetDepthStencilTarget(m_LightShadowArray);
+#endif
+
+		m_ModelInst.Render(shadowSorter);
+		shadowSorter.Sort();
+
+		shadowSorter.RenderMeshes(MeshSorter::kOpaque, gfxContext, globals);
 	}
 }
 
@@ -188,6 +219,14 @@ void RTModelViewer::RenderScene(void)
 		!(rayTracingMode == RTM_BACKWARD_WITH_CAUSTICS)
 		&& !(rayTracingMode == RTM_CAUSTIC)
 		;
+
+
+	const bool renderCaustic =
+		rayTracingMode == RTM_CAUSTIC ||
+		rayTracingMode == RTM_OFF_WITH_CAUSTICS ||
+		rayTracingMode == RTM_BACKWARD_WITH_CAUSTICS
+		;
+
 	GraphicsContext& gfxContext = GraphicsContext::Begin(L"Scene Render");
 
 	ParticleEffectManager::Update(gfxContext.GetComputeContext(), Graphics::GetFrameTime());
@@ -209,6 +248,10 @@ void RTModelViewer::RenderScene(void)
 		{
 			RenderSunShadow(gfxContext, globals);
 			RenderLightShadows(gfxContext, globals);
+		}
+		if (renderCaustic)
+		{
+			RenderCausticMaps(gfxContext, globals);
 		}
 
 		Lighting::FillLightGrid(gfxContext, m_Camera);

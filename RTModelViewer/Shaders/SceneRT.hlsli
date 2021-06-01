@@ -95,18 +95,18 @@ float3 GetIntersectionPoint()
 	return WorldRayOrigin() + WorldRayDirection() * RayTCurrent();
 }
 
-float3 GetScreenSpaceIntersectionPoint(float2 readGBufferAt)
+float3 GetScreenSpaceIntersectionPoint(float2 readGBufferAt, float4x4 cameraToWorld)
 {
 	// Screen position for the ray
-	float2 screenPos = readGBufferAt / g_dynamic.resolution * 2.0 - 1.0;
+	float2 screenPos = readGBufferAt / DispatchRaysDimensions().xy * 2.0 - 1.0;
 
 	// Invert Y for DirectX-style coordinates
 	screenPos.y = -screenPos.y;
 
-	float sceneDepth = g_GBDepth.Load(int3(readGBufferAt, 0));
+	float sceneDepth = g_GBDepth.Load(int4(readGBufferAt, DispatchRaysIndex().z, 0));
 
 	// Unproject into the world position using depth
-	float4 unprojected = mul(g_dynamic.cameraToWorld, float4(screenPos, sceneDepth, 1));
+	float4 unprojected = mul(cameraToWorld, float4(screenPos, sceneDepth, 1));
 	return unprojected.xyz / unprojected.w;
 }
 

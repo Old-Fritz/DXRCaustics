@@ -24,6 +24,7 @@ void ColorBuffer::CreateDerivedViews(ID3D12Device* Device, DXGI_FORMAT Format, u
 	ASSERT(ArraySize == 1 || NumMips == 1, "We don't support auto-mips on texture arrays");
 
 	m_NumMipMaps = NumMips - 1;
+	m_RTVHandles.resize(ArraySize);
 
 	D3D12_RENDER_TARGET_VIEW_DESC RTVDesc = {};
 	D3D12_UNORDERED_ACCESS_VIEW_DESC UAVDesc = {};
@@ -39,7 +40,7 @@ void ColorBuffer::CreateDerivedViews(ID3D12Device* Device, DXGI_FORMAT Format, u
 		RTVDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2DARRAY;
 		RTVDesc.Texture2DArray.MipSlice = 0;
 		RTVDesc.Texture2DArray.FirstArraySlice = 0;
-		RTVDesc.Texture2DArray.ArraySize = (UINT)ArraySize;
+		RTVDesc.Texture2DArray.ArraySize = 1;
 
 		UAVDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2DARRAY;
 		UAVDesc.Texture2DArray.MipSlice = 0;
@@ -72,14 +73,31 @@ void ColorBuffer::CreateDerivedViews(ID3D12Device* Device, DXGI_FORMAT Format, u
 
 	if (m_SRVHandle.ptr == D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN)
 	{
-		m_RTVHandle = Graphics::AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+		for (int i = 0; i < ArraySize; ++i)
+		{
+			m_RTVHandles[i] = Graphics::AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+		}
+		//m_RTVHandle = Graphics::AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 		m_SRVHandle = Graphics::AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	}
 
 	ID3D12Resource* Resource = m_pResource.Get();
 
-	// Create the render target view
-	Device->CreateRenderTargetView(Resource, &RTVDesc, m_RTVHandle);
+	if (ArraySize > 1)
+	{
+		for (int i = 0; i < ArraySize; ++i)
+		{
+			m_RTVHandles[i] = Graphics::AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+			// Create the render target view
+			RTVDesc.Texture2DArray.FirstArraySlice = i;
+			Device->CreateRenderTargetView(Resource, &RTVDesc, m_RTVHandles[i]);
+		}
+	}
+	else
+	{
+		Device->CreateRenderTargetView(Resource, &RTVDesc, m_RTVHandles[0]);
+	}
+
 
 	// Create the shader resource view
 	Device->CreateShaderResourceView(Resource, &SRVDesc, m_SRVHandle);
@@ -105,9 +123,9 @@ void ColorBuffer::CreateFromSwapChain( const std::wstring& Name, ID3D12Resource*
 
 	//m_UAVHandle[0] = Graphics::AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	//Graphics::g_Device->CreateUnorderedAccessView(m_pResource.Get(), nullptr, nullptr, m_UAVHandle[0]);
-
-	m_RTVHandle = Graphics::AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-	Graphics::g_Device->CreateRenderTargetView(m_pResource.Get(), nullptr, m_RTVHandle);
+	m_RTVHandles.resize(1);
+	m_RTVHandles[0] = Graphics::AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	Graphics::g_Device->CreateRenderTargetView(m_pResource.Get(), nullptr, m_RTVHandles[0]);
 }
 
 void ColorBuffer::Create(const std::wstring& Name, uint32_t Width, uint32_t Height, uint32_t NumMips,

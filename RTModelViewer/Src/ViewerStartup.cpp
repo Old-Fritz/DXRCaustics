@@ -105,9 +105,10 @@ void RTModelViewer::Startup(void)
 	Lighting::CreateRandomLights(
 		(m_ModelInst.GetCenter() - m_ModelInst.GetBoundingBox().GetDimensions() / 2.0f) * lightsRadius,
 		(m_ModelInst.GetCenter() + m_ModelInst.GetBoundingBox().GetDimensions() / 2.0f) * lightsRadius,
-		1);
+		3);
 
 	SetupPredefinedCameraPositions();
+	LoadLightsFromFile();
 }
 
 

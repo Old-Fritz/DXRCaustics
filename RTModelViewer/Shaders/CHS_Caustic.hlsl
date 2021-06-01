@@ -211,7 +211,7 @@ void Hit(inout CausticRayPayload payload, in BuiltInTriangleIntersectionAttribut
 
 float3 GetScreenCoords(float3 worldPos)
 {
-	float2 dims = float2(1920, 1080);
+	float2 dims = g_dynamic.resolution;
 
 	float4 p_xy = mul((ViewProjMatrix), float4(worldPos, 1.0));
 
@@ -226,6 +226,7 @@ struct LightParams
 	float distanceFalloff;
 	float radius;
 	float3 color;
+	float radiusSq;
 };
 
 LightParams GetLightParams(CausticRayPayload payload)
@@ -233,16 +234,16 @@ LightParams GetLightParams(CausticRayPayload payload)
 	LightParams params;
 
 	LightData lightData = lightBuffer[DispatchRaysIndex().z];
-	float lightRadiusSq = lightData.radiusSq;
+	params.radiusSq = lightData.radiusSq;
 
 	// modify 1/d^2 * R^2 to fall off at a fixed radius
 	// (R/d)^2 - d/R = [(1/d^2) - (1/R^2)*(d/R)] * R^2
 	//float distanceFalloff = lightRadiusSq / (payload.RayHitT * payload.RayHitT);
 	//distanceFalloff = max(0, distanceFalloff - rsqrt(distanceFalloff));
-	float invRadius = rsqrt(lightRadiusSq);
+	float invRadius = rsqrt(params.radiusSq);
 	params.radius = 1 / invRadius;
 
-	params.distanceFalloff = max(0, lightRadiusSq / (payload.RayHitT * payload.RayHitT) - invRadius * payload.RayHitT);
+	params.distanceFalloff = max(0, params.radiusSq / (payload.RayHitT * payload.RayHitT) - invRadius * payload.RayHitT);
 	params.color = payload.Color;
 
 	return params;
@@ -257,7 +258,7 @@ void Hit(inout CausticRayPayload payload, in BuiltInTriangleIntersectionAttribut
 
 	if (payload.SkipShading || lightParams.distanceFalloff <= 0)
 	{
-		//return;
+		return;
 	}
 
 	float3 worldPos = GetIntersectionPoint();
@@ -278,7 +279,7 @@ void Hit(inout CausticRayPayload payload, in BuiltInTriangleIntersectionAttribut
    // ----------------- SHADING -------------------- //
   // ---------------------------------------------- //
 
-	float sceneDepth = g_GBDepth.Load(int3(screenCoords.xy, 0));
+	float sceneDepth = g_mainDepth.Load(int3(screenCoords.xy, 0));
 
 	SurfaceProperties Surface = BuildSurface(gBuf);
 
@@ -289,8 +290,8 @@ void Hit(inout CausticRayPayload payload, in BuiltInTriangleIntersectionAttribut
 	float3 diffuse = 0;
 	float3 specular = 0;
 
-	const float MaxRecursion = 4;
-
+	const float MaxRecursion = g_dynamic.causticMaxRayRecursion;
+	
 	if (payload.Count < MaxRecursion)
 	{
 		RandomHandle rh = RandomInit(1);		
@@ -325,7 +326,7 @@ void Hit(inout CausticRayPayload payload, in BuiltInTriangleIntersectionAttribut
 	if (
 		screenCoords.z >= sceneDepth &&
 		screenCoords.z > 0 &&
-		screenCoords.x >= 0 && screenCoords.y >= 0 && screenCoords.x < 1920 && screenCoords.y < 1080
+		screenCoords.x >= 0 && screenCoords.y >= 0 && screenCoords.x < g_dynamic.resolution.x && screenCoords.y < g_dynamic.resolution.y
 		&& payload.Count > 0
 		)
 	{
@@ -339,9 +340,14 @@ void Hit(inout CausticRayPayload payload, in BuiltInTriangleIntersectionAttribut
 		//accumValue = ApplyLightCommonPBR(Surface, -WorldRayDirection(), lightParams.color);// *distanceFalloff;
 
 		//accumValue = colors[payload.Count] * specular;
-		accumValue = (diffuse + specular) * lightParams.color * lightParams.distanceFalloff;
+		accumValue = (diffuse+specular) * lightParams.color * lightParams.distanceFalloff;
 
-		g_screenOutput[screenCoords.xy] += float4(accumValue, 1);
+		float cameraDir = worldPos - ViewerPos;
+
+		float distFromCameraSq = dot(cameraDir, cameraDir);
+		//float k = 5000;
+
+		g_screenOutput[screenCoords.xy] += float4(accumValue, 1) / distFromCameraSq * lightParams.radiusSq * g_dynamic.causticPowerScale;;
 
 
 

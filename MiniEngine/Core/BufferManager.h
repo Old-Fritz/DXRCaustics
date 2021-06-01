@@ -79,6 +79,7 @@ namespace Graphics
 
 		D3D12_GPU_DESCRIPTOR_HANDLE GetRTHandle();
 		void SetRTHandle(D3D12_GPU_DESCRIPTOR_HANDLE handle);
+		void SetArrayIndex(uint32_t index);
 
 	public:
 		static constexpr DXGI_FORMAT c_GBufferFormats[(uint32_t)GBTarget::NumTargets] =

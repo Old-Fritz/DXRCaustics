@@ -66,6 +66,7 @@
 #include "Shaders/RaytracingHlslCompat.h"
 
 #define IID_PPV_ARGS_(ptr) IID_PPV_ARGS(ptr.GetAddressOf())
+#define MAX_LIGHTS 20
 
 using namespace GameCore;
 using namespace Math;
@@ -212,10 +213,13 @@ public:
 
 	// update
 	void UpdateLight();
+	void SaveLightsInFile();
+	void LoadLightsFromFile();
 
 	// scene render
 	void UpdateGlobalConstants(GlobalConstants& globals);
 	void RenderLightShadows(GraphicsContext& gfxContext, GlobalConstants& globals);
+	void RenderCausticMaps(GraphicsContext& gfxContext, GlobalConstants& globals);
 	void RenderSunShadow(GraphicsContext& gfxContext, GlobalConstants& globals);
 
 	void RenderZPass(GraphicsContext& gfxContext, Renderer::MeshSorter& sorter, GlobalConstants& globals);
@@ -394,8 +398,7 @@ enum RaytracingMode
 	RTM_SSR,
 	RTM_TRAVERSAL,
 	RTM_DIFFUSE_WITH_SHADOWRAYS,
-	RTM_SHADOWS,
-	
+	RTM_SHADOWS
 };
 extern EnumVar								rayTracingMode;
 
@@ -425,7 +428,7 @@ extern StructuredBuffer						g_hitShaderMeshInfoBuffer;
 extern RaytracingDispatchRayInputs			g_RaytracingInputs[RaytracingTypes::NumTypes];
 extern D3D12_CPU_DESCRIPTOR_HANDLE			g_bvh_attributeSrvs[34];
 
-extern LightSource							g_LightSource;
+extern LightSource							g_LightSource[MAX_LIGHTS];
 
 
 extern ByteAddressBuffer g_bvh_bottomLevelAccelerationStructure;
@@ -451,3 +454,12 @@ extern TextureRef* g_BlueNoiseRGBA;
 extern NumVar g_RTAdditiveRecurrenceSequenceAlphaX;
 extern NumVar g_RTAdditiveRecurrenceSequenceAlphaY;
 extern ExpVar g_RTAdditiveRecurrenceSequenceIndexLimit;
+
+
+
+extern NumVar g_CausticRaysPerPixel;
+extern NumVar g_CausticPowerScale;
+extern NumVar g_CausticMaxRayRecursion;
+
+extern NumVar g_SelectedLightSource;
+extern NumVar g_LightsCount;

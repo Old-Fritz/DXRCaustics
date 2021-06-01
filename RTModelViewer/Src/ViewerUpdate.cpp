@@ -1,5 +1,5 @@
 #include "RTModelViewer.h"
-
+#include <fstream>
 
 namespace Graphics
 {
@@ -117,50 +117,160 @@ NumVar g_ConeOuter(			"App/LightSource/Size/ConeOuter",			0.3f,		0.0f,		3.1415/2
 
 ExpVar g_LightRadius(		"App/LightSource/Size/LightRadius",			1500.0f,		0.0f,		10000.0f,	0.05f);
 
-LightSource g_LightSource;
+void UpdateNumVars(EngineVar::ActionType);
+
+NumVar g_SelectedLightSource("App/LightSource/Selected",				0, 0, MAX_LIGHTS - 1, 1, UpdateNumVars);
+NumVar g_LightsCount(		"App/LightSource/LigtsCount",				3, 0, MAX_LIGHTS - 1, 1);
+
+LightSource g_LightSource[MAX_LIGHTS];
+
+
+
+
+void UpdateNumVars(EngineVar::ActionType)
+{
+	uint32_t ind = g_SelectedLightSource;
+
+	g_LightPosX = g_LightSource[ind].Pos.GetX();
+	g_LightPosY = g_LightSource[ind].Pos.GetY();
+	g_LightPosZ = g_LightSource[ind].Pos.GetZ();
+
+	g_ConeDirX = g_LightSource[ind].ConeDir.GetX();
+	g_ConeDirY = g_LightSource[ind].ConeDir.GetY();
+	g_ConeDirZ = g_LightSource[ind].ConeDir.GetZ();
+
+	g_LightColorR = g_LightSource[ind].Color.GetX();
+	g_LightColorG = g_LightSource[ind].Color.GetY();
+	g_LightColorB = g_LightSource[ind].Color.GetZ();
+
+
+	g_ConeInner = g_LightSource[ind].ConeInner;
+	g_ConeOuter = g_LightSource[ind].ConeOuter;
+
+	g_LightIntensity = g_LightSource[ind].LightIntensity;
+	g_LightRadius = g_LightSource[ind].LightRadius;
+}
 
 void RTModelViewer::UpdateLight()
 {
+	uint32_t ind = g_SelectedLightSource;
+	//UpdateNumVars(ind);
+
+	if (GameInput::IsFirstPressed(GameInput::kKey_k))
+	{
+		SaveLightsInFile();
+	}
+	if (GameInput::IsFirstPressed(GameInput::kKey_j))
+	{
+		LoadLightsFromFile();
+	}
+
+	
 	if (GameInput::IsFirstPressed(GameInput::kKey_l))
 	{
-		g_LightSource.Pos		= m_Camera.GetPosition();
-		g_LightSource.ConeDir	= m_Camera.GetForwardVec();
 
-		g_LightPosX = g_LightSource.Pos.GetX();
-		g_LightPosY = g_LightSource.Pos.GetY();
-		g_LightPosZ = g_LightSource.Pos.GetZ();
+		g_LightSource[ind].Pos = m_Camera.GetPosition();
+		g_LightSource[ind].ConeDir = m_Camera.GetForwardVec();
 
-		g_ConeDirX = g_LightSource.ConeDir.GetX();
-		g_ConeDirY = g_LightSource.ConeDir.GetY();
-		g_ConeDirZ = g_LightSource.ConeDir.GetZ();
+		g_LightPosX = g_LightSource[ind].Pos.GetX();
+		g_LightPosY = g_LightSource[ind].Pos.GetY();
+		g_LightPosZ = g_LightSource[ind].Pos.GetZ();
+
+		g_ConeDirX = g_LightSource[ind].ConeDir.GetX();
+		g_ConeDirY = g_LightSource[ind].ConeDir.GetY();
+		g_ConeDirZ = g_LightSource[ind].ConeDir.GetZ();
 	}
 	else
 	{
-		g_LightSource.Pos.SetX(static_cast<float>(g_LightPosX));
-		g_LightSource.Pos.SetY(static_cast<float>(g_LightPosY));
-		g_LightSource.Pos.SetZ(static_cast<float>(g_LightPosZ));
+		g_LightSource[ind].Pos.SetX(static_cast<float>(g_LightPosX));
+		g_LightSource[ind].Pos.SetY(static_cast<float>(g_LightPosY));
+		g_LightSource[ind].Pos.SetZ(static_cast<float>(g_LightPosZ));
 
-		g_LightSource.ConeDir.SetX(static_cast<float>(g_ConeDirX));
-		g_LightSource.ConeDir.SetY(static_cast<float>(g_ConeDirY));
-		g_LightSource.ConeDir.SetZ(static_cast<float>(g_ConeDirZ));
+		g_LightSource[ind].ConeDir.SetX(static_cast<float>(g_ConeDirX));
+		g_LightSource[ind].ConeDir.SetY(static_cast<float>(g_ConeDirY));
+		g_LightSource[ind].ConeDir.SetZ(static_cast<float>(g_ConeDirZ));
 
-		Math::Normalize(g_LightSource.ConeDir);
-		g_ConeDirX = g_LightSource.ConeDir.GetX();
-		g_ConeDirY = g_LightSource.ConeDir.GetY();
-		g_ConeDirZ = g_LightSource.ConeDir.GetZ();
+		Math::Normalize(g_LightSource[ind].ConeDir);
+		g_ConeDirX = g_LightSource[ind].ConeDir.GetX();
+		g_ConeDirY = g_LightSource[ind].ConeDir.GetY();
+		g_ConeDirZ = g_LightSource[ind].ConeDir.GetZ();
 	}
 
-	g_LightSource.Color.SetX(static_cast<float>(g_LightColorR));
-	g_LightSource.Color.SetY(static_cast<float>(g_LightColorG));
-	g_LightSource.Color.SetZ(static_cast<float>(g_LightColorB));
+	g_LightSource[ind].Color.SetX(static_cast<float>(g_LightColorR));
+	g_LightSource[ind].Color.SetY(static_cast<float>(g_LightColorG));
+	g_LightSource[ind].Color.SetZ(static_cast<float>(g_LightColorB));
 
-	g_LightSource.ConeInner = g_ConeInner;
-	g_LightSource.ConeOuter = g_ConeOuter;
+	g_LightSource[ind].ConeInner = g_ConeInner;
+	g_LightSource[ind].ConeOuter = g_ConeOuter;
 
-	g_LightSource.LightIntensity = g_LightIntensity;
-	g_LightSource.LightRadius = g_LightRadius;
+	g_LightSource[ind].LightIntensity = g_LightIntensity;
+	g_LightSource[ind].LightRadius = g_LightRadius;
 
-
-	Lighting::UpdateLightData(0, g_LightSource.Pos, g_LightSource.LightRadius, g_LightSource.Color * g_LightSource.LightIntensity, g_LightSource.ConeDir, g_LightSource.ConeInner, g_LightSource.ConeOuter);
+	Lighting::UpdateLightData(0, g_LightSource[ind].Pos, g_LightSource[ind].LightRadius, g_LightSource[ind].Color * g_LightSource[ind].LightIntensity, g_LightSource[ind].ConeDir, g_LightSource[ind].ConeInner, g_LightSource[ind].ConeOuter);
 	Lighting::UpdateLightBuffer();
+}
+
+
+
+
+void RTModelViewer::SaveLightsInFile()
+{
+	std::ofstream file("../Data/Lights.lll");
+
+	for (int ind = 0; ind < MAX_LIGHTS; ++ind)
+	{
+		file << "LIGHT_" + std::to_string(ind) << std::endl
+			<< "LightPosX: "		<<			g_LightSource[ind].Pos.GetX()			<< std::endl
+			<< "LightPosY: "		<<			g_LightSource[ind].Pos.GetY()			<< std::endl
+			<< "LightPosZ: "		<<			g_LightSource[ind].Pos.GetZ()			<< std::endl
+			<< "ConeDirX: "			<<			g_LightSource[ind].ConeDir.GetX()		<< std::endl
+			<< "ConeDirY: "			<<			g_LightSource[ind].ConeDir.GetY()		<< std::endl
+			<< "ConeDirZ: "			<<			g_LightSource[ind].ConeDir.GetZ()		<< std::endl
+
+			<< "LightColorR: "		<<			g_LightSource[ind].Color.GetX()			<< std::endl
+			<< "LightColorG: "		<<			g_LightSource[ind].Color.GetY()			<< std::endl
+			<< "LightColorB: "		<<			g_LightSource[ind].Color.GetZ()			<< std::endl
+			<< "LightIntensity: "	<<			g_LightSource[ind].LightIntensity		<< std::endl
+
+			<< "ConeInner: "		<<			g_LightSource[ind].ConeInner			<< std::endl
+			<< "ConeOuter: "		<<			g_LightSource[ind].ConeOuter			<< std::endl
+
+			<< "LightRadius: "		<<			g_LightSource[ind].LightRadius << std::endl;
+	}	
+}
+
+void RTModelViewer::LoadLightsFromFile()
+{
+	std::ifstream file("../Data/Lights.lll");
+
+	std::string temp;
+	float posX, posY, posZ, coneX, coneY, coneZ, colX, colY, colZ, inten, inn, out, rad;
+
+	for (int ind = 0; ind < MAX_LIGHTS; ++ind)
+	{
+		float posX, posY, posZ, coneX, coneY, coneZ, colX, colY, colZ, inten, inn, out, rad;
+		file >> temp;
+		file	>>	temp	>>	posX	>>	temp	>>	posY	>>	temp	>>	posZ
+				>>	temp	>>	coneX	>>	temp	>>	coneY	>>	temp	>>	coneZ
+				>>	temp	>>	colX	>>	temp	>>	colY	>>	temp	>>	colZ
+				>>	temp	>> g_LightSource[ind].LightIntensity >>	temp	>> g_LightSource[ind].ConeInner		
+				>>	temp	>> g_LightSource[ind].ConeOuter >>	temp	>> g_LightSource[ind].LightRadius;
+
+		g_LightSource[ind].Pos.SetX(posX);
+		g_LightSource[ind].Pos.SetY(posY);
+		g_LightSource[ind].Pos.SetZ(posZ);
+
+		g_LightSource[ind].ConeDir.SetX(coneX);
+		g_LightSource[ind].ConeDir.SetY(coneY);
+		g_LightSource[ind].ConeDir.SetZ(coneZ);
+
+		Math::Normalize(g_LightSource[ind].ConeDir);
+
+		g_LightSource[ind].Color.SetX(colX);
+		g_LightSource[ind].Color.SetY(colY);
+		g_LightSource[ind].Color.SetZ(colZ);
+
+	}
+
+	UpdateNumVars(EngineVar::ActionType::Increment);
 }

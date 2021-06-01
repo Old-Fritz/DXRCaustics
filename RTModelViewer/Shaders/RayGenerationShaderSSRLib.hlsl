@@ -27,9 +27,9 @@ void RayGen()
 	float2 readGBufferAt = xy;
 
 	// Read depth and normal
-	float sceneDepth = g_GBDepth.Load(int3(readGBufferAt, 0));
-	float4 normalData = g_GBNormal.Load(int3(readGBufferAt, 0));
-	float2 reflectence = g_GBMetallicRoughness.Load(int3(readGBufferAt, 0));
+	float sceneDepth =		g_GBDepth.Load(				int4(readGBufferAt, DispatchRaysIndex().z, 0));
+	float4 normalData =		g_GBNormal.Load(			int4(readGBufferAt, DispatchRaysIndex().z, 0));
+	float2 reflectence =	g_GBMetallicRoughness.Load(	int4(readGBufferAt, DispatchRaysIndex().z, 0));
 	//if (reflectence.x == 0.0)
 	//	return;
 

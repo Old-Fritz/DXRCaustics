@@ -27,6 +27,7 @@ struct LightData
 	float2 coneAngles; // x = 1.0f / (cos(coneInner) - cos(coneOuter)), y = cos(coneOuter)
 
 	float4x4 shadowTextureMatrix;
+	float4x4 cameraToWorld;
 };
 
 uint2 GetTilePos(float2 pos, float2 invTileDim)

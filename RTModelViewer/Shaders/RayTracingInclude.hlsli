@@ -42,33 +42,34 @@ StructuredBuffer<RayTraceMeshInfo>		g_meshInfo					: register(t1);
 ByteAddressBuffer						g_meshData					: register(t2);
 StructuredBuffer<MaterialConstantsRT>	g_materialConstants			: register(t3);
 StructuredBuffer<MeshConstantsRT>		g_meshConstants				: register(t4);
+Texture2D<float>						g_mainDepth					: register(t5);
 
 // GBUFFER TEXTURES (srv local range 5 - 9)
-Texture2D<float4>						g_localBaseColor			: register(t5);
-Texture2D<float3>						g_localMetallicRoughness	: register(t6);
-Texture2D<float1>						g_localOcclusion			: register(t7);
-Texture2D<float3>						g_localEmissive				: register(t8);
-Texture2D<float3>						g_localNormal				: register(t9);
+Texture2D<float4>						g_localBaseColor			: register(t6);
+Texture2D<float3>						g_localMetallicRoughness	: register(t7);
+Texture2D<float1>						g_localOcclusion			: register(t8);
+Texture2D<float3>						g_localEmissive				: register(t9);
+Texture2D<float3>						g_localNormal				: register(t10);
 
 // LIGHTING BUFFERS (global range 10 - 15)
-TextureCube<float3>						radianceIBLTexture			: register(t10);
-TextureCube<float3>						irradianceIBLTexture		: register(t11);
-Texture2D<float>						lightSSAO					: register(t12);
-Texture2D<float>						lightSunShadow				: register(t13);
-StructuredBuffer<LightData>				lightBuffer					: register(t14);
-Texture2DArray<float>					lightShadowArrayTex			: register(t15);
-ByteAddressBuffer						lightGrid					: register(t16);
-ByteAddressBuffer						lightGridBitMask			: register(t17);
-Texture2D<float4>						BlueNoiseRGBA				: register(t18);
+TextureCube<float3>						radianceIBLTexture			: register(t11);
+TextureCube<float3>						irradianceIBLTexture		: register(t12);
+Texture2D<float>						lightSSAO					: register(t13);
+Texture2D<float>						lightSunShadow				: register(t14);
+StructuredBuffer<LightData>				lightBuffer					: register(t15);
+Texture2DArray<float>					lightShadowArrayTex			: register(t16);
+ByteAddressBuffer						lightGrid					: register(t17);
+ByteAddressBuffer						lightGridBitMask			: register(t18);
+Texture2D<float4>						BlueNoiseRGBA				: register(t19);
 
 
 // GBuffer (16 - 21)
-Texture2D<float>						g_GBDepth					: register(t19);
-Texture2D<float4>						g_GBBaseColor				: register(t20);
-Texture2D<float3>						g_GBMetallicRoughness		: register(t21);
-Texture2D<float1>						g_GBOcclusion				: register(t22);
-Texture2D<float3>						g_GBEmissive				: register(t23);
-Texture2D<float4>						g_GBNormal					: register(t24);
+Texture2DArray<float>					g_GBDepth					: register(t20);
+Texture2DArray<float4>					g_GBBaseColor				: register(t21);
+Texture2DArray<float3>					g_GBMetallicRoughness		: register(t22);
+Texture2DArray<float1>					g_GBOcclusion				: register(t23);
+Texture2DArray<float3>					g_GBEmissive				: register(t24);
+Texture2DArray<float4>					g_GBNormal					: register(t25);
 
 
 // OUTPUTS ( global range 2-10)
@@ -109,6 +110,21 @@ cbuffer b1 : register(b1)
 cbuffer Material : register(b2)
 {
 	uint MaterialID;
+}
+
+inline void GenerateLightCameraRay(uint2 index, out float3 origin, out float3 direction)
+{
+	float2 xy = index + 0.5; // center in the middle of the pixel
+	float2 screenPos = xy / DispatchRaysDimensions().xy * 2.0 - 1.0;
+
+	// Invert Y for DirectX-style coordinates
+	screenPos.y = -screenPos.y;
+
+	// Unproject into a ray
+	float4 unprojected = mul(lightBuffer[DispatchRaysIndex().z].cameraToWorld, float4(screenPos, 0, 1));
+	float3 world = unprojected.xyz / unprojected.w;
+	origin = lightBuffer[DispatchRaysIndex().z].pos;
+	direction = normalize(world - origin);
 }
 
 inline void GenerateCameraRay(uint2 index, out float3 origin, out float3 direction)

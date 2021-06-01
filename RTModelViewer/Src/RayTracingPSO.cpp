@@ -129,20 +129,20 @@ void RTModelViewer::InitGlobalRootSignature()
 	// scene srv
 	D3D12_DESCRIPTOR_RANGE1 sceneBuffersDescriptorRange = {};
 	sceneBuffersDescriptorRange.BaseShaderRegister = 1;
-	sceneBuffersDescriptorRange.NumDescriptors = 4;
+	sceneBuffersDescriptorRange.NumDescriptors = 5;
 	sceneBuffersDescriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 	sceneBuffersDescriptorRange.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_NONE;
 
 	// lighting
 	D3D12_DESCRIPTOR_RANGE1 lightingBuffersDescriptorRange = {};
-	lightingBuffersDescriptorRange.BaseShaderRegister = 10;
+	lightingBuffersDescriptorRange.BaseShaderRegister = 11;
 	lightingBuffersDescriptorRange.NumDescriptors = 9;
 	lightingBuffersDescriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 	lightingBuffersDescriptorRange.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_NONE;
 
 	// gbuffer
 	D3D12_DESCRIPTOR_RANGE1 GBufferDescriptorRange = {};
-	GBufferDescriptorRange.BaseShaderRegister = 19;
+	GBufferDescriptorRange.BaseShaderRegister = 20;
 	GBufferDescriptorRange.NumDescriptors = (uint32_t)GBTarget::NumTargets + 1;
 	GBufferDescriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 	GBufferDescriptorRange.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_NONE;
@@ -182,7 +182,7 @@ void RTModelViewer::InitGlobalRootSignature()
 void RTModelViewer::InitLocalRootSignature()
 {
 	D3D12_DESCRIPTOR_RANGE1 localTextureDescriptorRange = {};
-	localTextureDescriptorRange.BaseShaderRegister = 5;
+	localTextureDescriptorRange.BaseShaderRegister = 6;
 	localTextureDescriptorRange.NumDescriptors = kNumTextures;
 	localTextureDescriptorRange.RegisterSpace = 0;
 	localTextureDescriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;

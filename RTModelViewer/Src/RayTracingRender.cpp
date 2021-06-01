@@ -44,6 +44,11 @@ void UpdateDynamicConstants(DynamicCB& inputs, const Math::Camera& camera, Color
 	memcpy(&inputs.worldCameraPosition, &camera.GetPosition(), sizeof(inputs.worldCameraPosition));
 	inputs.resolution.x = (float)colorTarget.GetWidth();
 	inputs.resolution.y = (float)colorTarget.GetHeight();
+
+
+	inputs.causticMaxRayRecursion = g_CausticMaxRayRecursion;
+	inputs.causticRaysPerPixel = g_CausticRaysPerPixel;
+	inputs.causticPowerScale = g_CausticPowerScale;
 }
 
 void SetupResources(CommandContext& context, DynamicCB& dynamicCB, HitShaderConstants& hitShaderConstants, ColorBuffer& colorTarget, GeometryBuffer& GBuffer)
@@ -70,6 +75,8 @@ void SetupResources(CommandContext& context, DynamicCB& dynamicCB, HitShaderCons
 	context.TransitionResource(colorTarget, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
 	// gbuffer (5)
 	GBuffer.Setup(context, GBSet::AllRTs | GBSet::Depth | GBSet::NonPixel);
+	// main depth
+	context.TransitionResource(g_SceneGBuffer.GetDepthBuffer(), D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE);
 
 	context.FlushResourceBarriers();
 
@@ -223,13 +230,14 @@ void RTModelViewer::RaytraceCaustic(CommandContext& context, const GlobalConstan
 	UpdateHitShaderConstants(hitShaderConstants, globalConstants);
 	//hitShaderConstants.UseShadowRays = rayTracingMode == RTM_BACKWARD_WITH_SHADOWRAYS;
 	//hitShaderConstants.IsReflection = true;
-	inputs.resolution = { 512.0f, 512.0f };
+	//inputs.resolution = { 512.0f, 512.0f };
 
 	SetupResources(context, inputs, hitShaderConstants, colorTarget, GBuffer);
 	ComPtr<ID3D12GraphicsCommandList4> pCommandList;
 	context.GetCommandList()->QueryInterface(IID_PPV_ARGS_(pCommandList));
 
 	D3D12_DISPATCH_RAYS_DESC dispatchRaysDesc = g_RaytracingInputs[Caustic].GetDispatchRayDesc(512,512);
+	dispatchRaysDesc.Depth = g_LightsCount;
 	pCommandList->SetPipelineState1(g_RaytracingInputs[Caustic].m_pPSO.Get());
 	pCommandList->DispatchRays(&dispatchRaysDesc);
 }
@@ -271,7 +279,7 @@ void RTModelViewer::RenderRaytrace(GraphicsContext& gfxContext, const GlobalCons
 	case RTM_OFF_WITH_CAUSTICS:
 	case RTM_CAUSTIC:
 		//RaytraceCaustic(gfxContext, globalConstants, m_Camera, g_SceneColorBuffer, g_SceneGBuffer);
-		RaytraceCaustic(gfxContext, globalConstants, Lighting::m_LightShadowCamera[0], g_SceneColorBuffer, g_SceneGBuffer);
+		RaytraceCaustic(gfxContext, globalConstants, Lighting::m_LightShadowCamera[0], g_SceneColorBuffer, Lighting::m_LightGBufferArray);
 		break;
 	}
 

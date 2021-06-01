@@ -22,7 +22,7 @@ void RayGen()
 	 // ------------ SURFACE CREATION ---------------- //
 	// ---------------------------------------------- //
 
-	float3 worldPos = GetScreenSpaceIntersectionPoint(readGBufferAt);
+	float3 worldPos = GetScreenSpaceIntersectionPoint(readGBufferAt, g_dynamic.cameraToWorld);
 	float3 primaryRayDirection = normalize(ViewerPos.xyz - worldPos); // normalize(ViewerPos.xyz - worldPos)
 
 	GBuffer gBuf = ExtractScreenSpaceGBuffer(readGBufferAt);

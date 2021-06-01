@@ -27,7 +27,7 @@ void RayGen()
 	float2 readGBufferAt = xy;
 
 	// Read depth and normal
-	float sceneDepth = g_GBDepth.Load(int3(readGBufferAt, 0));
+	float sceneDepth = g_GBDepth.Load(int4(readGBufferAt, DispatchRaysIndex().z, 0));
 
 	// Unproject into the world position using depth
 	float4 unprojected = mul(g_dynamic.cameraToWorld, float4(screenPos, sceneDepth, 1));

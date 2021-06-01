@@ -50,6 +50,7 @@ namespace Lighting
 		float coneAngles[2];
 
 		float shadowTextureMatrix[16];
+		float cameraToWorld[16];
 	};
 	enum { kMinLightGridDim = 8 };
 	enum { MaxLights = 128 };

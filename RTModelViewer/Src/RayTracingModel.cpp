@@ -129,11 +129,14 @@ void RTModelViewer::InitializeRTViews()
 		// mesh constants t4
 		g_pRaytracingDescriptorHeap->AllocateDescriptor(srvHandle, unused);
 		Graphics::g_Device->CopyDescriptorsSimple(1, srvHandle, m_ModelInst.GetMeshConstantsGPU().GetSRV(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+		g_pRaytracingDescriptorHeap->AllocateDescriptor(srvHandle, unused);
+		Graphics::g_Device->CopyDescriptorsSimple(1, srvHandle, g_SceneGBuffer.GetDepthBuffer().GetDepthSRV(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	}
 
 	// Global : GBuffer
 	{
-		GeometryBuffer* GBuffers[] = { &g_SceneGBuffer };
+		GeometryBuffer* GBuffers[] = { &g_SceneGBuffer, &Lighting::m_LightGBufferArray };
 
 		for (int i = 0; i < sizeof(GBuffers) / sizeof(GeometryBuffer*); ++i)
 		{

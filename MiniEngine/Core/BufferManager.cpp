@@ -484,3 +484,12 @@ void Graphics::GeometryBuffer::SetRTHandle(D3D12_GPU_DESCRIPTOR_HANDLE handle)
 {
 	m_RTDescriptorHandle = handle;
 }
+
+void Graphics::GeometryBuffer::SetArrayIndex(uint32_t index)
+{
+	m_DepthBuffer.SetArrayIndex(index);
+	for (uint32_t i = 0; i < uint32_t(GBTarget::NumTargets); ++i)
+	{
+		m_ColorBuffers[i].SetArrayIndex(index);
+	}
+}

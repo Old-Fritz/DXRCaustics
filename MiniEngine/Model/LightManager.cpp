@@ -274,6 +274,11 @@ void Lighting::UpdateLightData(uint32_t lightId, const Math::Vector3 pos, float 
 	Matrix4 shadowTextureMatrix = Matrix4(AffineTransform(Matrix3::MakeScale(0.5f, -0.5f, 1.0f), Vector3(0.5f, 0.5f, 0.0f))) * m_LightShadowCamera[lightId].GetViewProjMatrix();
 
 	std::memcpy(m_LightData[lightId].shadowTextureMatrix, &shadowTextureMatrix, sizeof(shadowTextureMatrix));
+
+	auto m0 = m_LightShadowCamera[lightId].GetViewProjMatrix();
+	auto m1 = Transpose(Invert(m0));
+
+	std::memcpy(m_LightData[lightId].cameraToWorld, &m1, sizeof(m1));
 }
 
 

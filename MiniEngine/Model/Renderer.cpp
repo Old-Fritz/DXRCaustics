@@ -59,6 +59,7 @@ namespace Renderer
 	DescriptorHeap s_TextureHeap;
 	DescriptorHeap s_SamplerHeap;
 	std::vector<GraphicsPSO> sm_PSOs;
+	std::vector<GraphicsPSO> sm_CausticPSOs;
 
 	TextureRef s_RadianceCubeMap;
 	TextureRef s_IrradianceCubeMap;
@@ -133,7 +134,6 @@ void Renderer::Initialize(void)
 	ASSERT(sm_PSOs.size() == 0);
 
 	// Depth Only PSOs
-
 	GraphicsPSO DepthOnlyPSO(L"Renderer: Depth Only PSO");
 	DepthOnlyPSO.SetRootSignature(m_RootSig);
 	DepthOnlyPSO.SetRasterizerState(RasterizerDefault);
@@ -145,6 +145,12 @@ void Renderer::Initialize(void)
 	DepthOnlyPSO.SetVertexShader(g_pDepthOnlyVS, sizeof(g_pDepthOnlyVS));
 	DepthOnlyPSO.Finalize();
 	sm_PSOs.push_back(DepthOnlyPSO);
+	GraphicsPSO CausticDepthOnlyPSO(L"Renderer: Caustic Depth Only PSO");
+	CausticDepthOnlyPSO = DepthOnlyPSO;
+	CausticDepthOnlyPSO.SetRenderTargetFormats(0, nullptr, SHADOW_FORMAT);
+	CausticDepthOnlyPSO.Finalize();
+	sm_CausticPSOs.push_back(CausticDepthOnlyPSO);
+
 
 	GraphicsPSO CutoutDepthPSO(L"Renderer: Cutout Depth PSO");
 	CutoutDepthPSO = DepthOnlyPSO;
@@ -154,18 +160,32 @@ void Renderer::Initialize(void)
 	CutoutDepthPSO.SetPixelShader(g_pCutoutDepthPS, sizeof(g_pCutoutDepthPS));
 	CutoutDepthPSO.Finalize();
 	sm_PSOs.push_back(CutoutDepthPSO);
+	GraphicsPSO CausticCutoutDepthOnlyPSO(L"Renderer: Caustic Cutout Depth Only PSO");
+	CausticCutoutDepthOnlyPSO = CutoutDepthPSO;
+	CausticCutoutDepthOnlyPSO.SetRenderTargetFormats(0, nullptr, SHADOW_FORMAT);
+	CausticCutoutDepthOnlyPSO.Finalize();
+	sm_CausticPSOs.push_back(CausticCutoutDepthOnlyPSO);
+
 
 	GraphicsPSO SkinDepthOnlyPSO = DepthOnlyPSO;
 	SkinDepthOnlyPSO.SetInputLayout(_countof(skinPos), skinPos);
 	SkinDepthOnlyPSO.SetVertexShader(g_pDepthOnlySkinVS, sizeof(g_pDepthOnlySkinVS));
 	SkinDepthOnlyPSO.Finalize();
 	sm_PSOs.push_back(SkinDepthOnlyPSO);
+	GraphicsPSO CausticSkinDepthOnlyPSO = SkinDepthOnlyPSO;
+	CausticSkinDepthOnlyPSO.SetRenderTargetFormats(0, nullptr, SHADOW_FORMAT);
+	CausticSkinDepthOnlyPSO.Finalize();
+	sm_CausticPSOs.push_back(CausticSkinDepthOnlyPSO);
 
 	GraphicsPSO SkinCutoutDepthPSO = CutoutDepthPSO;
 	SkinCutoutDepthPSO.SetInputLayout(_countof(skinPosAndUV), skinPosAndUV);
 	SkinCutoutDepthPSO.SetVertexShader(g_pCutoutDepthSkinVS, sizeof(g_pCutoutDepthSkinVS));
 	SkinCutoutDepthPSO.Finalize();
 	sm_PSOs.push_back(SkinCutoutDepthPSO);
+	GraphicsPSO CausticSkinCutoutDepthPSO = SkinCutoutDepthPSO;
+	CausticSkinCutoutDepthPSO.SetRenderTargetFormats(0, nullptr, SHADOW_FORMAT);
+	CausticSkinCutoutDepthPSO.Finalize();
+	sm_CausticPSOs.push_back(CausticSkinCutoutDepthPSO);
 
 	ASSERT(sm_PSOs.size() == 4);
 
@@ -175,21 +195,26 @@ void Renderer::Initialize(void)
 	DepthOnlyPSO.SetRenderTargetFormats(0, nullptr, g_ShadowBuffer.GetFormat());
 	DepthOnlyPSO.Finalize();
 	sm_PSOs.push_back(DepthOnlyPSO);
+	sm_CausticPSOs.push_back(DepthOnlyPSO);
+
 
 	CutoutDepthPSO.SetRasterizerState(RasterizerShadowTwoSided);
 	CutoutDepthPSO.SetRenderTargetFormats(0, nullptr, g_ShadowBuffer.GetFormat());
 	CutoutDepthPSO.Finalize();
 	sm_PSOs.push_back(CutoutDepthPSO);
+	sm_CausticPSOs.push_back(CutoutDepthPSO);
 
 	SkinDepthOnlyPSO.SetRasterizerState(RasterizerShadow);
 	SkinDepthOnlyPSO.SetRenderTargetFormats(0, nullptr, g_ShadowBuffer.GetFormat());
 	SkinDepthOnlyPSO.Finalize();
 	sm_PSOs.push_back(SkinDepthOnlyPSO);
+	sm_CausticPSOs.push_back(SkinDepthOnlyPSO);
 
 	SkinCutoutDepthPSO.SetRasterizerState(RasterizerShadowTwoSided);
 	SkinCutoutDepthPSO.SetRenderTargetFormats(0, nullptr, g_ShadowBuffer.GetFormat());
 	SkinCutoutDepthPSO.Finalize();
 	sm_PSOs.push_back(SkinCutoutDepthPSO);
+	sm_CausticPSOs.push_back(SkinCutoutDepthPSO);
 
 	ASSERT(sm_PSOs.size() == 8);
 
@@ -464,9 +489,14 @@ uint8_t Renderer::GetPSO(uint16_t psoFlags)
 #endif
 	sm_PSOs.push_back(ColorPSO);
 
+	ColorPSO.SetDepthStencilState(DepthStateReadOnly);
+	ColorPSO.SetRenderTargetFormats((uint32_t)Graphics::GBTarget::NumTargets, Graphics::GeometryBuffer::c_GBufferFormats, SHADOW_FORMAT);
+	ColorPSO.Finalize();
+	sm_PSOs.push_back(ColorPSO);
+
 	ASSERT(sm_PSOs.size() <= 256, "Ran out of room for unique PSOs");
 
-	return (uint8_t)sm_PSOs.size() - 2;
+	return (uint8_t)sm_PSOs.size() - 3;
 }
 
 void Renderer::DrawSkybox( GraphicsContext& gfxContext, const Camera& Camera, const D3D12_VIEWPORT& viewport, const D3D12_RECT& scissor )
@@ -529,6 +559,14 @@ void MeshSorter::AddMesh( const Mesh& mesh, float distance,
 		key.key = dist.u;
 		m_SortKeys.push_back(key.value);
 		m_PassCounts[kZPass]++;
+	}
+	else if (m_BatchType == kCaustics)
+	{
+		key.passID = kOpaque;
+		key.psoIdx = mesh.pso + 2;
+		key.key = dist.u;
+		m_SortKeys.push_back(key.value);
+		m_PassCounts[kOpaque]++;
 	}
 	else if (mesh.psoFlags & PSOFlags::kAlphaBlend)
 	{
@@ -647,11 +685,15 @@ void MeshSorter::RenderMeshes(
 		if (passCount == 0)
 			continue;
 
-		if (m_BatchType == kDefault)
+		if (m_BatchType == kDefault || m_BatchType == kCaustics)
 		{
 			switch (m_CurrentPass)
 			{
 			case kZPass:
+				if (m_BatchType == kCaustics)
+				{
+					break;
+				}
 				if (m_GBuffer)
 				{
 					m_GBuffer->Setup(context, GBSet::Depth | GBSet::DSWrite | GBSet::Setup);

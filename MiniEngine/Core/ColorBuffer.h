@@ -25,7 +25,7 @@ public:
 	ColorBuffer( Color ClearColor = Color(0.0f, 0.0f, 0.0f, 0.0f)  )
 		: m_ClearColor(ClearColor), m_NumMipMaps(0), m_FragmentCount(1), m_SampleCount(1)
 	{
-		m_RTVHandle.ptr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN;
+		//m_RTVHandle.ptr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN;
 		m_SRVHandle.ptr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN;
 		for (int i = 0; i < _countof(m_UAVHandle); ++i)
 			m_UAVHandle[i].ptr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN;
@@ -58,7 +58,7 @@ public:
 
 	// Get pre-created CPU-visible descriptor handles
 	const D3D12_CPU_DESCRIPTOR_HANDLE& GetSRV(void) const { return m_SRVHandle; }
-	const D3D12_CPU_DESCRIPTOR_HANDLE& GetRTV(void) const { return m_RTVHandle; }
+	const D3D12_CPU_DESCRIPTOR_HANDLE& GetRTV(void) const { return m_RTVHandles[m_currentIndex]; }
 	const D3D12_CPU_DESCRIPTOR_HANDLE& GetUAV(void) const { return m_UAVHandle[0]; }
 
 	void SetClearColor( Color ClearColor ) { m_ClearColor = ClearColor; }
@@ -76,6 +76,8 @@ public:
 	// that you use dimensions with powers of two (but not necessarily square.)  Pass
 	// 0 for ArrayCount to reserve space for mips at creation time.
 	void GenerateMipMaps(CommandContext& Context);
+
+	void SetArrayIndex(uint32_t index) { m_currentIndex = index; }
 
 protected:
 
@@ -104,7 +106,8 @@ protected:
 
 	Color m_ClearColor;
 	D3D12_CPU_DESCRIPTOR_HANDLE m_SRVHandle;
-	D3D12_CPU_DESCRIPTOR_HANDLE m_RTVHandle;
+	std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> m_RTVHandles;
+	uint32_t m_currentIndex = 0;
 	D3D12_CPU_DESCRIPTOR_HANDLE m_UAVHandle[12];
 	uint32_t m_NumMipMaps; // number of texture sublevels
 	uint32_t m_FragmentCount;
