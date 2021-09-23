@@ -15,7 +15,7 @@ struct RayPayload
 struct BackwardRayPayload
 {
 	//bool SkipShading;
-	uint Color;
+	float3 Color;
 	//float  RayHitT;
 };
 

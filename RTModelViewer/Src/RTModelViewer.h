@@ -73,7 +73,7 @@ using namespace Math;
 using namespace Graphics;
 
 constexpr UINT MaxRayRecursion = 16;
-constexpr UINT c_NumCameraPositions = 5;
+constexpr UINT c_NumCameraPositions = 2;
 constexpr UINT MaxMaterials = 100;
 
 __declspec(align(256)) struct HitShaderConstants
@@ -458,7 +458,7 @@ extern ExpVar g_RTAdditiveRecurrenceSequenceIndexLimit;
 
 
 extern NumVar g_CausticRaysPerPixel;
-extern NumVar g_CausticPowerScale;
+extern ExpVar g_CausticPowerScale;
 extern NumVar g_CausticMaxRayRecursion;
 
 extern NumVar g_SelectedLightSource;

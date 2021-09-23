@@ -13,7 +13,7 @@ const char* rayTracingModes[] = {
 	"Shadow Rays",
 	"Diffuse&ShadowRays",
 };
-EnumVar rayTracingMode("App/Raytracing/RayTraceMode", RTM_BACKWARD_WITH_CAUSTICS, _countof(rayTracingModes), rayTracingModes);
+EnumVar rayTracingMode("App/Raytracing/RayTraceMode", RTM_OFF_WITH_CAUSTICS, _countof(rayTracingModes), rayTracingModes);
 
 void UpdateHitShaderConstants(HitShaderConstants& hitShaderConstants, const GlobalConstants& globalConstants)
 {

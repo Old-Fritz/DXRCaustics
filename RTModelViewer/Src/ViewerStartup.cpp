@@ -116,30 +116,39 @@ void RTModelViewer::SetupPredefinedCameraPositions()
 {
 	m_CameraPosArrayCurrentPosition = 0;
 
+	// SCENE
+	m_CameraPosArray[0].position = Vector3(-186.553, 388.58, 69.9838);// *g_ModelScale;
+	m_CameraPosArray[0].heading = 0.87f * 1.5707f;
+	m_CameraPosArray[0].pitch = -0.39f;
+
+	m_CameraPosArray[1].position = Vector3(-623.553, 233.58, -200.9838);// *g_ModelScale;
+	m_CameraPosArray[1].heading = 1.20 * 1.5707f;
+	m_CameraPosArray[1].pitch = -0.39f;
+
 	// Lion's head
-	m_CameraPosArray[0].position = Vector3(-11.f, 1.7f, -0.30f) * g_ModelScale;
-	m_CameraPosArray[0].heading = 1.5707f;
-	m_CameraPosArray[0].pitch = 0.0f;
-
-	// View of columns
-	m_CameraPosArray[1].position = Vector3(2.99f, 2.08f, -2.02f) * g_ModelScale;
-	m_CameraPosArray[1].heading = -3.1111f;
-	m_CameraPosArray[1].pitch = 0.5953f;
-
-	// Bottom-up view from the floor
-	m_CameraPosArray[2].position = Vector3(-12.3761f, 0.806f, -0.2602f) * g_ModelScale;
-	m_CameraPosArray[2].heading = -1.5707f;
-	m_CameraPosArray[2].pitch = 0.268f;
-
-	// Top-down view from the second floor
-	m_CameraPosArray[3].position = Vector3(-9.779f, 5.9505f, -1.9497f) * g_ModelScale;
-	m_CameraPosArray[3].heading = -2.077f;
-	m_CameraPosArray[3].pitch = -0.450f;
-
-	// View of corridors on the second floor
-	m_CameraPosArray[4].position = Vector3(-14.63f, 6.f, 3.9452f) * g_ModelScale;
-	m_CameraPosArray[4].heading = -1.236f;
-	m_CameraPosArray[4].pitch = 0.0f;
+	//m_CameraPosArray[0].position = Vector3(-11.f, 1.7f, -0.30f) * g_ModelScale;
+	//m_CameraPosArray[0].heading = 1.5707f;
+	//m_CameraPosArray[0].pitch = 0.0f;
+	//
+	//// View of columns
+	//m_CameraPosArray[1].position = Vector3(2.99f, 2.08f, -2.02f) * g_ModelScale;
+	//m_CameraPosArray[1].heading = -3.1111f;
+	//m_CameraPosArray[1].pitch = 0.5953f;
+	//
+	//// Bottom-up view from the floor
+	//m_CameraPosArray[2].position = Vector3(-12.3761f, 0.806f, -0.2602f) * g_ModelScale;
+	//m_CameraPosArray[2].heading = -1.5707f;
+	//m_CameraPosArray[2].pitch = 0.268f;
+	//
+	//// Top-down view from the second floor
+	//m_CameraPosArray[3].position = Vector3(-9.779f, 5.9505f, -1.9497f) * g_ModelScale;
+	//m_CameraPosArray[3].heading = -2.077f;
+	//m_CameraPosArray[3].pitch = -0.450f;
+	//
+	//// View of corridors on the second floor
+	//m_CameraPosArray[4].position = Vector3(-14.63f, 6.f, 3.9452f) * g_ModelScale;
+	//m_CameraPosArray[4].heading = -1.236f;
+	//m_CameraPosArray[4].pitch = 0.0f;
 }
 
 void RTModelViewer::Cleanup(void)

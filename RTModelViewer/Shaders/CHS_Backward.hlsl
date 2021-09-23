@@ -31,6 +31,7 @@ void Hit(inout BackwardRayPayload payload, in BuiltInTriangleIntersectionAttribu
 
 	VertexData vertex = ExtractVertexData(attr, worldPos);
 	GBuffer gBuf = ExtractGBuffer(vertex);
+
 	SurfaceProperties Surface = BuildSurface(gBuf, normalize(ViewerPos.xyz - worldPos));
 
 	  // ---------------------------------------------- //
@@ -40,7 +41,7 @@ void Hit(inout BackwardRayPayload payload, in BuiltInTriangleIntersectionAttribu
 	// Begin accumulating light starting with emissive
 	float3 colorAccum = gBuf.emissive;
 
-	AccumulateLights(colorAccum, Surface, worldPos);// , DispatchRaysIndex().xy);
+	AccumulateLights(colorAccum, Surface, worldPos, DispatchRaysIndex().xy);
 
 	  // ---------------------------------------------- //
 	 // ----------------- REFLECTIONS ---------------- //
@@ -57,6 +58,7 @@ void Hit(inout BackwardRayPayload payload, in BuiltInTriangleIntersectionAttribu
 	 // ----------------- OUTPUT --------------------- //
 	// ---------------------------------------------- //
 
-	payload.Color = PackDec4(float4(colorAccum, 1.0));
+	payload.Color = float4(colorAccum, 1.0);
+	//payload.Color = PackDec4(float4(colorAccum * 0.1, 1.0));
 	//g_screenOutput[DispatchRaysIndex().xy] = float4(colorAccum, 1.0);
 }

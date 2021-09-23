@@ -20,7 +20,7 @@ void AccumulateReflection(inout float3 colorAccum, SurfaceProperties Surface, fl
 	//	return;
 
 	float3 sampleAccum = 0;
-	uint sampleCount = 1;
+	uint sampleCount = 8;
 
 	RandomHandle rh = RandomInit(sampleCount);
 
@@ -28,7 +28,7 @@ void AccumulateReflection(inout float3 colorAccum, SurfaceProperties Surface, fl
 	{
 		// R
 		float3 direction = GetReflectedDirection(Surface, primaryRayDirection, rh);
-		float3 origin = worldPos - primaryRayDirection * 0.1f;	 // Lift off the surface a bit
+		float3 origin = worldPos - primaryRayDirection * 2.0f;	 // Lift off the surface a bit
 
 		RayDesc rayDesc = { origin,
 			0.0f,
@@ -41,13 +41,15 @@ void AccumulateReflection(inout float3 colorAccum, SurfaceProperties Surface, fl
 		payload.Color = 0;
 		TraceRay(g_accel, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, ~0, 0, 1, 0, rayDesc, payload);
 
-		float3 color = UnPackDec4(payload.Color).xyz;
+		//float3 color = UnPackDec4(payload.Color).xyz;
+		float3 color = (payload.Color).xyz;
 
 		// Diffuse & specular factors
 		float3 diffuse, specular;
+		
 		CalcReflectionFactors(Surface, direction, diffuse, specular);
 
-		sampleAccum += color * specular;
+		sampleAccum += (color * specular);
 	}
 
 	colorAccum += sampleAccum / sampleCount;

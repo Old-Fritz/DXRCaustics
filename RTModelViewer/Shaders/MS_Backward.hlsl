@@ -6,7 +6,8 @@ void Miss(inout BackwardRayPayload payload)
 {
 	//if (!payload.SkipShading)
 	{
-		payload.Color = PackDec4(float4(GetSkybox(WorldRayDirection()), 1));
+		//payload.Color = PackDec4(float4(GetSkybox(WorldRayDirection()), 1));
+		payload.Color = (float4(GetSkybox(WorldRayDirection()), 1));
 	}
 }
 

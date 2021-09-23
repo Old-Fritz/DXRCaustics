@@ -118,14 +118,18 @@ NumVar g_ConeOuter(			"App/LightSource/Size/ConeOuter",			0.3f,		0.0f,		3.1415/2
 ExpVar g_LightRadius(		"App/LightSource/Size/LightRadius",			1500.0f,		0.0f,		10000.0f,	0.05f);
 
 void UpdateNumVars(EngineVar::ActionType);
+void UpdateLightsCount(EngineVar::ActionType);
 
 NumVar g_SelectedLightSource("App/LightSource/Selected",				0, 0, MAX_LIGHTS - 1, 1, UpdateNumVars);
-NumVar g_LightsCount(		"App/LightSource/LigtsCount",				3, 0, MAX_LIGHTS - 1, 1);
+NumVar g_LightsCount(		"App/LightSource/LigtsCount",				3, 0, MAX_LIGHTS, 1, UpdateLightsCount);
 
 LightSource g_LightSource[MAX_LIGHTS];
 
 
-
+void UpdateLightsCount(EngineVar::ActionType)
+{
+	Lighting::m_LastLight = g_LightsCount;
+}
 
 void UpdateNumVars(EngineVar::ActionType)
 {
@@ -206,7 +210,7 @@ void RTModelViewer::UpdateLight()
 	g_LightSource[ind].LightIntensity = g_LightIntensity;
 	g_LightSource[ind].LightRadius = g_LightRadius;
 
-	Lighting::UpdateLightData(0, g_LightSource[ind].Pos, g_LightSource[ind].LightRadius, g_LightSource[ind].Color * g_LightSource[ind].LightIntensity, g_LightSource[ind].ConeDir, g_LightSource[ind].ConeInner, g_LightSource[ind].ConeOuter);
+	Lighting::UpdateLightData(ind, g_LightSource[ind].Pos, g_LightSource[ind].LightRadius, g_LightSource[ind].Color * g_LightSource[ind].LightIntensity, g_LightSource[ind].ConeDir, g_LightSource[ind].ConeInner, g_LightSource[ind].ConeOuter);
 	Lighting::UpdateLightBuffer();
 }
 
@@ -270,7 +274,11 @@ void RTModelViewer::LoadLightsFromFile()
 		g_LightSource[ind].Color.SetY(colY);
 		g_LightSource[ind].Color.SetZ(colZ);
 
+		Lighting::UpdateLightData(ind, g_LightSource[ind].Pos, g_LightSource[ind].LightRadius, g_LightSource[ind].Color * g_LightSource[ind].LightIntensity, g_LightSource[ind].ConeDir, g_LightSource[ind].ConeInner, g_LightSource[ind].ConeOuter);
+
 	}
+
+
 
 	UpdateNumVars(EngineVar::ActionType::Increment);
 }

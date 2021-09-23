@@ -40,8 +40,8 @@ ComPtr<ID3D12Device5> g_pRaytracingDevice;
 std::vector<std::pair<TextureRef, TextureRef>> g_IBLTextures;
 TextureRef* g_BlueNoiseRGBA;
 
-NumVar g_RTAdditiveRecurrenceSequenceAlphaX("App/Raytracing/AdditiveRecurrenceSequenceAlphaX", 0.78539816339744830961566084581988f, 0, 1.0f, 0.0152799f);
-NumVar g_RTAdditiveRecurrenceSequenceAlphaY("App/Raytracing/AdditiveRecurrenceSequenceAlphaY", 0.61803398874989484820458683436564f, 0, 1.0f, 0.0143562f);
+NumVar g_RTAdditiveRecurrenceSequenceAlphaX("App/Raytracing/AdditiveRecurrenceSequenceAlphaX", 0.018539816339744830961566084581988f, 0, 1.0f, 0.0152799f);
+NumVar g_RTAdditiveRecurrenceSequenceAlphaY("App/Raytracing/AdditiveRecurrenceSequenceAlphaY", 0.0161803398874989484820458683436564f, 0, 1.0f, 0.0143562f);
 ExpVar g_RTAdditiveRecurrenceSequenceIndexLimit("App/Raytracing/AdditiveRecurrenceSequenceIndexLimit", 16777216, 0, 16777216*2, 1);
 
 
@@ -49,8 +49,8 @@ ExpVar g_RTAdditiveRecurrenceSequenceIndexLimit("App/Raytracing/AdditiveRecurren
 DynamicEnumVar g_IBLSet("App/Lighting/Environment", ChangeIBLSet);
 NumVar g_IBLBias("App/Lighting/Gloss Reduction", 4.0f, 0.0f, 10.0f, 1.0f, ChangeIBLBias);
 
-ExpVar g_SunLightIntensity("App/Lighting/Sun Light Intensity", 0.4f, 0.0f, 16.0f, 0.1f);
-ExpVar g_AmbientIntensity("App/Lighting/Ambient Intensity", 0.6f, -16.0f, 16.0f, 0.1f);
+ExpVar g_SunLightIntensity("App/Lighting/Sun Light Intensity", 6.0f, -16.0f, 16.0f, 0.1f);
+ExpVar g_AmbientIntensity("App/Lighting/Ambient Intensity", 1.0f, -16.0f, 16.0f, 0.1f);
 
 NumVar g_SunOrientation("App/Lighting/Sun Orientation", -0.5f, -100.0f, 100.0f, 0.1f);
 NumVar g_SunInclination("App/Lighting/Sun Inclination", 0.75f, 0.0f, 1.0f, 0.01f);
@@ -58,7 +58,7 @@ NumVar g_SunInclination("App/Lighting/Sun Inclination", 0.75f, 0.0f, 1.0f, 0.01f
 NumVar g_ModelScale("App/Raytracing/ModelScale", 100.0f, 1.0f, 1000.0f);
 
 NumVar g_CausticRaysPerPixel("App/Raytracing/Caustic/RaysPerPixel", 1, 0.25f, 16, 0.25f);
-NumVar g_CausticPowerScale("App/Raytracing/Caustic/PowerScale", 1, 0, 100.0f, 0.05f);
+ExpVar g_CausticPowerScale("App/Raytracing/Caustic/PowerScale", 1/3.1415f, -16.0f, 16.0f, 0.1f);
 NumVar g_CausticMaxRayRecursion("App/Raytracing/Caustic/MaxRaRecursion", 4, 1, 16, 1);
 
 void ChangeIBLSet(EngineVar::ActionType)

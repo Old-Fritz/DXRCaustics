@@ -81,7 +81,7 @@ void RayGen()
 		CausticRayPayload payload;
 		payload.SkipShading = false;
 		payload.RayHitT = maxDist;
-		payload.Color = lightColor * specular * coneFalloff;
+		payload.Color = lightColor * specular * coneFalloff / g_dynamic.causticRaysPerPixel;
 		payload.Count = 1;
 		TraceRay(g_accel, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, ~0, 0, 1, 0, rayDesc, payload);
 	}
