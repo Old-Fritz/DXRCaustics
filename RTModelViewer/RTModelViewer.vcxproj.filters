@@ -33,6 +33,18 @@
     <Filter Include="Shaders\Includes">
       <UniqueIdentifier>{41d87a61-e297-4bff-a678-654a6636f6a8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders\Caustic">
+      <UniqueIdentifier>{a3b51485-bdf1-4dce-b88e-16181a5e3189}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\Default">
+      <UniqueIdentifier>{0cc58318-49a4-4b67-8779-7bd8ba26b1e4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\Backward">
+      <UniqueIdentifier>{0b1ecddc-4d7a-4b8e-8b2e-775cfdb03aa4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\Diffuse">
+      <UniqueIdentifier>{4ec47634-0b2a-451a-b984-098892e6373f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -57,44 +69,53 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Shaders\RayGenerationShadowsLib.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\RayGenerationShaderLib.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\RayGenerationShaderSSRLib.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\missShadowsLib.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\missShaderLib.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\hitShaderLib.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\HitShaderDiffuseLib.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\MS_Backward.hlsl">
-      <Filter>Shaders</Filter>
+    <FxCompile Include="Shaders\AHS_Backward.hlsl">
+      <Filter>Shaders\Backward</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\CHS_Backward.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>Shaders\Backward</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\MS_Backward.hlsl">
+      <Filter>Shaders\Backward</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\RGS_Backward.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>Shaders\Backward</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\AHS_Caustic.hlsl">
+      <Filter>Shaders\Caustic</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\CHS_Caustic.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>Shaders\Caustic</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\MS_Caustic.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>Shaders\Caustic</Filter>
     </FxCompile>
     <FxCompile Include="Shaders\RGS_Caustic.hlsl">
-      <Filter>Shaders</Filter>
+      <Filter>Shaders\Caustic</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\AHS_Default.hlsl">
+      <Filter>Shaders\Default</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\CHS_Default.hlsl">
+      <Filter>Shaders\Default</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\MS_Default.hlsl">
+      <Filter>Shaders\Default</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\CHS_Diffuse.hlsl">
+      <Filter>Shaders\Diffuse</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\RGS_Diffuse.hlsl">
+      <Filter>Shaders\Diffuse</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\RGS_Shadows.hlsl">
+      <Filter>Shaders\Diffuse</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\MS_Shadows.hlsl">
+      <Filter>Shaders\Diffuse</Filter>
+    </FxCompile>
+    <FxCompile Include="Shaders\RGS_SSR.hlsl">
+      <Filter>Shaders\Diffuse</Filter>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>

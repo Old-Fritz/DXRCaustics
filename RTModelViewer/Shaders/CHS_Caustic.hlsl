@@ -159,7 +159,7 @@ void FullTraceCaustic(Surface surface, float3 rayColor, float3 diffuse, float3 s
 
 /*
 [shader("closesthit")]
-void Hit(inout CausticRayPayload payload, in BuiltInTriangleIntersectionAttributes attr)
+void ClosestHit(inout CausticRayPayload payload, in BuiltInTriangleIntersectionAttributes attr)
 {
 	//payload.RayHitT = RayTCurrent();
 	//if (payload.SkipShading)
@@ -250,7 +250,7 @@ LightParams GetLightParams(CausticRayPayload payload)
 }
 
 [shader("closesthit")]
-void Hit(inout CausticRayPayload payload, in BuiltInTriangleIntersectionAttributes attr)
+void ClosestHit(inout CausticRayPayload payload, in BuiltInTriangleIntersectionAttributes attr)
 {
 	payload.RayHitT += RayTCurrent();
 

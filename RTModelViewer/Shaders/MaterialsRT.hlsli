@@ -52,6 +52,11 @@ GBuffer ExtractGBuffer(VertexData vertex)
 	return gBuf;
 }
 
+float ExtractTransparency(VertexData vertex)
+{
+	return TexSample(g_localBaseColor, vertex.tc).a;
+}
+
 GBuffer ExtractScreenSpaceGBuffer(float2 readGBufferAt)
 {
 	GBuffer gBuf;
@@ -65,6 +70,12 @@ GBuffer ExtractScreenSpaceGBuffer(float2 readGBufferAt)
 
 	return gBuf;
 }
+
+float ExtractTransparency(float2 readGBufferAt)
+{
+	return g_GBBaseColor.Load(int4(readGBufferAt, DispatchRaysIndex().z, 0)).a;
+}
+
 
 
 SurfaceProperties BuildSurface(GBuffer gBuf)

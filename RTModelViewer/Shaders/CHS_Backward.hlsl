@@ -15,7 +15,7 @@
 #include "RayTracingInclude.hlsli"
 
 [shader("closesthit")]
-void Hit(inout BackwardRayPayload payload, in BuiltInTriangleIntersectionAttributes attr)
+void ClosestHit(inout BackwardRayPayload payload, in BuiltInTriangleIntersectionAttributes attr)
 {
 	//payload.RayHitT = RayTCurrent();
 	//if (payload.SkipShading)

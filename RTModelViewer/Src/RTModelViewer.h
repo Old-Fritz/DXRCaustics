@@ -46,21 +46,26 @@
 #include <atlbase.h>
 #include "DXSampleHelper.h"
 
-#include "CompiledShaders/RayGenerationShaderLib.h"
-#include "CompiledShaders/RayGenerationShaderSSRLib.h"
-#include "CompiledShaders/HitShaderLib.h"
-#include "CompiledShaders/MissShaderLib.h"
-#include "CompiledShaders/HitShaderDiffuseLib.h"
-#include "CompiledShaders/RayGenerationShadowsLib.h"
-#include "CompiledShaders/MissShadowsLib.h"
+
+#include "CompiledShaders/RGS_Shadows.h"
+#include "CompiledShaders/MS_Shadows.h"
+
+#include "CompiledShaders/RGS_SSR.h"
+#include "CompiledShaders/RGS_Diffuse.h"
+#include "CompiledShaders/CHS_Diffuse.h"
+
+#include "CompiledShaders/CHS_Default.h"
+#include "CompiledShaders/AHS_Default.h"
+#include "CompiledShaders/MS_Default.h"
 
 #include "CompiledShaders/RGS_Backward.h"
 #include "CompiledShaders/CHS_Backward.h"
+#include "CompiledShaders/AHS_Backward.h"
 #include "CompiledShaders/MS_Backward.h"
-
 
 #include "CompiledShaders/RGS_Caustic.h"
 #include "CompiledShaders/CHS_Caustic.h"
+#include "CompiledShaders/AHS_Caustic.h"
 #include  "CompiledShaders/MS_Caustic.h"
 
 #include "Shaders/RaytracingHlslCompat.h"
@@ -110,7 +115,8 @@ struct ShaderExport
 enum ShaderExportNames
 {
 	SEN_RayGen = 0,
-	SEN_Hit,
+	SEN_AnyHit,
+	SEN_ClosestHit,
 	SEN_Miss,
 	SEN_NumExports
 };

@@ -224,26 +224,35 @@ void RTModelViewer::InitSubObjectsTraceShaders(std::vector<D3D12_STATE_SUBOBJECT
 	// Ray Gen shader stuff
 	// ----------------------------------------------------------------//
 	exports[SEN_RayGen].exportName = L"RayGen";
-	D3D12_STATE_SUBOBJECT rayGenDxilLibSubobject = CreateDxilLibrary(exports[SEN_RayGen].exportName, g_pRayGenerationShaderLib,
-		sizeof(g_pRayGenerationShaderLib), exports[SEN_RayGen].dxilLibDesc, exports[SEN_RayGen].exportDesc);
+	D3D12_STATE_SUBOBJECT rayGenDxilLibSubobject = CreateDxilLibrary(exports[SEN_RayGen].exportName, g_pRGS_Diffuse,
+		sizeof(g_pRGS_Diffuse), exports[SEN_RayGen].dxilLibDesc, exports[SEN_RayGen].exportDesc);
 
 	subObjects.push_back(rayGenDxilLibSubobject);
 	exports[SEN_RayGen].pSubObject = &subObjects.back();
 
-	// Hit Group shader stuff
+	// Closest Hit shader stuff
 	// ----------------------------------------------------------------//
-	exports[SEN_Hit].exportName = L"Hit";
-	D3D12_STATE_SUBOBJECT hitGroupLibSubobject = CreateDxilLibrary(exports[SEN_Hit].exportName, g_phitShaderLib,
-		sizeof(g_phitShaderLib), exports[SEN_Hit].dxilLibDesc, exports[SEN_Hit].exportDesc);
+	exports[SEN_ClosestHit].exportName = L"ClosestHit";
+	D3D12_STATE_SUBOBJECT closestHitLibSubobject = CreateDxilLibrary(exports[SEN_ClosestHit].exportName, g_pCHS_Default,
+		sizeof(g_pCHS_Default), exports[SEN_ClosestHit].dxilLibDesc, exports[SEN_ClosestHit].exportDesc);
 
-	subObjects.push_back(hitGroupLibSubobject);
-	exports[SEN_Hit].pSubObject = &subObjects.back();
+	subObjects.push_back(closestHitLibSubobject);
+	exports[SEN_ClosestHit].pSubObject = &subObjects.back();
+
+	// Any Hit shader stuff
+	// ----------------------------------------------------------------//
+	exports[SEN_AnyHit].exportName = L"AnyHit";
+	D3D12_STATE_SUBOBJECT anyHitLibSubobject = CreateDxilLibrary(exports[SEN_AnyHit].exportName, g_pAHS_Default,
+		sizeof(g_pAHS_Default), exports[SEN_AnyHit].dxilLibDesc, exports[SEN_AnyHit].exportDesc);
+
+	subObjects.push_back(anyHitLibSubobject);
+	exports[SEN_AnyHit].pSubObject = &subObjects.back();
 
 	// Miss shader stuff
 	// ----------------------------------------------------------------//
 	exports[SEN_Miss].exportName = L"Miss";
-	D3D12_STATE_SUBOBJECT missLibSubobject = CreateDxilLibrary(exports[SEN_Miss].exportName, g_pmissShaderLib,
-		sizeof(g_pmissShaderLib), exports[SEN_Miss].dxilLibDesc, exports[SEN_Miss].exportDesc);
+	D3D12_STATE_SUBOBJECT missLibSubobject = CreateDxilLibrary(exports[SEN_Miss].exportName, g_pMS_Default,
+		sizeof(g_pMS_Default), exports[SEN_Miss].dxilLibDesc, exports[SEN_Miss].exportDesc);
 
 	subObjects.push_back(missLibSubobject);
 	exports[SEN_Miss].pSubObject = &subObjects.back();
@@ -260,7 +269,8 @@ void RTModelViewer::InitHitGroups(std::vector<D3D12_STATE_SUBOBJECT>& subObjects
 	subObjects.push_back(shaderConfigStateObject);
 
 	LPCWSTR hitGroupExportName = L"HitGroup";
-	hitGroupDesc.ClosestHitShaderImport = exports[SEN_Hit].exportName;
+	hitGroupDesc.AnyHitShaderImport = exports[SEN_AnyHit].exportName;
+	hitGroupDesc.ClosestHitShaderImport = exports[SEN_ClosestHit].exportName;
 	hitGroupDesc.HitGroupExport = hitGroupExportName;
 	D3D12_STATE_SUBOBJECT hitGroupSubobject = {};
 	hitGroupSubobject.Type = D3D12_STATE_SUBOBJECT_TYPE_HIT_GROUP;
@@ -286,7 +296,7 @@ void RTModelViewer::InitRayTraceInputs(std::function<void(ComPtr<ID3D12StateObje
 	}
 
 	{
-		*exports[SEN_RayGen].pSubObject = CreateDxilLibrary(exports[SEN_RayGen].exportName, g_pRayGenerationShaderSSRLib, sizeof(g_pRayGenerationShaderSSRLib), exports[SEN_RayGen].dxilLibDesc, exports[SEN_RayGen].exportDesc);
+		*exports[SEN_RayGen].pSubObject = CreateDxilLibrary(exports[SEN_RayGen].exportName, g_pRGS_SSR, sizeof(g_pRGS_SSR), exports[SEN_RayGen].dxilLibDesc, exports[SEN_RayGen].exportDesc);
 		ComPtr<ID3D12StateObject> pReflectionbarycentricPSO;
 		HRESULT res = g_pRaytracingDevice->CreateStateObject(&stateObject, IID_PPV_ARGS_(pReflectionbarycentricPSO));
 		GetShaderTable(pReflectionbarycentricPSO, pHitShaderTable.data());
@@ -294,8 +304,8 @@ void RTModelViewer::InitRayTraceInputs(std::function<void(ComPtr<ID3D12StateObje
 	}
 
 	{
-		*exports[SEN_RayGen].pSubObject = CreateDxilLibrary(exports[SEN_RayGen].exportName, g_pRayGenerationShadowsLib, sizeof(g_pRayGenerationShadowsLib), exports[SEN_RayGen].dxilLibDesc, exports[SEN_RayGen].exportDesc);
-		*exports[SEN_Miss].pSubObject = CreateDxilLibrary(exports[SEN_Miss].exportName, g_pmissShadowsLib, sizeof(g_pmissShadowsLib), exports[SEN_Miss].dxilLibDesc, exports[SEN_Miss].exportDesc);
+		*exports[SEN_RayGen].pSubObject = CreateDxilLibrary(exports[SEN_RayGen].exportName, g_pRGS_Shadows, sizeof(g_pRGS_Shadows), exports[SEN_RayGen].dxilLibDesc, exports[SEN_RayGen].exportDesc);
+		*exports[SEN_Miss].pSubObject = CreateDxilLibrary(exports[SEN_Miss].exportName, g_pMS_Shadows, sizeof(g_pMS_Shadows), exports[SEN_Miss].dxilLibDesc, exports[SEN_Miss].exportDesc);
 
 		ComPtr<ID3D12StateObject> pShadowsPSO;
 		HRESULT res = g_pRaytracingDevice->CreateStateObject(&stateObject, IID_PPV_ARGS_(pShadowsPSO));
@@ -304,9 +314,10 @@ void RTModelViewer::InitRayTraceInputs(std::function<void(ComPtr<ID3D12StateObje
 	}
 
 	{
-		*exports[SEN_RayGen].pSubObject = CreateDxilLibrary(exports[SEN_RayGen].exportName, g_pRayGenerationShaderLib, sizeof(g_pRayGenerationShaderLib), exports[SEN_RayGen].dxilLibDesc, exports[SEN_RayGen].exportDesc);
-		*exports[SEN_Hit].pSubObject = CreateDxilLibrary(exports[SEN_Hit].exportName, g_pHitShaderDiffuseLib, sizeof(g_pHitShaderDiffuseLib), exports[SEN_Hit].dxilLibDesc, exports[SEN_Hit].exportDesc);
-		*exports[SEN_Miss].pSubObject = CreateDxilLibrary(exports[SEN_Miss].exportName, g_pmissShaderLib, sizeof(g_pmissShaderLib), exports[SEN_Miss].dxilLibDesc, exports[SEN_Miss].exportDesc);
+		*exports[SEN_RayGen].pSubObject = CreateDxilLibrary(exports[SEN_RayGen].exportName, g_pRGS_Diffuse, sizeof(g_pRGS_Diffuse), exports[SEN_RayGen].dxilLibDesc, exports[SEN_RayGen].exportDesc);
+		*exports[SEN_AnyHit].pSubObject = CreateDxilLibrary(exports[SEN_AnyHit].exportName, g_pAHS_Default, sizeof(g_pAHS_Default), exports[SEN_AnyHit].dxilLibDesc, exports[SEN_AnyHit].exportDesc);
+		*exports[SEN_ClosestHit].pSubObject = CreateDxilLibrary(exports[SEN_ClosestHit].exportName, g_pCHS_Diffuse, sizeof(g_pCHS_Diffuse), exports[SEN_ClosestHit].dxilLibDesc, exports[SEN_ClosestHit].exportDesc);
+		*exports[SEN_Miss].pSubObject = CreateDxilLibrary(exports[SEN_Miss].exportName, g_pMS_Default, sizeof(g_pMS_Default), exports[SEN_Miss].dxilLibDesc, exports[SEN_Miss].exportDesc);
 
 		ComPtr<ID3D12StateObject> pDiffusePSO;
 		HRESULT res = g_pRaytracingDevice->CreateStateObject(&stateObject, IID_PPV_ARGS_(pDiffusePSO));
@@ -315,9 +326,10 @@ void RTModelViewer::InitRayTraceInputs(std::function<void(ComPtr<ID3D12StateObje
 	}
 
 	{
-		*exports[SEN_RayGen].pSubObject = CreateDxilLibrary(exports[SEN_RayGen].exportName, g_pRayGenerationShaderSSRLib, sizeof(g_pRayGenerationShaderSSRLib), exports[SEN_RayGen].dxilLibDesc, exports[SEN_RayGen].exportDesc);
-		*exports[SEN_Hit].pSubObject = CreateDxilLibrary(exports[SEN_Hit].exportName, g_pHitShaderDiffuseLib, sizeof(g_pHitShaderDiffuseLib), exports[SEN_Hit].dxilLibDesc, exports[SEN_Hit].exportDesc);
-		*exports[SEN_Miss].pSubObject = CreateDxilLibrary(exports[SEN_Miss].exportName, g_pmissShaderLib, sizeof(g_pmissShaderLib), exports[SEN_Miss].dxilLibDesc, exports[SEN_Miss].exportDesc);
+		*exports[SEN_RayGen].pSubObject = CreateDxilLibrary(exports[SEN_RayGen].exportName, g_pRGS_SSR, sizeof(g_pRGS_SSR), exports[SEN_RayGen].dxilLibDesc, exports[SEN_RayGen].exportDesc);
+		*exports[SEN_AnyHit].pSubObject = CreateDxilLibrary(exports[SEN_AnyHit].exportName, g_pAHS_Default, sizeof(g_pAHS_Default), exports[SEN_AnyHit].dxilLibDesc, exports[SEN_AnyHit].exportDesc);
+		*exports[SEN_ClosestHit].pSubObject = CreateDxilLibrary(exports[SEN_ClosestHit].exportName, g_pCHS_Diffuse, sizeof(g_pCHS_Diffuse), exports[SEN_ClosestHit].dxilLibDesc, exports[SEN_ClosestHit].exportDesc);
+		*exports[SEN_Miss].pSubObject = CreateDxilLibrary(exports[SEN_Miss].exportName, g_pMS_Default, sizeof(g_pMS_Default), exports[SEN_Miss].dxilLibDesc, exports[SEN_Miss].exportDesc);
 
 		ComPtr<ID3D12StateObject> pReflectionPSO;
 		HRESULT res = g_pRaytracingDevice->CreateStateObject(&stateObject, IID_PPV_ARGS_(pReflectionPSO));
@@ -327,7 +339,8 @@ void RTModelViewer::InitRayTraceInputs(std::function<void(ComPtr<ID3D12StateObje
 
 	{
 		*exports[SEN_RayGen].pSubObject = CreateDxilLibrary(exports[SEN_RayGen].exportName, g_pRGS_Backward, sizeof(g_pRGS_Backward), exports[SEN_RayGen].dxilLibDesc, exports[SEN_RayGen].exportDesc);
-		*exports[SEN_Hit].pSubObject = CreateDxilLibrary(exports[SEN_Hit].exportName, g_pCHS_Backward, sizeof(g_pCHS_Backward), exports[SEN_Hit].dxilLibDesc, exports[SEN_Hit].exportDesc);
+		*exports[SEN_AnyHit].pSubObject = CreateDxilLibrary(exports[SEN_AnyHit].exportName, g_pAHS_Default, sizeof(g_pAHS_Default), exports[SEN_AnyHit].dxilLibDesc, exports[SEN_AnyHit].exportDesc);
+		*exports[SEN_ClosestHit].pSubObject = CreateDxilLibrary(exports[SEN_ClosestHit].exportName, g_pCHS_Backward, sizeof(g_pCHS_Backward), exports[SEN_ClosestHit].dxilLibDesc, exports[SEN_ClosestHit].exportDesc);
 		*exports[SEN_Miss].pSubObject = CreateDxilLibrary(exports[SEN_Miss].exportName, g_pMS_Backward, sizeof(g_pMS_Backward), exports[SEN_Miss].dxilLibDesc, exports[SEN_Miss].exportDesc);
 
 		ComPtr<ID3D12StateObject> pBackwardPSO;
@@ -338,7 +351,8 @@ void RTModelViewer::InitRayTraceInputs(std::function<void(ComPtr<ID3D12StateObje
 
 	{
 		*exports[SEN_RayGen].pSubObject = CreateDxilLibrary(exports[SEN_RayGen].exportName, g_pRGS_Caustic, sizeof(g_pRGS_Caustic), exports[SEN_RayGen].dxilLibDesc, exports[SEN_RayGen].exportDesc);
-		*exports[SEN_Hit].pSubObject = CreateDxilLibrary(exports[SEN_Hit].exportName, g_pCHS_Caustic, sizeof(g_pCHS_Caustic), exports[SEN_Hit].dxilLibDesc, exports[SEN_Hit].exportDesc);
+		*exports[SEN_AnyHit].pSubObject = CreateDxilLibrary(exports[SEN_AnyHit].exportName, g_pAHS_Default, sizeof(g_pAHS_Default), exports[SEN_AnyHit].dxilLibDesc, exports[SEN_AnyHit].exportDesc);
+		*exports[SEN_ClosestHit].pSubObject = CreateDxilLibrary(exports[SEN_ClosestHit].exportName, g_pCHS_Caustic, sizeof(g_pCHS_Caustic), exports[SEN_ClosestHit].dxilLibDesc, exports[SEN_ClosestHit].exportDesc);
 		*exports[SEN_Miss].pSubObject = CreateDxilLibrary(exports[SEN_Miss].exportName, g_pMS_Caustic, sizeof(g_pMS_Caustic), exports[SEN_Miss].dxilLibDesc, exports[SEN_Miss].exportDesc);
 
 		ComPtr<ID3D12StateObject> pCausticPSO;

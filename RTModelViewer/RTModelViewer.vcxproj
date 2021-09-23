@@ -84,6 +84,9 @@
     <None Include="Shaders\SceneRT.hlsli" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="Shaders\AHS_Backward.hlsl" />
+    <FxCompile Include="Shaders\AHS_Caustic.hlsl" />
+    <FxCompile Include="Shaders\AHS_Default.hlsl" />
     <FxCompile Include="Shaders\CHS_Caustic.hlsl" />
     <FxCompile Include="Shaders\MS_Caustic.hlsl" />
     <FxCompile Include="Shaders\RGS_Backward.hlsl" />
@@ -92,14 +95,14 @@
       <FileType>Document</FileType>
     </None>
     <FxCompile Include="Shaders\CHS_Backward.hlsl" />
-    <FxCompile Include="Shaders\HitShaderDiffuseLib.hlsl" />
-    <FxCompile Include="Shaders\hitShaderLib.hlsl" />
-    <FxCompile Include="Shaders\missShaderLib.hlsl" />
-    <FxCompile Include="Shaders\missShadowsLib.hlsl" />
+    <FxCompile Include="Shaders\CHS_Diffuse.hlsl" />
+    <FxCompile Include="Shaders\CHS_Default.hlsl" />
+    <FxCompile Include="Shaders\MS_Default.hlsl" />
+    <FxCompile Include="Shaders\MS_Shadows.hlsl" />
     <FxCompile Include="Shaders\MS_Backward.hlsl" />
-    <FxCompile Include="Shaders\RayGenerationShaderLib.hlsl" />
-    <FxCompile Include="Shaders\RayGenerationShaderSSRLib.hlsl" />
-    <FxCompile Include="Shaders\RayGenerationShadowsLib.hlsl" />
+    <FxCompile Include="Shaders\RGS_Diffuse.hlsl" />
+    <FxCompile Include="Shaders\RGS_SSR.hlsl" />
+    <FxCompile Include="Shaders\RGS_Shadows.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shaders\RayTracingInclude.hlsli" />

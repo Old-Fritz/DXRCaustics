@@ -305,6 +305,6 @@ void RTModelViewer::RenderUI(class GraphicsContext& gfxContext)
 	float primaryRaysPerSec = g_SceneColorBuffer.GetWidth() * g_SceneColorBuffer.GetHeight() * rollingAverageFrameRate / (1000000.0f);
 	TextContext text(gfxContext);
 	text.Begin();
-	text.DrawFormattedString("\nMillion Primary Rays/s: %7.3f", primaryRaysPerSec);
+	//text.DrawFormattedString("\nMillion Primary Rays/s: %7.3f", primaryRaysPerSec);
 	text.End();
 }
