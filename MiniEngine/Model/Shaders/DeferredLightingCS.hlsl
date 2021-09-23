@@ -134,8 +134,8 @@ void main(uint2 DTid :SV_DispatchThreadID)
 		//colorAccum += Surface.c_diff * AmbientIntensity;
 
 		// Add IBL
-		colorAccum += Diffuse_IBL(Surface);
-		colorAccum += Specular_IBL(Surface);
+		colorAccum += Diffuse_IBL(Surface) * AmbientIntensity;
+		colorAccum += Specular_IBL(Surface) * AmbientIntensity;
 
 		colorAccum += ApplyDirectionalLightPBR(Surface, SunDirection, SunIntensity, shadowCoord, texSunShadow);
 		ShadeLightsPBR(colorAccum, pixelPos, Surface, worldPos);

@@ -369,7 +369,11 @@ void ShadeLightsPBR(inout float3 colorSum, uint2 pixelPos,
 		else
 #endif
 		{
-			colorSum += ApplyConeShadowedLightPBR(SHADOWED_LIGHT_ARGS_PBR);
+			if (lightIndex < FirstLightIndex.z)
+			{
+				colorSum += ApplyConeShadowedLightPBR(SHADOWED_LIGHT_ARGS_PBR);
+
+			}
 		}
 	}
 }
