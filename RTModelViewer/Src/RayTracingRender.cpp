@@ -51,7 +51,7 @@ void UpdateDynamicConstants(DynamicCB& inputs, const Math::Camera& camera, Color
 	inputs.causticPowerScale = g_CausticPowerScale;
 }
 
-void SetupResources(CommandContext& context, DynamicCB& dynamicCB, HitShaderConstants& hitShaderConstants, ColorBuffer& colorTarget, GeometryBuffer& GBuffer)
+void SetupResources(CommandContext& context, DynamicCB& dynamicCB, HitShaderConstants& hitShaderConstants, ColorBuffer& colorTarget, GeometryBuffer& GBuffer, Tlas& tlas)
 {
 	context.WriteBuffer(g_hitConstantBuffer, 0, &hitShaderConstants, sizeof(hitShaderConstants));
 	context.WriteBuffer(g_dynamicConstantBuffer, 0, &dynamicCB, sizeof(dynamicCB));
@@ -94,12 +94,12 @@ void SetupResources(CommandContext& context, DynamicCB& dynamicCB, HitShaderCons
 	pCommandList->SetComputeRootDescriptorTable(3, g_LightingSrvs); // t10-15 
 	pCommandList->SetComputeRootDescriptorTable(4, g_OutputUAV); // u2
 	pCommandList->SetComputeRootDescriptorTable(5, GBuffer.GetRTHandle()); // t16-t21
-	pCommandList->SetComputeRootShaderResourceView(6, g_bvh_topLevelAccelerationStructure->GetGPUVirtualAddress()); // t0
+	pCommandList->SetComputeRootShaderResourceView(6, tlas.GetGPUVirtualAddress()); // t0
 }
 
 
 
-void Raytracebarycentrics(CommandContext& context, const GlobalConstants& globalConstants, const Math::Camera& camera, ColorBuffer& colorTarget, GeometryBuffer& GBuffer)
+void Raytracebarycentrics(CommandContext& context, const GlobalConstants& globalConstants, const Math::Camera& camera, ColorBuffer& colorTarget, GeometryBuffer& GBuffer, Tlas& tlas)
 {
 	ScopedTimer _p0(L"Raytracing barycentrics", context);
 
@@ -109,7 +109,7 @@ void Raytracebarycentrics(CommandContext& context, const GlobalConstants& global
 	UpdateDynamicConstants(inputs, camera, colorTarget);
 	UpdateHitShaderConstants(hitShaderConstants, globalConstants);
 
-	SetupResources(context, inputs, hitShaderConstants, colorTarget, GBuffer);
+	SetupResources(context, inputs, hitShaderConstants, colorTarget, GBuffer, tlas);
 	ComPtr<ID3D12GraphicsCommandList4> pCommandList;
 	context.GetCommandList()->QueryInterface(IID_PPV_ARGS_(pCommandList));
 
@@ -118,7 +118,7 @@ void Raytracebarycentrics(CommandContext& context, const GlobalConstants& global
 	pCommandList->DispatchRays(&dispatchRaysDesc);
 }
 
-void RaytracebarycentricsSSR(CommandContext& context, const GlobalConstants& globalConstants, const Math::Camera& camera, ColorBuffer& colorTarget, GeometryBuffer& GBuffer)
+void RaytracebarycentricsSSR(CommandContext& context, const GlobalConstants& globalConstants, const Math::Camera& camera, ColorBuffer& colorTarget, GeometryBuffer& GBuffer, Tlas& tlas)
 {
 	ScopedTimer _p0(L"Raytracing SSR barycentrics", context);
 
@@ -128,7 +128,7 @@ void RaytracebarycentricsSSR(CommandContext& context, const GlobalConstants& glo
 	UpdateDynamicConstants(inputs, camera, colorTarget);
 	UpdateHitShaderConstants(hitShaderConstants, globalConstants);
 
-	SetupResources(context, inputs, hitShaderConstants, colorTarget, GBuffer);
+	SetupResources(context, inputs, hitShaderConstants, colorTarget, GBuffer, tlas);
 	ComPtr<ID3D12GraphicsCommandList4> pCommandList;
 	context.GetCommandList()->QueryInterface(IID_PPV_ARGS_(pCommandList));
 
@@ -147,7 +147,7 @@ void RTModelViewer::RaytraceShadows(CommandContext& context, const GlobalConstan
 	UpdateDynamicConstants(inputs, camera, colorTarget);
 	UpdateHitShaderConstants(hitShaderConstants, globalConstants);
 
-	SetupResources(context, inputs, hitShaderConstants, colorTarget, GBuffer);
+	SetupResources(context, inputs, hitShaderConstants, colorTarget, GBuffer, m_tlas);
 	ComPtr<ID3D12GraphicsCommandList4> pCommandList;
 	context.GetCommandList()->QueryInterface(IID_PPV_ARGS_(pCommandList));
 
@@ -167,7 +167,7 @@ void RTModelViewer::RaytraceDiffuse(CommandContext& context, const GlobalConstan
 	UpdateHitShaderConstants(hitShaderConstants, globalConstants);
 	hitShaderConstants.UseShadowRays = rayTracingMode == RTM_DIFFUSE_WITH_SHADOWRAYS;
 
-	SetupResources(context, inputs, hitShaderConstants, colorTarget, GBuffer);
+	SetupResources(context, inputs, hitShaderConstants, colorTarget, GBuffer, m_tlas);
 	ComPtr<ID3D12GraphicsCommandList4> pCommandList;
 	context.GetCommandList()->QueryInterface(IID_PPV_ARGS_(pCommandList));
 
@@ -187,7 +187,7 @@ void RTModelViewer::RaytraceReflections(CommandContext& context, const GlobalCon
 	UpdateHitShaderConstants(hitShaderConstants, globalConstants);
 	hitShaderConstants.IsReflection = true;
 
-	SetupResources(context, inputs, hitShaderConstants, colorTarget, GBuffer);
+	SetupResources(context, inputs, hitShaderConstants, colorTarget, GBuffer, m_tlas);
 	ComPtr<ID3D12GraphicsCommandList4> pCommandList;
 	context.GetCommandList()->QueryInterface(IID_PPV_ARGS_(pCommandList));
 
@@ -209,7 +209,7 @@ void RTModelViewer::RaytraceBackward(CommandContext& context, const GlobalConsta
 
 	//hitShaderConstants.IsReflection = true;
 
-	SetupResources(context, inputs, hitShaderConstants, colorTarget, GBuffer);
+	SetupResources(context, inputs, hitShaderConstants, colorTarget, GBuffer, m_tlas);
 	ComPtr<ID3D12GraphicsCommandList4> pCommandList;
 	context.GetCommandList()->QueryInterface(IID_PPV_ARGS_(pCommandList));
 
@@ -232,7 +232,7 @@ void RTModelViewer::RaytraceCaustic(CommandContext& context, const GlobalConstan
 	//hitShaderConstants.IsReflection = true;
 	//inputs.resolution = { 512.0f, 512.0f };
 
-	SetupResources(context, inputs, hitShaderConstants, colorTarget, GBuffer);
+	SetupResources(context, inputs, hitShaderConstants, colorTarget, GBuffer, m_tlas);
 	ComPtr<ID3D12GraphicsCommandList4> pCommandList;
 	context.GetCommandList()->QueryInterface(IID_PPV_ARGS_(pCommandList));
 
@@ -251,11 +251,11 @@ void RTModelViewer::RenderRaytrace(GraphicsContext& gfxContext, const GlobalCons
 	switch (rayTracingMode)
 	{
 	case RTM_TRAVERSAL:
-		Raytracebarycentrics(gfxContext.GetComputeContext(), globalConstants, m_Camera, g_SceneColorBuffer, g_SceneGBuffer);
+		Raytracebarycentrics(gfxContext.GetComputeContext(), globalConstants, m_Camera, g_SceneColorBuffer, g_SceneGBuffer, m_tlas);
 		break;
 
 	case RTM_SSR:
-		RaytracebarycentricsSSR(gfxContext.GetComputeContext(), globalConstants, m_Camera, g_SceneColorBuffer, g_SceneGBuffer);
+		RaytracebarycentricsSSR(gfxContext.GetComputeContext(), globalConstants, m_Camera, g_SceneColorBuffer, g_SceneGBuffer, m_tlas);
 		break;
 
 	case RTM_SHADOWS:

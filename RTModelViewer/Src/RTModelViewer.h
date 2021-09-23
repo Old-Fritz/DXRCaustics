@@ -197,6 +197,66 @@ struct RaytracingDispatchRayInputs
 	ByteAddressBuffer   m_HitShaderTable;
 };
 
+struct RTGeometry
+{
+	RTGeometry();
+	RTGeometry(const Model* pModel, const Mesh* pMesh);
+
+	void Fill(const Model* pModel, const Mesh* pMesh);
+
+	D3D12_RAYTRACING_GEOMETRY_DESC* GetDescPtr();
+
+	D3D12_RAYTRACING_GEOMETRY_DESC m_desc;
+	bool m_isOpaque = true;
+	bool m_isDoubleSide = false;
+};
+
+
+struct Blas
+{
+	void AddGeometry(const Model* pModel, const Mesh* pMesh);
+	void PrepareDesc();
+	void PrepareBuffers();
+	void Build(ID3D12GraphicsCommandList4* pList);
+	D3D12_GPU_VIRTUAL_ADDRESS GetGPUVirtualAddress();
+
+	ByteAddressBuffer m_scratchBuffer;
+	ComPtr<ID3D12Resource> m_resultBuffer;
+
+	UINT64 m_scratchSize = 0;
+	UINT64 m_resultSize = 0;
+
+	std::vector<D3D12_RAYTRACING_GEOMETRY_DESC*> m_geometryDescPtrs;
+	std::vector<RTGeometry> m_geometry;
+
+	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC m_desc = {};
+
+	bool m_isDoubleSide = false;
+};
+
+struct Tlas
+{
+	void AddInstance(Blas& blas);
+	void PrepareDesc();
+	void PrepareBuffers();
+	void Build(ID3D12GraphicsCommandList4* pList);
+	D3D12_GPU_VIRTUAL_ADDRESS GetGPUVirtualAddress();
+
+	ByteAddressBuffer m_scratchBuffer;
+	ComPtr<ID3D12Resource> m_resultBuffer;
+
+	UINT64 m_scratchSize = 0;
+	UINT64 m_resultSize = 0;
+
+	std::vector<D3D12_RAYTRACING_GEOMETRY_DESC*> m_geometryDescPtrs;
+	std::vector<RTGeometry> m_geometry;
+
+	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC m_desc = {};
+
+	std::vector<D3D12_RAYTRACING_INSTANCE_DESC> m_instanceDescs;
+	ByteAddressBuffer m_instanceDataBuffer;
+};
+
 struct MaterialRootConstant
 {
 	UINT MaterialID;
@@ -295,6 +355,9 @@ private:
 	ShadowCamera m_SunShadowCamera;
 
 	TextureRef m_BlueNoiseRGBA;
+
+	std::vector<Blas> m_blases;
+	Tlas m_tlas;
 
 };
 
