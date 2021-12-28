@@ -339,7 +339,7 @@ void RTModelViewer::InitRayTraceInputs(std::function<void(ComPtr<ID3D12StateObje
 
 	{
 		*exports[SEN_RayGen].pSubObject = CreateDxilLibrary(exports[SEN_RayGen].exportName, g_pRGS_Backward, sizeof(g_pRGS_Backward), exports[SEN_RayGen].dxilLibDesc, exports[SEN_RayGen].exportDesc);
-		*exports[SEN_AnyHit].pSubObject = CreateDxilLibrary(exports[SEN_AnyHit].exportName, g_pAHS_Default, sizeof(g_pAHS_Default), exports[SEN_AnyHit].dxilLibDesc, exports[SEN_AnyHit].exportDesc);
+		*exports[SEN_AnyHit].pSubObject = CreateDxilLibrary(exports[SEN_AnyHit].exportName, g_pAHS_Backward, sizeof(g_pAHS_Backward), exports[SEN_AnyHit].dxilLibDesc, exports[SEN_AnyHit].exportDesc);
 		*exports[SEN_ClosestHit].pSubObject = CreateDxilLibrary(exports[SEN_ClosestHit].exportName, g_pCHS_Backward, sizeof(g_pCHS_Backward), exports[SEN_ClosestHit].dxilLibDesc, exports[SEN_ClosestHit].exportDesc);
 		*exports[SEN_Miss].pSubObject = CreateDxilLibrary(exports[SEN_Miss].exportName, g_pMS_Backward, sizeof(g_pMS_Backward), exports[SEN_Miss].dxilLibDesc, exports[SEN_Miss].exportDesc);
 
@@ -351,7 +351,7 @@ void RTModelViewer::InitRayTraceInputs(std::function<void(ComPtr<ID3D12StateObje
 
 	{
 		*exports[SEN_RayGen].pSubObject = CreateDxilLibrary(exports[SEN_RayGen].exportName, g_pRGS_Caustic, sizeof(g_pRGS_Caustic), exports[SEN_RayGen].dxilLibDesc, exports[SEN_RayGen].exportDesc);
-		*exports[SEN_AnyHit].pSubObject = CreateDxilLibrary(exports[SEN_AnyHit].exportName, g_pAHS_Default, sizeof(g_pAHS_Default), exports[SEN_AnyHit].dxilLibDesc, exports[SEN_AnyHit].exportDesc);
+		*exports[SEN_AnyHit].pSubObject = CreateDxilLibrary(exports[SEN_AnyHit].exportName, g_pAHS_Caustic, sizeof(g_pAHS_Caustic), exports[SEN_AnyHit].dxilLibDesc, exports[SEN_AnyHit].exportDesc);
 		*exports[SEN_ClosestHit].pSubObject = CreateDxilLibrary(exports[SEN_ClosestHit].exportName, g_pCHS_Caustic, sizeof(g_pCHS_Caustic), exports[SEN_ClosestHit].dxilLibDesc, exports[SEN_ClosestHit].exportDesc);
 		*exports[SEN_Miss].pSubObject = CreateDxilLibrary(exports[SEN_Miss].exportName, g_pMS_Caustic, sizeof(g_pMS_Caustic), exports[SEN_Miss].dxilLibDesc, exports[SEN_Miss].exportDesc);
 

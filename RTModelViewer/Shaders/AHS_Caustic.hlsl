@@ -12,10 +12,12 @@ void AnyHit(inout CausticRayPayload payload, in BuiltInTriangleIntersectionAttri
 	 // --------- SURFACE TRANSPARENCY --------------- //
 	// ---------------------------------------------- //
 
-	VertexData vertex = ExtractVertexData(attrib, worldPos);
+	float3 screenCoords = GetScreenCoords(worldPos);
+	VertexData vertex = ExtractVertexData(attrib, worldPos, screenCoords);
 	float transparency = ExtractTransparency(vertex);
 
-	if (transparency < 0.001f)
+
+	if (transparency < 0.1f)
 	{
 		IgnoreHit();
 	}

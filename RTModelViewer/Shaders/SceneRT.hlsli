@@ -3,18 +3,21 @@
 
 #include "Unpacking.hlsli"
 
-
+#ifdef USE_SAMPLE_GRAD
 struct TextureCoords
 {
-	float2			uv;
+	float2			xy;
 	float2			ddxUV;
 	float2			ddyUV;
 };
+#else
+#define TextureCoords float2
+#endif
 
 struct VertexData
 {
 	float3			normal;
-	float3			tangent;
+	float4			tangent;
 	float3			bitangent;
 	TextureCoords	tc;
 };
@@ -115,9 +118,9 @@ float3 GetProjectWorldCoords(float3 worldPos)
 	return mul(ViewProjMatrix, float4(worldPos, 1.0));
 }
 
-VertexData ExtractVertexData(in BuiltInTriangleIntersectionAttributes attr, float3 worldPos)
+VertexData ExtractVertexData(in BuiltInTriangleIntersectionAttributes attr, float3 worldPos, float3 screenCoords)
 {
-	VertexData vertex;
+	VertexData vertex = (VertexData)0;
 
 	uint materialID = MaterialID;
 	uint triangleID = PrimitiveIndex();
@@ -125,7 +128,7 @@ VertexData ExtractVertexData(in BuiltInTriangleIntersectionAttributes attr, floa
 	// per mesh data
 	RayTraceMeshInfo info = g_meshInfo[materialID];
 	MeshConstantsRT meshConstants = g_meshConstants[materialID];
-	float3x3 worldIT = float3x3(meshConstants.worldIT_0, meshConstants.worldIT_1, meshConstants.worldIT_2);
+	//float3x3 worldIT = float3x3(meshConstants.worldIT_0, meshConstants.worldIT_1, meshConstants.worldIT_2);
 	//worldIT = float3x3(0.01f, 0, 0,
 	//	0, 0.01f, 0,
 	//	0, 0, 0.01f);
@@ -138,27 +141,39 @@ VertexData ExtractVertexData(in BuiltInTriangleIntersectionAttributes attr, floa
    // ------------------ NORMAL -------------------- //
   // ---------------------------------------------- //
 
+
   // extract normal attributes
+#ifndef USE_SAMPLE_GRAD
+	uint3 address = ii * info.m_attributeStrideBytes;
+	for (uint i = 0; i < 3; i++)
+	{
+		vertex.normal += GetNormalAttribute(address[i] + info.m_normalAttributeOffsetBytes).xyz * bary[i];
+		vertex.tangent += GetTangentAttribute(address[i] + info.m_tangentAttributeOffsetBytes) * bary[i];
+		vertex.tc.xy += GetUVAttribute(address[i] + info.m_uvAttributeOffsetBytes) * bary[i];
+	}
+	vertex.normal = normalize(vertex.normal);
+	vertex.tangent = normalize(vertex.tangent);
+	vertex.bitangent = normalize(cross(vertex.normal, vertex.tangent.xyz) * vertex.tangent.w);
+
+#else
 	const float4 normal0 = GetNormalAttribute(info.m_normalAttributeOffsetBytes + ii.x * info.m_attributeStrideBytes);
 	const float4 normal1 = GetNormalAttribute(info.m_normalAttributeOffsetBytes + ii.y * info.m_attributeStrideBytes);
 	const float4 normal2 = GetNormalAttribute(info.m_normalAttributeOffsetBytes + ii.z * info.m_attributeStrideBytes);
-	const float4 normal = normal0 * bary.x + normal1 * bary.y + normal2 * bary.z;
-	vertex.normal = normalize(normal.xyz);
+	vertex.normal = normalize(normal0 * bary.x + normal1 * bary.y + normal2 * bary.z);
 	//vertex.normal = mul(worldIT, normal.xyz);
 
 	const float4 tangent0 = GetTangentAttribute(info.m_tangentAttributeOffsetBytes + ii.x * info.m_attributeStrideBytes);
 	const float4 tangent1 = GetTangentAttribute(info.m_tangentAttributeOffsetBytes + ii.y * info.m_attributeStrideBytes);
 	const float4 tangent2 = GetTangentAttribute(info.m_tangentAttributeOffsetBytes + ii.z * info.m_attributeStrideBytes);
-	const float4 tangent = tangent0 * bary.x + tangent1 * bary.y + tangent2 * bary.z;
-	vertex.tangent = normalize(tangent.xyz);
+	vertex.tangent = normalize(tangent0 * bary.x + tangent1 * bary.y + tangent2 * bary.z);
 	//vertex.tangent = mul(worldIT, tangent.xyz);
 
 	// Reintroduced the bitangent because we aren't storing the handedness of the tangent frame anywhere.  Assuming the space
 	// is right-handed causes normal maps to invert for some surfaces.
 	//bool isRightHanded = true;
 	//float scaleBitangent = (isRightHanded ? 1.0 : -1.0);
-	float scaleBitangent = tangent.w;
-	vertex.bitangent = normalize(cross(vertex.normal, vertex.tangent) * scaleBitangent);
+	//float scaleBitangent = tangent.w;
+	vertex.bitangent = normalize(cross(vertex.normal, vertex.tangent) * tangent.w);
 
 	// ---------------------------------------------- //
    // ----------------- TEXTURE UV ----------------- //
@@ -190,7 +205,7 @@ VertexData ExtractVertexData(in BuiltInTriangleIntersectionAttributes attr, floa
 	float3 triangleNormal = normalize(cross(p2 - p0, p1 - p0));
 
 	// Helper rays
-	uint2 threadID = DispatchRaysIndex().xy;
+	uint2 threadID = screenCoords.xy;
 	float3 ddxOrigin, ddxDir, ddyOrigin, ddyDir;
 	GenerateCameraRay(uint2(threadID.x + 1, threadID.y), ddxOrigin, ddxDir);
 	GenerateCameraRay(uint2(threadID.x, threadID.y + 1), ddyOrigin, ddyDir);
@@ -205,8 +220,9 @@ VertexData ExtractVertexData(in BuiltInTriangleIntersectionAttributes attr, floa
 
 	// Compute UVs and take the difference
 	float3x2 uvMat = float3x2(uv0, uv1, uv2);
-	vertex.tc.ddxUV = mul(baryX, uvMat) - vertex.tc.uv;
-	vertex.tc.ddyUV = mul(baryY, uvMat) - vertex.tc.uv;
+	vertex.tc.ddxUV = mul(baryX, uvMat) - vertex.tc.xy;
+	vertex.tc.ddyUV = mul(baryY, uvMat) - vertex.tc.xy;
+#endif
 
 	return vertex;
 }

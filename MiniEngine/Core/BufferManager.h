@@ -85,7 +85,7 @@ namespace Graphics
 		static constexpr DXGI_FORMAT c_GBufferFormats[(uint32_t)GBTarget::NumTargets] =
 		{
 			DXGI_FORMAT_R16G16B16A16_FLOAT,
-			DXGI_FORMAT_R16G16_FLOAT,
+			DXGI_FORMAT_R16G16B16A16_FLOAT,
 			DXGI_FORMAT_R16_FLOAT,
 			DXGI_FORMAT_R16G16B16A16_FLOAT,
 			DXGI_FORMAT_R16G16B16A16_FLOAT
@@ -115,6 +115,7 @@ namespace Graphics
 
 	extern ColorBuffer g_VelocityBuffer;	// R10G10B10  (3D velocity)
 	extern ShadowBuffer g_ShadowBuffer;
+	extern ColorBuffer g_CausticBuffer;
 
 	extern ColorBuffer g_SSAOFullScreen;	// R8_UNORM
 	extern ColorBuffer g_LinearDepth[2];	// Normalized planar distance (0 at eye, 1 at far plane) computed from the SceneDepthBuffer

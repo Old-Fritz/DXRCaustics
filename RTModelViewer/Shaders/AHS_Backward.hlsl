@@ -13,10 +13,11 @@ void AnyHit(inout BackwardRayPayload payload, in BuiltInTriangleIntersectionAttr
    // --------- SURFACE TRANSPARENCY --------------- //
   // ---------------------------------------------- //
 
-	VertexData vertex = ExtractVertexData(attrib, worldPos);
+	//float3 screenCoords = GetScreenCoords(worldPos);
+	VertexData vertex = ExtractVertexData(attrib, worldPos, float3(0,0,0));
 	float transparency = ExtractTransparency(vertex);
 
-	if (transparency < 1.0f)
+	if (transparency < 0.1f)
 	{
 		IgnoreHit();
 	}

@@ -27,8 +27,8 @@ void AccumulateReflection(inout float3 colorAccum, SurfaceProperties Surface, fl
 	for (uint i = 0; i < sampleCount; i++)
 	{
 		// R
-		float3 direction = GetReflectedDirection(Surface, primaryRayDirection, rh);
-		float3 origin = worldPos - primaryRayDirection * 2.0f;	 // Lift off the surface a bit
+		float3 direction = -GetReflectedDirection(Surface, primaryRayDirection, rh);
+		float3 origin = worldPos - primaryRayDirection * 0.01f;	 // Lift off the surface a bit
 
 		RayDesc rayDesc = { origin,
 			0.0f,

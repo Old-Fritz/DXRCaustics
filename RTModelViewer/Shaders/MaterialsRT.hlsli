@@ -12,22 +12,42 @@ struct GBuffer
 	float3			normal;
 };
 
+
+//#define USE_SAMPLE_GRAD
+#define MIP_LEVEL 0
+
 // sample textures
-float4 TexSample(Texture2D<float4> tex, TextureCoords coords)
+inline float4 TexSample(Texture2D<float4> tex, TextureCoords coords)
 {
-	return tex.SampleGrad(defaultSampler, coords.uv, coords.ddxUV, coords.ddyUV);
+#ifdef USE_SAMPLE_GRAD
+	return tex.SampleGrad(defaultSampler, coords.xy, coords.ddxUV, coords.ddyUV);
+#else
+	return tex.SampleLevel(defaultSampler, coords.xy, MIP_LEVEL);
+#endif
 }
-float3 TexSample(Texture2D<float3> tex, TextureCoords coords)
+inline float3 TexSample(Texture2D<float3> tex, TextureCoords coords)
 {
-	return tex.SampleGrad(defaultSampler, coords.uv, coords.ddxUV, coords.ddyUV);
+#ifdef USE_SAMPLE_GRAD
+	return tex.SampleGrad(defaultSampler, coords.xy, coords.ddxUV, coords.ddyUV);
+#else
+	return tex.SampleLevel(defaultSampler, coords.xy, MIP_LEVEL);
+#endif
 }
-float2 TexSample(Texture2D<float2> tex, TextureCoords coords)
+inline float2 TexSample(Texture2D<float2> tex, TextureCoords coords)
 {
-	return tex.SampleGrad(defaultSampler, coords.uv, coords.ddxUV, coords.ddyUV);
+#ifdef USE_SAMPLE_GRAD
+	return tex.SampleGrad(defaultSampler, coords.xy, coords.ddxUV, coords.ddyUV);
+#else
+	return tex.SampleLevel(defaultSampler, coords.xy, MIP_LEVEL);
+#endif
 }
-float1 TexSample(Texture2D<float1> tex, TextureCoords coords)
+inline float1 TexSample(Texture2D<float1> tex, TextureCoords coords)
 {
-	return tex.SampleGrad(defaultSampler, coords.uv, coords.ddxUV, coords.ddyUV);
+#ifdef USE_SAMPLE_GRAD
+	return tex.SampleGrad(defaultSampler, coords.xy, coords.ddxUV, coords.ddyUV);
+#else
+	return tex.SampleLevel(defaultSampler, coords.xy, MIP_LEVEL);
+#endif
 }
 
 GBuffer ExtractGBuffer(VertexData vertex)
@@ -46,13 +66,13 @@ GBuffer ExtractGBuffer(VertexData vertex)
 
 	// calculate normal
 	gBuf.normal = normalize(gBuf.normal * float3(mat.normalTextureScale, mat.normalTextureScale, 1));
-	float3x3 tbn = float3x3(vertex.tangent, vertex.bitangent, vertex.normal);
+	float3x3 tbn = float3x3(vertex.tangent.xyz, vertex.bitangent, vertex.normal);
 	gBuf.normal = mul(gBuf.normal, tbn);
 
 	return gBuf;
 }
 
-float ExtractTransparency(VertexData vertex)
+inline float ExtractTransparency(VertexData vertex)
 {
 	return TexSample(g_localBaseColor, vertex.tc).a;
 }
@@ -63,15 +83,15 @@ GBuffer ExtractScreenSpaceGBuffer(float2 readGBufferAt)
 
 	// Load and modulate textures
 	gBuf.baseColor =			g_GBBaseColor.Load(			int4(readGBufferAt, DispatchRaysIndex().z, 0));
-	gBuf.metallicRoughness =	g_GBMetallicRoughness.Load(	int4(readGBufferAt, DispatchRaysIndex().z, 0));
+	gBuf.metallicRoughness =	g_GBMetallicRoughness.Load(	int4(readGBufferAt, DispatchRaysIndex().z, 0)).bg;
 	gBuf.occlusion =			g_GBOcclusion.Load(			int4(readGBufferAt, DispatchRaysIndex().z, 0));
 	gBuf.emissive =				g_GBEmissive.Load(			int4(readGBufferAt, DispatchRaysIndex().z, 0));
-	gBuf.normal =				g_GBNormal.Load(			int4(readGBufferAt, DispatchRaysIndex().z, 0));
+	gBuf.normal =				g_GBNormal.Load(			int4(readGBufferAt, DispatchRaysIndex().z, 0)).xyz;
 
 	return gBuf;
 }
 
-float ExtractTransparency(float2 readGBufferAt)
+inline float ExtractTransparency(float2 readGBufferAt)
 {
 	return g_GBBaseColor.Load(int4(readGBufferAt, DispatchRaysIndex().z, 0)).a;
 }

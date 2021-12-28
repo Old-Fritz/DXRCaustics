@@ -23,18 +23,20 @@ void RayGen()
 	// ---------------------------------------------- //
 
 	float3 worldPos = GetScreenSpaceIntersectionPoint(readGBufferAt, g_dynamic.cameraToWorld);
-	float3 primaryRayDirection = normalize(ViewerPos.xyz - worldPos); // normalize(ViewerPos.xyz - worldPos)
+	float3 primaryRayDirection = normalize(worldPos - ViewerPos.xyz); // normalize(ViewerPos.xyz - worldPos)
+
+	//float3 primaryRayDirection = normalize(ViewerPos.xyz - worldPos); // normalize(ViewerPos.xyz - worldPos)
 
 	GBuffer gBuf = ExtractScreenSpaceGBuffer(readGBufferAt);
 
 
-	if (gBuf.metallicRoughness.x > 0.7)
-	{
-		gBuf.metallicRoughness.x = 0.7;
-		gBuf.metallicRoughness.y += clamp(gBuf.metallicRoughness.y, 0.7, 1);
-	}
+	//if (gBuf.metallicRoughness.x > 0.7)
+	//{
+	//	gBuf.metallicRoughness.x = 0.7;
+	//	gBuf.metallicRoughness.y += clamp(gBuf.metallicRoughness.y, 0.7, 1);
+	//}
 	//gBuf.metallicRoughness.y += clamp(gBuf.metallicRoughness.y, 0.2, 1) + gBuf.metallicRoughness.x *0.5f;// float2(0, 1);
-	SurfaceProperties Surface = BuildSurface(gBuf, primaryRayDirection);
+	SurfaceProperties Surface = BuildSurface(gBuf, -primaryRayDirection);
 
 	  // ---------------------------------------------- //
 	 // ----------------- SHADING -------------------- //

@@ -197,10 +197,10 @@ struct RaytracingDispatchRayInputs
 	ByteAddressBuffer   m_HitShaderTable;
 };
 
-struct RTGeometry
+struct RTGeometryTriangle
 {
-	RTGeometry();
-	RTGeometry(const Model* pModel, const Mesh* pMesh);
+	RTGeometryTriangle();
+	RTGeometryTriangle(const Model* pModel, const Mesh* pMesh);
 
 	void Fill(const Model* pModel, const Mesh* pMesh);
 
@@ -211,6 +211,16 @@ struct RTGeometry
 	bool m_isDoubleSide = false;
 };
 
+struct RTGeometryAABB
+{
+	RTGeometryAABB();
+
+	void Fill();
+
+	D3D12_RAYTRACING_GEOMETRY_DESC* GetDescPtr();
+
+	D3D12_RAYTRACING_GEOMETRY_DESC m_desc;
+};
 
 struct Blas
 {
@@ -227,7 +237,7 @@ struct Blas
 	UINT64 m_resultSize = 0;
 
 	std::vector<D3D12_RAYTRACING_GEOMETRY_DESC*> m_geometryDescPtrs;
-	std::vector<RTGeometry> m_geometry;
+	std::vector<RTGeometryTriangle> m_geometry;
 
 	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC m_desc = {};
 
@@ -247,9 +257,6 @@ struct Tlas
 
 	UINT64 m_scratchSize = 0;
 	UINT64 m_resultSize = 0;
-
-	std::vector<D3D12_RAYTRACING_GEOMETRY_DESC*> m_geometryDescPtrs;
-	std::vector<RTGeometry> m_geometry;
 
 	D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC m_desc = {};
 
@@ -358,6 +365,7 @@ private:
 
 	std::vector<Blas> m_blases;
 	Tlas m_tlas;
+	Tlas m_causticTlas;
 
 };
 

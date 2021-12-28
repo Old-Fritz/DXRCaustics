@@ -29,7 +29,8 @@ void ClosestHit(inout BackwardRayPayload payload, in BuiltInTriangleIntersection
 	 // ------------ SURFACE CREATION ---------------- //
 	// ---------------------------------------------- //
 
-	VertexData vertex = ExtractVertexData(attr, worldPos);
+	float3 screenCoords = GetScreenCoords(worldPos);
+	VertexData vertex = ExtractVertexData(attr, worldPos, screenCoords);
 	GBuffer gBuf = ExtractGBuffer(vertex);
 
 	SurfaceProperties Surface = BuildSurface(gBuf, normalize(ViewerPos.xyz - worldPos));

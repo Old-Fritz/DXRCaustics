@@ -24,7 +24,6 @@ struct CausticRayPayload
 	float3 Color;
 	uint Count;
 	float RayHitT;
-	bool SkipShading;
 };
 
 #ifndef SINGLE
@@ -140,6 +139,30 @@ inline void GenerateCameraRay(uint2 index, out float3 origin, out float3 directi
 	float3 world = unprojected.xyz / unprojected.w;
 	origin = g_dynamic.worldCameraPosition;
 	direction = normalize(world - origin);
+}
+
+inline bool ScreenCoordsInFrustum(float3 screenCoords)
+{
+	return screenCoords.x >= 0 && screenCoords.y >= 0 && screenCoords.x < g_dynamic.resolution.x&& screenCoords.y < g_dynamic.resolution.y;
+}
+
+inline bool ScreenCoordsVisible(float3 screenCoords)
+{
+	float sceneDepth = g_mainDepth.Load(int3(screenCoords.xy, 0));
+
+	return screenCoords.z >= sceneDepth && screenCoords.z > 0 && ScreenCoordsInFrustum(screenCoords);
+}
+
+float3 GetScreenCoords(float3 worldPos)
+{
+	float2 dims = g_dynamic.resolution;
+
+	float4 p_xy = mul((ViewProjMatrix), float4(worldPos, 1.0));
+
+	p_xy /= p_xy.w;
+	p_xy.y = -p_xy.y;
+
+	return float3((p_xy.xy + 1) / 2 * (dims - 1) + 0.5, p_xy.z);
 }
 
 #include "RandomRT.hlsli"

@@ -1,14 +1,14 @@
 #include "RTModelViewer.h"
 
 
-RTGeometry::RTGeometry() : m_desc()
+RTGeometryTriangle::RTGeometryTriangle() : m_desc()
 {}
-RTGeometry::RTGeometry(const Model* pModel, const Mesh* pMesh)
+RTGeometryTriangle::RTGeometryTriangle(const Model* pModel, const Mesh* pMesh)
 {
 	Fill(pModel, pMesh);
 }
 
-void RTGeometry::Fill(const Model* pModel, const Mesh* pMesh)
+void RTGeometryTriangle::Fill(const Model* pModel, const Mesh* pMesh)
 {
 	m_isOpaque = !(pMesh->psoFlags & PSOFlags::kAlphaTest) && !(pMesh->psoFlags & PSOFlags::kAlphaBlend);
 	m_isDoubleSide = (pMesh->psoFlags & PSOFlags::kTwoSided);
@@ -27,17 +27,52 @@ void RTGeometry::Fill(const Model* pModel, const Mesh* pMesh)
 	trianglesDesc.Transform3x4 = 0;
 }
 
-D3D12_RAYTRACING_GEOMETRY_DESC* RTGeometry::GetDescPtr()
+D3D12_RAYTRACING_GEOMETRY_DESC* RTGeometryTriangle::GetDescPtr()
+{
+	return &m_desc;
+}
+
+RTGeometryAABB::RTGeometryAABB() : m_desc()
+{}
+
+void RTGeometryAABB::Fill()
+{
+	m_desc.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_PROCEDURAL_PRIMITIVE_AABBS;
+	m_desc.Flags = D3D12_RAYTRACING_GEOMETRY_FLAG_OPAQUE;
+	//
+	//D3D12_RAYTRACING_GEOMETRY_AABBS_DESC& aabbDesc = m_desc.AABBs;
+	////D3D12_RAYTRACING_AABB& m_desc.
+	//
+	//
+	//
+	//m_isOpaque = !(pMesh->psoFlags & PSOFlags::kAlphaTest) && !(pMesh->psoFlags & PSOFlags::kAlphaBlend);
+	//m_isDoubleSide = (pMesh->psoFlags & PSOFlags::kTwoSided);
+	//
+	//m_desc.Type = D3D12_RAYTRACING_GEOMETRY_TYPE_TRIANGLES;
+	//m_desc.Flags = m_isOpaque ? D3D12_RAYTRACING_GEOMETRY_FLAG_OPAQUE : D3D12_RAYTRACING_GEOMETRY_FLAG_NONE;
+	//
+	//D3D12_RAYTRACING_GEOMETRY_TRIANGLES_DESC& trianglesDesc = m_desc.Triangles;
+	//trianglesDesc.VertexFormat = DXGI_FORMAT_R32G32B32_FLOAT;
+	//trianglesDesc.VertexCount = pMesh->vbSize / pMesh->vbStride;
+	//trianglesDesc.VertexBuffer.StartAddress = pModel->m_DataBuffer.GetGpuVirtualAddress() + pMesh->vbOffset;
+	//trianglesDesc.IndexBuffer = pModel->m_DataBuffer.GetGpuVirtualAddress() + pMesh->ibOffset;
+	//trianglesDesc.VertexBuffer.StrideInBytes = pMesh->vbStride;
+	//trianglesDesc.IndexCount = pMesh->ibSize / ((DXGI_FORMAT)pMesh->ibFormat == DXGI_FORMAT_R32_UINT ? 4 : 2);
+	//trianglesDesc.IndexFormat = (DXGI_FORMAT)pMesh->ibFormat;
+	//trianglesDesc.Transform3x4 = 0;
+}
+
+D3D12_RAYTRACING_GEOMETRY_DESC* RTGeometryAABB::GetDescPtr()
 {
 	return &m_desc;
 }
 
 void Blas::AddGeometry(const Model* pModel, const Mesh* pMesh)
-	{
-		m_geometry.emplace_back(pModel, pMesh);
-		m_geometryDescPtrs.push_back(m_geometry.back().GetDescPtr());
-		m_isDoubleSide |= m_geometry.back().m_isDoubleSide;
-	}
+{
+	m_geometry.emplace_back(pModel, pMesh);
+	m_geometryDescPtrs.push_back(m_geometry.back().GetDescPtr());
+	m_isDoubleSide |= m_geometry.back().m_isDoubleSide;
+}
 
 void Blas::PrepareDesc()
 	{

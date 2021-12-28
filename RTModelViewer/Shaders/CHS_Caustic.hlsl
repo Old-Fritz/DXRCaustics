@@ -209,18 +209,6 @@ void ClosestHit(inout CausticRayPayload payload, in BuiltInTriangleIntersectionA
 */
 
 
-float3 GetScreenCoords(float3 worldPos)
-{
-	float2 dims = g_dynamic.resolution;
-
-	float4 p_xy = mul((ViewProjMatrix), float4(worldPos, 1.0));
-
-	p_xy /= p_xy.w;
-	p_xy.y = -p_xy.y;
-
-	return float3((p_xy.xy + 1) / 2 * (dims - 1) + 0.5, p_xy.z);
-}
-
 struct LightParams
 {
 	float distanceFalloff;
@@ -229,7 +217,7 @@ struct LightParams
 	float radiusSq;
 };
 
-LightParams GetLightParams(CausticRayPayload payload)
+inline LightParams GetLightParams(CausticRayPayload payload)
 {
 	LightParams params;
 
@@ -256,7 +244,7 @@ void ClosestHit(inout CausticRayPayload payload, in BuiltInTriangleIntersectionA
 
 	LightParams lightParams = GetLightParams(payload);
 
-	if (payload.SkipShading || lightParams.distanceFalloff <= 0)
+	if ( lightParams.distanceFalloff <= 0)
 	{
 		return;
 	}
@@ -264,7 +252,7 @@ void ClosestHit(inout CausticRayPayload payload, in BuiltInTriangleIntersectionA
 	float3 worldPos = GetIntersectionPoint();
 
 	float3 dirToViewer = normalize(ViewerPos.xyz - worldPos);
-	worldPos += dirToViewer * 2.0f;
+	//worldPos += dirToViewer * 2.0f;
 
 	float3 screenCoords = GetScreenCoords(worldPos);
 
@@ -272,14 +260,12 @@ void ClosestHit(inout CausticRayPayload payload, in BuiltInTriangleIntersectionA
    // ------------ SURFACE CREATION ---------------- //
   // ---------------------------------------------- //
 
-	VertexData vertex = ExtractVertexData(attr, worldPos);
+	VertexData vertex = ExtractVertexData(attr, worldPos, screenCoords);
 	GBuffer gBuf = ExtractGBuffer(vertex);
 
 	// ---------------------------------------------- //
    // ----------------- SHADING -------------------- //
   // ---------------------------------------------- //
-
-	float sceneDepth = g_mainDepth.Load(int3(screenCoords.xy, 0));
 
 	SurfaceProperties Surface = BuildSurface(gBuf);
 
@@ -297,7 +283,7 @@ void ClosestHit(inout CausticRayPayload payload, in BuiltInTriangleIntersectionA
 		RandomHandle rh = RandomInit(1);		
 
 		float3 direction = -GetReflectedDirection(Surface, WorldRayDirection(), rh);
-		float3 origin = worldPos - WorldRayDirection() * 2.0f;	 // Lift off the surface a bit
+		float3 origin = worldPos - WorldRayDirection() * 0.01f;	 // Lift off the surface a bit
 
 		SetSurfaceView(Surface, direction);
 
@@ -310,25 +296,19 @@ void ClosestHit(inout CausticRayPayload payload, in BuiltInTriangleIntersectionA
 		};
 
 		CausticRayPayload payloadNew;
-		payload.SkipShading = false;
 		payload.RayHitT = payload.RayHitT;
 		payloadNew.Color = lightParams.color * specular;
 		payloadNew.Count = payload.Count + 1;
 		TraceRay(g_accel, RAY_FLAG_CULL_BACK_FACING_TRIANGLES, ~0, 0, 1, 0, rayDesc, payloadNew);
 	}
 
-	float3 colors[4];
-		colors[0] = float3(1, 0, 0);
-		colors[1] = float3(0, 1, 0);
-		colors[2] = float3(0, 0, 1);
-		colors[3] = float3(1, 1, 0);
+	//float3 colors[4];
+	//	colors[0] = float3(1, 0, 0);
+	//	colors[1] = float3(0, 1, 0);
+	//	colors[2] = float3(0, 0, 1);
+	//	colors[3] = float3(1, 1, 0);
 
-	if (
-		screenCoords.z >= sceneDepth &&
-		screenCoords.z > 0 &&
-		screenCoords.x >= 0 && screenCoords.y >= 0 && screenCoords.x < g_dynamic.resolution.x && screenCoords.y < g_dynamic.resolution.y
-		&& payload.Count > 0
-		)
+	if (ScreenCoordsVisible(screenCoords) && payload.Count > 0)
 	{
 		float3 accumValue = 0;
 		// calc diffuse

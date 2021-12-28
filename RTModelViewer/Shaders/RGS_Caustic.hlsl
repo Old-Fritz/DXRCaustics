@@ -7,6 +7,11 @@
 void RayGen()
 {
 	uint2 DTid = DispatchRaysIndex().xy;
+	//if ((DTid.x % 2 == 0 && DTid.y % 2 == 0))
+	//{
+	//	return;
+	//}
+
 	float2 readGBufferAt = DTid.xy + 0.5;
 	LightData lightData = lightBuffer[DispatchRaysIndex().z];
 
@@ -26,10 +31,10 @@ void RayGen()
 
 
 	float3 worldPos = GetScreenSpaceIntersectionPoint(readGBufferAt, lightData.cameraToWorld);
-	float3 primaryRayDirection = normalize(lightData.pos - worldPos); // normalize(ViewerPos.xyz - worldPos)
+	float3 primaryRayDirection = normalize(worldPos - lightData.pos);//normalize(lightData.pos - worldPos); // normalize(ViewerPos.xyz - worldPos)
 
 	GBuffer gBuf = ExtractScreenSpaceGBuffer(readGBufferAt);
-	SurfaceProperties Surface = BuildSurface(gBuf, primaryRayDirection);
+	SurfaceProperties Surface = BuildSurface(gBuf, -primaryRayDirection);
 	
 	  // ---------------------------------------------- //
 	 // ----------------- REFLEC --------------------- //
@@ -59,18 +64,18 @@ void RayGen()
 	coneFalloff = saturate((coneFalloff - coneAngles.y) * coneAngles.x);
 
 
-	float3 origin = worldPos - primaryRayDirection * 2.0f;	 // Lift off the surface a bit
+	//float3 origin = worldPos;
 
 	/// gen ray
 	for (int i = 0; i < g_dynamic.causticRaysPerPixel; ++i)
 	{
-		float3 direction = GetReflectedDirection(Surface, primaryRayDirection, rh);
-
+		float3 direction = -GetReflectedDirection(Surface, primaryRayDirection, rh);
+		float3 origin = worldPos - primaryRayDirection * 0.01f;	 // Lift off the surface a bit
 
 		SetSurfaceView(Surface, direction);
 
 		float3 diffuse, specular;
-		CalcReflectionFactors(Surface, primaryRayDirection, diffuse, specular);
+		CalcReflectionFactors(Surface, -primaryRayDirection , diffuse, specular);
 
 		RayDesc rayDesc = { origin,
 			0.0f,
@@ -79,7 +84,6 @@ void RayGen()
 		};
 
 		CausticRayPayload payload;
-		payload.SkipShading = false;
 		payload.RayHitT = maxDist;
 		payload.Color = lightColor * specular * coneFalloff / g_dynamic.causticRaysPerPixel;
 		payload.Count = 1;

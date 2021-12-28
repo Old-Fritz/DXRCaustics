@@ -279,7 +279,7 @@ void RTModelViewer::RenderRaytrace(GraphicsContext& gfxContext, const GlobalCons
 	case RTM_OFF_WITH_CAUSTICS:
 	case RTM_CAUSTIC:
 		//RaytraceCaustic(gfxContext, globalConstants, m_Camera, g_SceneColorBuffer, g_SceneGBuffer);
-		RaytraceCaustic(gfxContext, globalConstants, Lighting::m_LightShadowCamera[0], g_SceneColorBuffer, Lighting::m_LightGBufferArray);
+		RaytraceCaustic(gfxContext, globalConstants, m_Camera, g_SceneColorBuffer, Lighting::m_LightGBufferArray);
 		break;
 	}
 
