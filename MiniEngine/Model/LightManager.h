@@ -41,13 +41,15 @@ namespace Lighting
 	// must keep in sync with HLSL
 	struct LightData
 	{
+		float color[3];
 		float pos[3];
 		float radiusSq;
-		float color[3];
+		float radius;
 
-		uint32_t type;
 		float coneDir[3];
 		float coneAngles[2];
+
+		uint32_t type;
 
 		float shadowTextureMatrix[16];
 		float cameraToWorld[16];
@@ -74,7 +76,7 @@ namespace Lighting
 
 	void InitializeResources(void);
 	void CreateRandomLights(const Math::Vector3 minBound, const Math::Vector3 maxBound, uint32_t count = MaxLights);
-	void FillLightGrid(GraphicsContext& gfxContext, const Math::Camera& camera);
+	void FillLightGrid(GraphicsContext& gfxContext, const Math::Camera& camera, uint32_t count = MaxLights);
 	void Shutdown(void);
 	void UpdateLightBuffer(void);
 	void UpdateLightData(uint32_t lightId, const Math::Vector3 pos, float lightRadius, const Math::Vector3 color, const Math::Vector3 coneDir, float coneInner, float coneOuter, uint32_t type = 2);

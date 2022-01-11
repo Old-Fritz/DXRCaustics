@@ -45,6 +45,7 @@
 #include "LightManager.h"
 #include <atlbase.h>
 #include "DXSampleHelper.h"
+#include <d3d12shader.h>
 
 
 #include "CompiledShaders/RGS_Shadows.h"
@@ -68,7 +69,7 @@
 #include "CompiledShaders/AHS_Caustic.h"
 #include  "CompiledShaders/MS_Caustic.h"
 
-#include "Shaders/RaytracingHlslCompat.h"
+#include "../Shaders/Include/CommonConstantBuffers.h"
 
 #define IID_PPV_ARGS_(ptr) IID_PPV_ARGS(ptr.GetAddressOf())
 #define MAX_LIGHTS 20
@@ -79,30 +80,7 @@ using namespace Graphics;
 
 constexpr UINT MaxRayRecursion = 16;
 constexpr UINT c_NumCameraPositions = 2;
-constexpr UINT MaxMaterials = 100;
-
-__declspec(align(256)) struct HitShaderConstants
-{
-	Matrix4			ViewProjMatrix;
-	Matrix4			SunShadowMatrix;
-	Vector4			ViewerPos;
-	Vector4			SunDirection; 
-	Vector4			SunIntensity;
-	Vector4			AmbientIntensity;
-	Vector4			ShadowTexelSize;
-	Vector4			InvTileDim;
-	UintVector4		TileCount;
-	UintVector4		FirstLightIndex;
-
-	float			ModelScale;
-	float			IBLRange;
-	float			IBLBias;
-	uint			AdditiveRecurrenceSequenceIndexBasis;
-
-	float2			AdditiveRecurrenceSequenceAlpha;
-	uint			IsReflection;
-	uint			UseShadowRays;
-};
+constexpr UINT MaxMaterials = 200;
 
 struct ShaderExport
 {
@@ -137,6 +115,13 @@ enum RaytracingTypes
 	Backward,
 	Caustic,
 	NumTypes
+};
+
+enum GBuffersTypes
+{
+	GBT_Main,
+	GBT_Array,
+	GBT_Num
 };
 
 struct RaytracingDispatchRayInputs
@@ -465,17 +450,17 @@ struct LightSource
 
 enum RaytracingMode
 {
-	RTM_OFF,
-	RTM_OFF_WITH_CAUSTICS,
-	RTM_BACKWARD_WITH_CAUSTICS,
+	RTM_NO_RT,
 	RTM_CAUSTIC,
-	RTM_BACKWARD,
-	RTM_DIFFUSE_WITH_SHADOWMAPS,
-	RTM_REFLECTIONS,
-	RTM_SSR,
-	RTM_TRAVERSAL,
-	RTM_DIFFUSE_WITH_SHADOWRAYS,
-	RTM_SHADOWS
+	RTM_CAUSTIC_REFL,
+	RTM_CAUSTIC_DEBUG,
+	RTM_REFL,
+	RTM_DIFFUSE,
+	RTM_REFL_MAX,
+	RTM_REFL_BARY,
+	RTM_BARY_RAYS,
+	RTM_DIFFUSE_SHADOWS,
+	RTM_SHADOWS_DEBUG
 };
 extern EnumVar								rayTracingMode;
 
@@ -490,6 +475,7 @@ extern D3D12_GPU_DESCRIPTOR_HANDLE			g_GpuSceneMaterialSrvs[MaxMaterials];
 extern D3D12_CPU_DESCRIPTOR_HANDLE			g_SceneMeshInfo;
 
 extern D3D12_GPU_DESCRIPTOR_HANDLE			g_OutputUAV;
+extern D3D12_GPU_DESCRIPTOR_HANDLE			g_GBufferSRV[GBT_Num];
 extern D3D12_GPU_DESCRIPTOR_HANDLE			g_LightingSrvs;
 extern D3D12_GPU_DESCRIPTOR_HANDLE			g_SceneSrvs;
 
@@ -528,10 +514,19 @@ extern NumVar g_SunInclination;
 
 extern TextureRef* g_BlueNoiseRGBA;
 
+extern NumVar g_RTAdditiveRecurrenceSequenceOffset;
 extern NumVar g_RTAdditiveRecurrenceSequenceAlphaX;
 extern NumVar g_RTAdditiveRecurrenceSequenceAlphaY;
 extern ExpVar g_RTAdditiveRecurrenceSequenceIndexLimit;
 
+
+extern NumVar g_RTReflectionsSampleCount;
+extern BoolVar g_RTUseExperimentalCheckerboard;
+
+extern BoolVar g_RTUseFeature1;
+extern BoolVar g_RTUseFeature2;
+extern BoolVar g_RTUseFeature3;
+extern BoolVar g_RTUseFeature4;
 
 
 extern NumVar g_CausticRaysPerPixel;
@@ -540,3 +535,5 @@ extern NumVar g_CausticMaxRayRecursion;
 
 extern NumVar g_SelectedLightSource;
 extern NumVar g_LightsCount;
+
+extern BoolVar g_GlobalLight;

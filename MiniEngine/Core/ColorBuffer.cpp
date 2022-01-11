@@ -73,7 +73,7 @@ void ColorBuffer::CreateDerivedViews(ID3D12Device* Device, DXGI_FORMAT Format, u
 
 	if (m_SRVHandle.ptr == D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN)
 	{
-		for (int i = 0; i < ArraySize; ++i)
+		for (UINT i = 0; i < ArraySize; ++i)
 		{
 			m_RTVHandles[i] = Graphics::AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 		}
@@ -85,7 +85,7 @@ void ColorBuffer::CreateDerivedViews(ID3D12Device* Device, DXGI_FORMAT Format, u
 
 	if (ArraySize > 1)
 	{
-		for (int i = 0; i < ArraySize; ++i)
+		for (UINT i = 0; i < ArraySize; ++i)
 		{
 			m_RTVHandles[i] = Graphics::AllocateDescriptor(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 			// Create the render target view

@@ -1,0 +1,574 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\Packages\Microsoft.Windows.CppWinRT.2.0.211028.7\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('..\Packages\Microsoft.Windows.CppWinRT.2.0.211028.7\build\native\Microsoft.Windows.CppWinRT.props')" />
+  <Import Project="..\Packages\Microsoft.Direct3D.D3D12.1.700.10-preview\build\native\Microsoft.Direct3D.D3D12.props" Condition="Exists('..\Packages\Microsoft.Direct3D.D3D12.1.700.10-preview\build\native\Microsoft.Direct3D.D3D12.props')" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>
+    </LinkIncremental>
+    <PostBuildEventUseInBuild>
+    </PostBuildEventUseInBuild>
+    <OutDir>$(SolutionDir)Bin\</OutDir>
+    <IntDir>$(SolutionDir)Temp\$(Configuration)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <PostBuildEventUseInBuild>
+    </PostBuildEventUseInBuild>
+    <OutDir>$(SolutionDir)Bin\</OutDir>
+    <IntDir>$(SolutionDir)Temp\$(Configuration)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">
+    <PostBuildEventUseInBuild>
+    </PostBuildEventUseInBuild>
+    <OutDir>$(SolutionDir)Bin\</OutDir>
+    <IntDir>$(SolutionDir)Temp\$(Configuration)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Profile|x64">
+      <Configuration>Profile</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Include\Common_Defines.hlsli" />
+    <None Include="Include\Common_Helpers.hlsli" />
+    <None Include="Include\Common_RayTracing.hlsli" />
+    <None Include="Include\Common_Resources.hlsli" />
+    <None Include="Include\Res_Compute.hlsli" />
+    <None Include="Include\Res_GBuffer.hlsli" />
+    <None Include="Include\Res_ArrayGBuffer.hlsli" />
+    <None Include="Include\Res_Global.hlsli" />
+    <None Include="Include\Res_LightGrid.hlsli" />
+    <None Include="Include\Res_Lighting.hlsli" />
+    <None Include="Include\Res_MaterialTextures.hlsli" />
+    <None Include="Include\Res_Pixel.hlsli" />
+    <None Include="Include\Utils_Caustic.hlsli" />
+    <None Include="Include\Res_RayTracing.hlsli" />
+    <None Include="Include\Common_Utils.hlsli" />
+    <None Include="Include\Utils_Output.hlsli" />
+    <None Include="Include\Utils_Random.hlsli" />
+    <None Include="Include\Utils_Reflection.hlsli" />
+    <None Include="Include\Utils_RayTracing.hlsli" />
+    <None Include="Include\Utils_Unpacking.hlsli" />
+    <None Include="Include\Common.hlsli" />
+    <None Include="Include\Common_CS.hlsli" />
+    <None Include="Include\Common_PS.hlsli" />
+    <None Include="Include\Common_RT.hlsli" />
+    <None Include="Include\FillLightGridCS.hlsli" />
+    <None Include="Include\Light_Accumulate.hlsli" />
+    <None Include="Include\Common_Lighting.hlsli" />
+    <None Include="Include\Light_Materials.hlsli" />
+    <None Include="Include\Light_PBR.hlsli" />
+    <None Include="Include\Light_Shadows.hlsli" />
+    <None Include="Include\Utils_Screen.hlsli" />
+    <None Include="Include\CommonConstantBuffers.h" />
+    <None Include="Core\AoBlurAndUpsampleCS.hlsli" />
+    <None Include="Core\AoRenderCS.hlsli" />
+    <None Include="Core\BicubicFilterFunctions.hlsli" />
+    <None Include="Core\BitonicSortCommon.hlsli" />
+    <None Include="Core\ColorSpaceUtility.hlsli" />
+    <None Include="Core\CommonRS.hlsli" />
+    <None Include="Core\DoFCommon.hlsli" />
+    <None Include="Core\DoFRS.hlsli" />
+    <None Include="Core\FXAAPass1CS.hlsli" />
+    <None Include="Core\FXAAPass2CS.hlsli" />
+    <None Include="Core\FXAARootSignature.hlsli" />
+    <None Include="Core\GenerateMipsCS.hlsli" />
+    <None Include="Core\LanczosFunctions.hlsli" />
+    <None Include="Core\MotionBlurRS.hlsli" />
+    <None Include="Core\ParticleRS.hlsli" />
+    <None Include="Core\ParticleUpdateCommon.hlsli" />
+    <None Include="Core\ParticleUtility.hlsli" />
+    <None Include="Core\PerfGraphRS.hlsli" />
+    <None Include="Core\PixelPacking.hlsli" />
+    <None Include="Core\PixelPacking_R11G11B10.hlsli" />
+    <None Include="Core\PixelPacking_RGBE.hlsli" />
+    <None Include="Core\PixelPacking_RGBM.hlsli" />
+    <None Include="Core\PixelPacking_Velocity.hlsli" />
+    <None Include="Core\PostEffectsRS.hlsli" />
+    <None Include="Core\PresentRS.hlsli" />
+    <None Include="Core\ShaderUtility.hlsli" />
+    <None Include="Core\SSAORS.hlsli" />
+    <None Include="Core\TextRS.hlsli" />
+    <None Include="Core\ToneMappingUtility.hlsli" />
+    <None Include="Include\Utils_Vertices.hlsli" />
+    <None Include="Include\Utils_Waves.hlsli" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="RT\AHS_Backward.hlsl">
+      <ShaderType>Library</ShaderType>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">-Zpr -HV 2021</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">-Zpr -Zi -Qembed_debug  -HV 2021 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">-Zpr -Qembed_debug -Zi  -HV 2021 %(AdditionalOptions)</AdditionalOptions>
+    </FxCompile>
+    <FxCompile Include="RT\AHS_Caustic.hlsl">
+      <ShaderType>Library</ShaderType>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">-Zpr -HV 2021</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">-Zpr -Zi -Qembed_debug  -HV 2021 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">-Zpr -Qembed_debug -Zi  -HV 2021 %(AdditionalOptions)</AdditionalOptions>
+    </FxCompile>
+    <FxCompile Include="RT\AHS_Default.hlsl">
+      <ShaderType>Library</ShaderType>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">-Zpr -HV 2021</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">-Zpr -Zi -Qembed_debug  -HV 2021 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">-Zpr -Qembed_debug -Zi  -HV 2021 %(AdditionalOptions)</AdditionalOptions>
+    </FxCompile>
+    <FxCompile Include="RT\CHS_Backward.hlsl">
+      <ShaderType>Library</ShaderType>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">-Zpr -HV 2021</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">-Zpr -Zi -Qembed_debug  -HV 2021 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">-Zpr -Qembed_debug -Zi  -HV 2021 %(AdditionalOptions)</AdditionalOptions>
+    </FxCompile>
+    <FxCompile Include="RT\CHS_Caustic.hlsl">
+      <ShaderType>Library</ShaderType>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">-Zpr -HV 2021</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">-Zpr -Zi -Qembed_debug  -HV 2021 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">-Zpr -Qembed_debug -Zi  -HV 2021 %(AdditionalOptions)</AdditionalOptions>
+    </FxCompile>
+    <FxCompile Include="RT\CHS_Default.hlsl">
+      <ShaderType>Library</ShaderType>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">-Zpr -HV 2021</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">-Zpr -Zi -Qembed_debug  -HV 2021 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">-Zpr -Qembed_debug -Zi  -HV 2021 %(AdditionalOptions)</AdditionalOptions>
+    </FxCompile>
+    <FxCompile Include="RT\CHS_Diffuse.hlsl">
+      <ShaderType>Library</ShaderType>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">-Zpr -HV 2021</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">-Zpr -Zi -Qembed_debug  -HV 2021 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">-Zpr -Qembed_debug -Zi  -HV 2021 %(AdditionalOptions)</AdditionalOptions>
+    </FxCompile>
+    <FxCompile Include="RT\MS_Backward.hlsl">
+      <ShaderType>Library</ShaderType>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">-Zpr -HV 2021</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">-Zpr -Zi -Qembed_debug  -HV 2021 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">-Zpr -Qembed_debug -Zi  -HV 2021 %(AdditionalOptions)</AdditionalOptions>
+    </FxCompile>
+    <FxCompile Include="RT\MS_Caustic.hlsl">
+      <ShaderType>Library</ShaderType>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">-Zpr -HV 2021</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">-Zpr -Zi -Qembed_debug  -HV 2021 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">-Zpr -Qembed_debug -Zi  -HV 2021 %(AdditionalOptions)</AdditionalOptions>
+    </FxCompile>
+    <FxCompile Include="RT\MS_Default.hlsl">
+      <ShaderType>Library</ShaderType>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">-Zpr -HV 2021</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">-Zpr -Zi -Qembed_debug  -HV 2021 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">-Zpr -Qembed_debug -Zi  -HV 2021 %(AdditionalOptions)</AdditionalOptions>
+    </FxCompile>
+    <FxCompile Include="RT\MS_Shadows.hlsl">
+      <ShaderType>Library</ShaderType>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">-Zpr -HV 2021</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">-Zpr -Zi -Qembed_debug  -HV 2021 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">-Zpr -Qembed_debug -Zi  -HV 2021 %(AdditionalOptions)</AdditionalOptions>
+    </FxCompile>
+    <FxCompile Include="RT\RGS_Backward.hlsl">
+      <ShaderType>Library</ShaderType>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">-Zpr -HV 2021</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">-Zpr -Zi -Qembed_debug  -HV 2021 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">-Zpr -Qembed_debug -Zi  -HV 2021 %(AdditionalOptions)</AdditionalOptions>
+    </FxCompile>
+    <FxCompile Include="RT\RGS_Caustic.hlsl">
+      <ShaderType>Library</ShaderType>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">-Zpr -HV 2021</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">-Zpr -Zi -Qembed_debug  -HV 2021 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">-Zpr -Qembed_debug -Zi  -HV 2021 %(AdditionalOptions)</AdditionalOptions>
+    </FxCompile>
+    <FxCompile Include="RT\RGS_Diffuse.hlsl">
+      <ShaderType>Library</ShaderType>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">-Zpr -HV 2021</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">-Zpr -Zi -Qembed_debug  -HV 2021 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">-Zpr -Qembed_debug -Zi  -HV 2021 %(AdditionalOptions)</AdditionalOptions>
+    </FxCompile>
+    <FxCompile Include="RT\RGS_Shadows.hlsl">
+      <ShaderType>Library</ShaderType>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">-Zpr -HV 2021</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">-Zpr -Zi -Qembed_debug  -HV 2021 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">-Zpr -Qembed_debug -Zi  -HV 2021 %(AdditionalOptions)</AdditionalOptions>
+    </FxCompile>
+    <FxCompile Include="RT\RGS_SSR.hlsl">
+      <ShaderType>Library</ShaderType>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">-Zpr -HV 2021</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">-Zpr -Zi -Qembed_debug  -HV 2021 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">-Zpr -Qembed_debug -Zi  -HV 2021 %(AdditionalOptions)</AdditionalOptions>
+    </FxCompile>
+    <FxCompile Include="Model\CutoutDepthPS.hlsl">
+      <ShaderType>Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Model\CutoutDepthSkinVS.hlsl">
+      <ShaderType>Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Model\CutoutDepthVS.hlsl">
+      <ShaderType>Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Model\DefaultNoTangentNoUV1PS.hlsl">
+      <ShaderType>Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Model\DefaultNoTangentNoUV1SkinVS.hlsl">
+      <ShaderType>Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Model\DefaultNoTangentNoUV1VS.hlsl">
+      <ShaderType>Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Model\DefaultNoTangentPS.hlsl">
+      <ShaderType>Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Model\DefaultNoTangentSkinVS.hlsl">
+      <ShaderType>Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Model\DefaultNoTangentVS.hlsl">
+      <ShaderType>Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Model\DefaultNoUV1PS.hlsl">
+      <ShaderType>Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Model\DefaultNoUV1SkinVS.hlsl">
+      <ShaderType>Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Model\DefaultNoUV1VS.hlsl">
+      <ShaderType>Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Model\DefaultPS.hlsl">
+      <ShaderType>Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Model\DefaultSkinVS.hlsl">
+      <ShaderType>Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Model\DefaultVS.hlsl">
+      <ShaderType>Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Model\DeferredLightingCS.hlsl">
+    </FxCompile>
+    <FxCompile Include="Model\DepthOnlySkinVS.hlsl">
+      <ShaderType>Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Model\DepthOnlyVS.hlsl">
+      <ShaderType>Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Model\DepthViewerPS.hlsl">
+      <ShaderType>Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Model\DepthViewerVS.hlsl">
+      <ShaderType>Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Model\FillLightGridCS_16.hlsl">
+    </FxCompile>
+    <FxCompile Include="Model\FillLightGridCS_24.hlsl">
+    </FxCompile>
+    <FxCompile Include="Model\FillLightGridCS_32.hlsl">
+    </FxCompile>
+    <FxCompile Include="Model\FillLightGridCS_8.hlsl">
+    </FxCompile>
+    <FxCompile Include="Model\ModelViewerPS.hlsl">
+      <ShaderType>Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Model\ModelViewerVS.hlsl">
+      <ShaderType>Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Model\SkyboxPS.hlsl">
+      <ShaderType>Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Model\SkyboxVS.hlsl">
+      <ShaderType>Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Core\AdaptExposureCS.hlsl" />
+    <FxCompile Include="Core\AoBlurUpsampleBlendOutCS.hlsl" />
+    <FxCompile Include="Core\AoBlurUpsampleCS.hlsl" />
+    <FxCompile Include="Core\AoBlurUpsamplePreMinBlendOutCS.hlsl" />
+    <FxCompile Include="Core\AoBlurUpsamplePreMinCS.hlsl" />
+    <FxCompile Include="Core\AoPrepareDepthBuffers1CS.hlsl" />
+    <FxCompile Include="Core\AoPrepareDepthBuffers2CS.hlsl" />
+    <FxCompile Include="Core\AoRender1CS.hlsl" />
+    <FxCompile Include="Core\AoRender2CS.hlsl" />
+    <FxCompile Include="Core\ApplyBloom2CS.hlsl" />
+    <FxCompile Include="Core\ApplyBloomCS.hlsl" />
+    <FxCompile Include="Core\AverageLumaCS.hlsl" />
+    <FxCompile Include="Core\BicubicHorizontalUpsamplePS.hlsl">
+      <ShaderType>Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Core\BicubicUpsampleCS.hlsl" />
+    <FxCompile Include="Core\BicubicUpsampleFast16CS.hlsl" />
+    <FxCompile Include="Core\BicubicUpsampleFast24CS.hlsl" />
+    <FxCompile Include="Core\BicubicUpsampleFast32CS.hlsl" />
+    <FxCompile Include="Core\BicubicUpsampleGammaPS.hlsl">
+      <ShaderType>Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Core\BicubicUpsamplePS.hlsl">
+      <ShaderType>Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Core\BicubicVerticalUpsamplePS.hlsl">
+      <ShaderType>Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Core\BilinearUpsamplePS.hlsl">
+      <ShaderType>Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Core\Bitonic32InnerSortCS.hlsl" />
+    <FxCompile Include="Core\Bitonic32OuterSortCS.hlsl" />
+    <FxCompile Include="Core\Bitonic32PreSortCS.hlsl" />
+    <FxCompile Include="Core\Bitonic64InnerSortCS.hlsl" />
+    <FxCompile Include="Core\Bitonic64OuterSortCS.hlsl" />
+    <FxCompile Include="Core\Bitonic64PreSortCS.hlsl" />
+    <FxCompile Include="Core\BitonicIndirectArgsCS.hlsl" />
+    <FxCompile Include="Core\BlendUIHDRPS.hlsl">
+      <ShaderType>Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Core\BloomExtractAndDownsampleHdrCS.hlsl" />
+    <FxCompile Include="Core\BloomExtractAndDownsampleLdrCS.hlsl" />
+    <FxCompile Include="Core\BlurCS.hlsl" />
+    <FxCompile Include="Core\BoundNeighborhoodCS.hlsl" />
+    <FxCompile Include="Core\BufferCopyPS.hlsl">
+      <ShaderType>Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Core\CameraMotionBlurPrePassCS.hlsl" />
+    <FxCompile Include="Core\CameraMotionBlurPrePassLinearZCS.hlsl" />
+    <FxCompile Include="Core\CameraVelocityCS.hlsl" />
+    <FxCompile Include="Core\CompositeHDRPS.hlsl">
+      <ShaderType>Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Core\CompositeSDRPS.hlsl">
+      <ShaderType>Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Core\CopyBackPostBufferCS.hlsl" />
+    <FxCompile Include="Core\DebugDrawHistogramCS.hlsl" />
+    <FxCompile Include="Core\DebugLuminanceHdr2CS.hlsl" />
+    <FxCompile Include="Core\DebugLuminanceHdrCS.hlsl" />
+    <FxCompile Include="Core\DebugLuminanceLdr2CS.hlsl" />
+    <FxCompile Include="Core\DebugLuminanceLdrCS.hlsl" />
+    <FxCompile Include="Core\DebugSSAOCS.hlsl" />
+    <FxCompile Include="Core\DoFCombine2CS.hlsl" />
+    <FxCompile Include="Core\DoFCombineCS.hlsl" />
+    <FxCompile Include="Core\DoFCombineFast2CS.hlsl" />
+    <FxCompile Include="Core\DoFCombineFastCS.hlsl" />
+    <FxCompile Include="Core\DoFDebugBlueCS.hlsl" />
+    <FxCompile Include="Core\DoFDebugGreenCS.hlsl" />
+    <FxCompile Include="Core\DoFDebugRedCS.hlsl" />
+    <FxCompile Include="Core\DoFMedianFilterCS.hlsl" />
+    <FxCompile Include="Core\DoFMedianFilterFixupCS.hlsl" />
+    <FxCompile Include="Core\DoFMedianFilterSepAlphaCS.hlsl" />
+    <FxCompile Include="Core\DoFPass1CS.hlsl" />
+    <FxCompile Include="Core\DoFPass2CS.hlsl" />
+    <FxCompile Include="Core\DoFPass2DebugCS.hlsl" />
+    <FxCompile Include="Core\DoFPass2FastCS.hlsl" />
+    <FxCompile Include="Core\DoFPass2FixupCS.hlsl" />
+    <FxCompile Include="Core\DoFPreFilterCS.hlsl" />
+    <FxCompile Include="Core\DoFPreFilterFastCS.hlsl" />
+    <FxCompile Include="Core\DoFPreFilterFixupCS.hlsl" />
+    <FxCompile Include="Core\DoFTilePassCS.hlsl" />
+    <FxCompile Include="Core\DoFTilePassFixupCS.hlsl" />
+    <FxCompile Include="Core\DownsampleBloomAllCS.hlsl" />
+    <FxCompile Include="Core\DownsampleBloomCS.hlsl" />
+    <FxCompile Include="Core\DownsampleDepthPS.hlsl">
+      <ShaderType>Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Core\ExtractLumaCS.hlsl" />
+    <FxCompile Include="Core\FXAAPass1_Luma2_CS.hlsl" />
+    <FxCompile Include="Core\FXAAPass1_Luma_CS.hlsl" />
+    <FxCompile Include="Core\FXAAPass1_RGB2_CS.hlsl" />
+    <FxCompile Include="Core\FXAAPass1_RGB_CS.hlsl" />
+    <FxCompile Include="Core\FXAAPass2H2CS.hlsl" />
+    <FxCompile Include="Core\FXAAPass2HCS.hlsl" />
+    <FxCompile Include="Core\FXAAPass2HDebug2CS.hlsl" />
+    <FxCompile Include="Core\FXAAPass2HDebugCS.hlsl" />
+    <FxCompile Include="Core\FXAAPass2V2CS.hlsl" />
+    <FxCompile Include="Core\FXAAPass2VCS.hlsl" />
+    <FxCompile Include="Core\FXAAPass2VDebug2CS.hlsl" />
+    <FxCompile Include="Core\FXAAPass2VDebugCS.hlsl" />
+    <FxCompile Include="Core\FXAAResolveWorkQueueCS.hlsl" />
+    <FxCompile Include="Core\GenerateHistogramCS.hlsl" />
+    <FxCompile Include="Core\GenerateMipsGammaCS.hlsl" />
+    <FxCompile Include="Core\GenerateMipsGammaOddCS.hlsl" />
+    <FxCompile Include="Core\GenerateMipsGammaOddXCS.hlsl" />
+    <FxCompile Include="Core\GenerateMipsGammaOddYCS.hlsl" />
+    <FxCompile Include="Core\GenerateMipsLinearCS.hlsl" />
+    <FxCompile Include="Core\GenerateMipsLinearOddCS.hlsl" />
+    <FxCompile Include="Core\GenerateMipsLinearOddXCS.hlsl" />
+    <FxCompile Include="Core\GenerateMipsLinearOddYCS.hlsl" />
+    <FxCompile Include="Core\LanczosCS.hlsl" />
+    <FxCompile Include="Core\LanczosFast16CS.hlsl" />
+    <FxCompile Include="Core\LanczosFast24CS.hlsl" />
+    <FxCompile Include="Core\LanczosFast32CS.hlsl" />
+    <FxCompile Include="Core\LanczosHorizontalPS.hlsl">
+      <ShaderType>Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Core\LanczosVerticalPS.hlsl">
+      <ShaderType>Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Core\LinearizeDepthCS.hlsl" />
+    <FxCompile Include="Core\MagnifyPixelsPS.hlsl">
+      <ShaderType>Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Core\MotionBlurFinalPassCS.hlsl" />
+    <FxCompile Include="Core\MotionBlurFinalPassPS.hlsl">
+      <ShaderType>Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Core\MotionBlurPrePassCS.hlsl" />
+    <FxCompile Include="Core\ParticleBinCullingCS.hlsl" />
+    <FxCompile Include="Core\ParticleDepthBoundsCS.hlsl" />
+    <FxCompile Include="Core\ParticleDispatchIndirectArgsCS.hlsl" />
+    <FxCompile Include="Core\ParticleFinalDispatchIndirectArgsCS.hlsl" />
+    <FxCompile Include="Core\ParticleLargeBinCullingCS.hlsl" />
+    <FxCompile Include="Core\ParticleNoSortVS.hlsl">
+      <ShaderType>Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Core\ParticlePreSortCS.hlsl" />
+    <FxCompile Include="Core\ParticlePS.hlsl">
+      <ShaderType>Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Core\ParticleSortIndirectArgsCS.hlsl" />
+    <FxCompile Include="Core\ParticleSpawnCS.hlsl" />
+    <FxCompile Include="Core\ParticleTileCullingCS.hlsl" />
+    <FxCompile Include="Core\ParticleTileRender2CS.hlsl" />
+    <FxCompile Include="Core\ParticleTileRenderCS.hlsl" />
+    <FxCompile Include="Core\ParticleTileRenderFast2CS.hlsl" />
+    <FxCompile Include="Core\ParticleTileRenderFastCS.hlsl" />
+    <FxCompile Include="Core\ParticleTileRenderFastDynamic2CS.hlsl" />
+    <FxCompile Include="Core\ParticleTileRenderFastDynamicCS.hlsl" />
+    <FxCompile Include="Core\ParticleTileRenderFastLowRes2CS.hlsl" />
+    <FxCompile Include="Core\ParticleTileRenderFastLowResCS.hlsl" />
+    <FxCompile Include="Core\ParticleTileRenderSlowDynamic2CS.hlsl" />
+    <FxCompile Include="Core\ParticleTileRenderSlowDynamicCS.hlsl" />
+    <FxCompile Include="Core\ParticleTileRenderSlowLowRes2CS.hlsl" />
+    <FxCompile Include="Core\ParticleTileRenderSlowLowResCS.hlsl" />
+    <FxCompile Include="Core\ParticleUpdateCS.hlsl" />
+    <FxCompile Include="Core\ParticleVS.hlsl">
+      <ShaderType>Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Core\PerfGraphBackgroundVS.hlsl">
+      <ShaderType>Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Core\PerfGraphPS.hlsl">
+      <ShaderType>Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Core\PerfGraphVS.hlsl">
+      <ShaderType>Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Core\PresentHDRPS.hlsl">
+      <ShaderType>Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Core\PresentSDRPS.hlsl">
+      <ShaderType>Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Core\ResolveTAACS.hlsl" />
+    <FxCompile Include="Core\ScaleAndCompositeHDRPS.hlsl">
+      <ShaderType>Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Core\ScaleAndCompositeSDRPS.hlsl">
+      <ShaderType>Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Core\ScreenQuadCommonVS.hlsl">
+      <ShaderType>Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Core\ScreenQuadPresentVS.hlsl">
+      <ShaderType>Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Core\SharpeningUpsampleGammaPS.hlsl">
+      <ShaderType>Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Core\SharpeningUpsamplePS.hlsl">
+      <ShaderType>Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Core\SharpenTAACS.hlsl" />
+    <FxCompile Include="Core\TemporalBlendCS.hlsl" />
+    <FxCompile Include="Core\TextAntialiasPS.hlsl">
+      <ShaderType>Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Core\TextShadowPS.hlsl">
+      <ShaderType>Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Core\TextVS.hlsl">
+      <ShaderType>Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="Core\ToneMap2CS.hlsl" />
+    <FxCompile Include="Core\ToneMapCS.hlsl" />
+    <FxCompile Include="Core\ToneMapHDR2CS.hlsl" />
+    <FxCompile Include="Core\ToneMapHDRCS.hlsl" />
+    <FxCompile Include="Core\UpsampleAndBlurCS.hlsl" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{056786EE-1B17-458C-A485-116D802BC056}</ProjectGuid>
+    <ApplicationEnvironment>title</ApplicationEnvironment>
+    <DefaultLanguage>en-US</DefaultLanguage>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectName>ModelShaders</ProjectName>
+    <RootNamespace>Shaders</RootNamespace>
+    <PlatformToolset>v142</PlatformToolset>
+    <MinimumVisualStudioVersion>16.0</MinimumVisualStudioVersion>
+    <TargetRuntime>Native</TargetRuntime>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings" />
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project=".\Build.props" />
+    <Import Project=".\Desktop.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>.;..\;..\MiniEngine\Core;..\MiniEngine\Model;Shaders;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link Condition="'$(Configuration)'=='Debug'">
+      <AdditionalOptions>/nodefaultlib:MSVCRT %(AdditionalOptions)</AdditionalOptions>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Platform)'=='x64'">
+    <Link>
+      <AdditionalDependencies>d3d12.lib;dxgi.lib;runtimeobject.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)
+	  </AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ItemDefinitionGroup>
+    <ProjectReference>
+      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
+    </ProjectReference>
+    <ClCompile>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <FxCompile>
+      <AdditionalIncludeDirectories>.\Include</AdditionalIncludeDirectories>
+      <ShaderModel>6.5</ShaderModel>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Compute</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Compute</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">Compute</ShaderType>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">-HV 2021</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">-Zi -Qembed_debug -HV 2021</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">-Zi -Qembed_debug -HV 2021</AdditionalOptions>
+    </FxCompile>
+  </ItemDefinitionGroup>
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="..\Packages\zlib-msvc-x64.1.2.11.8900\build\native\zlib-msvc-x64.targets" Condition="Exists('..\Packages\zlib-msvc-x64.1.2.11.8900\build\native\zlib-msvc-x64.targets')" />
+    <Import Project="..\Packages\directxtex_desktop_win10.2021.1.10.2\build\native\directxtex_desktop_win10.targets" Condition="Exists('..\Packages\directxtex_desktop_win10.2021.1.10.2\build\native\directxtex_desktop_win10.targets')" />
+    <Import Project="..\Packages\directxmesh_desktop_win10.2021.1.10.1\build\native\directxmesh_desktop_win10.targets" Condition="Exists('..\Packages\directxmesh_desktop_win10.2021.1.10.1\build\native\directxmesh_desktop_win10.targets')" />
+    <Import Project="..\Packages\WinPixEventRuntime.1.0.210209001\build\WinPixEventRuntime.targets" Condition="Exists('..\Packages\WinPixEventRuntime.1.0.210209001\build\WinPixEventRuntime.targets')" />
+    <Import Project="..\Packages\Microsoft.Direct3D.D3D12.1.700.10-preview\build\native\Microsoft.Direct3D.D3D12.targets" Condition="Exists('..\Packages\Microsoft.Direct3D.D3D12.1.700.10-preview\build\native\Microsoft.Direct3D.D3D12.targets')" />
+    <Import Project="..\Packages\Microsoft.Windows.CppWinRT.2.0.211028.7\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('..\Packages\Microsoft.Windows.CppWinRT.2.0.211028.7\build\native\Microsoft.Windows.CppWinRT.targets')" />
+  </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\Packages\zlib-msvc-x64.1.2.11.8900\build\native\zlib-msvc-x64.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\Packages\zlib-msvc-x64.1.2.11.8900\build\native\zlib-msvc-x64.targets'))" />
+    <Error Condition="!Exists('..\Packages\directxtex_desktop_win10.2021.1.10.2\build\native\directxtex_desktop_win10.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\Packages\directxtex_desktop_win10.2021.1.10.2\build\native\directxtex_desktop_win10.targets'))" />
+    <Error Condition="!Exists('..\Packages\directxmesh_desktop_win10.2021.1.10.1\build\native\directxmesh_desktop_win10.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\Packages\directxmesh_desktop_win10.2021.1.10.1\build\native\directxmesh_desktop_win10.targets'))" />
+    <Error Condition="!Exists('..\Packages\WinPixEventRuntime.1.0.210209001\build\WinPixEventRuntime.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\Packages\WinPixEventRuntime.1.0.210209001\build\WinPixEventRuntime.targets'))" />
+    <Error Condition="!Exists('..\Packages\Microsoft.Direct3D.D3D12.1.700.10-preview\build\native\Microsoft.Direct3D.D3D12.props')" Text="$([System.String]::Format('$(ErrorText)', '..\Packages\Microsoft.Direct3D.D3D12.1.700.10-preview\build\native\Microsoft.Direct3D.D3D12.props'))" />
+    <Error Condition="!Exists('..\Packages\Microsoft.Direct3D.D3D12.1.700.10-preview\build\native\Microsoft.Direct3D.D3D12.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\Packages\Microsoft.Direct3D.D3D12.1.700.10-preview\build\native\Microsoft.Direct3D.D3D12.targets'))" />
+    <Error Condition="!Exists('..\Packages\Microsoft.Windows.CppWinRT.2.0.211028.7\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', '..\Packages\Microsoft.Windows.CppWinRT.2.0.211028.7\build\native\Microsoft.Windows.CppWinRT.props'))" />
+    <Error Condition="!Exists('..\Packages\Microsoft.Windows.CppWinRT.2.0.211028.7\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\Packages\Microsoft.Windows.CppWinRT.2.0.211028.7\build\native\Microsoft.Windows.CppWinRT.targets'))" />
+  </Target>
+</Project>

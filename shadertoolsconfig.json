@@ -1,0 +1,9 @@
+{
+    "hlsl.additionalIncludeDirectories": 
+    [
+      "D:\\Git\\DXRCaustics\\Shaders\\Include\\"
+    ],
+    "hlsl.virtualDirectoryMappings": 
+    {
+    }
+}

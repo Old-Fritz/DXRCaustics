@@ -20,6 +20,7 @@ D3D12_GPU_DESCRIPTOR_HANDLE g_GpuSceneMaterialSrvs[MaxMaterials];
 D3D12_CPU_DESCRIPTOR_HANDLE g_SceneMeshInfo;
 
 D3D12_GPU_DESCRIPTOR_HANDLE g_OutputUAV;
+D3D12_GPU_DESCRIPTOR_HANDLE g_GBufferSRV[GBT_Num];
 D3D12_GPU_DESCRIPTOR_HANDLE g_LightingSrvs;
 D3D12_GPU_DESCRIPTOR_HANDLE g_SceneSrvs;
 
@@ -40,17 +41,23 @@ ComPtr<ID3D12Device5> g_pRaytracingDevice;
 std::vector<std::pair<TextureRef, TextureRef>> g_IBLTextures;
 TextureRef* g_BlueNoiseRGBA;
 
-NumVar g_RTAdditiveRecurrenceSequenceAlphaX("App/Raytracing/AdditiveRecurrenceSequenceAlphaX", 0.018539816339744830961566084581988f, 0, 1.0f, 0.0152799f);
-NumVar g_RTAdditiveRecurrenceSequenceAlphaY("App/Raytracing/AdditiveRecurrenceSequenceAlphaY", 0.0161803398874989484820458683436564f, 0, 1.0f, 0.0143562f);
+NumVar g_RTAdditiveRecurrenceSequenceOffset("App/Raytracing/AdditiveRecurrenceSequenceOffset", 0, -1000, 1000, 1);
+NumVar g_RTAdditiveRecurrenceSequenceAlphaX("App/Raytracing/AdditiveRecurrenceSequenceAlphaX", 0.698539816339744830961566084581988f, 0, 1.0f, 0.0152799f);
+NumVar g_RTAdditiveRecurrenceSequenceAlphaY("App/Raytracing/AdditiveRecurrenceSequenceAlphaY", 0.6961803398874989484820458683436564f, 0, 1.0f, 0.0143562f);
+//NumVar g_RTAdditiveRecurrenceSequenceAlphaX("App/Raytracing/AdditiveRecurrenceSequenceAlphaX", 0.018539816339744830961566084581988f, 0, 1.0f, 0.0152799f);
+//NumVar g_RTAdditiveRecurrenceSequenceAlphaY("App/Raytracing/AdditiveRecurrenceSequenceAlphaY", 0.0161803398874989484820458683436564f, 0, 1.0f, 0.0143562f);
 ExpVar g_RTAdditiveRecurrenceSequenceIndexLimit("App/Raytracing/AdditiveRecurrenceSequenceIndexLimit", 16777216, 0, 16777216*2, 1);
 
 
 
-DynamicEnumVar g_IBLSet("App/Lighting/Environment", ChangeIBLSet);
-NumVar g_IBLBias("App/Lighting/Gloss Reduction", 4.0f, 0.0f, 10.0f, 1.0f, ChangeIBLBias);
+NumVar	g_RTReflectionsSampleCount("App/Raytracing/Refl/SampleCount", 4, 1, 128, 1);
 
-ExpVar g_SunLightIntensity("App/Lighting/Sun Light Intensity", 6.0f, -16.0f, 16.0f, 0.1f);
-ExpVar g_AmbientIntensity("App/Lighting/Ambient Intensity", 1.0f, -16.0f, 16.0f, 0.1f);
+
+DynamicEnumVar g_IBLSet("App/Lighting/Environment", ChangeIBLSet);
+NumVar g_IBLBias("App/Lighting/Gloss Reduction", 6.0f, 0.0f, 10.0f, 0.25f, ChangeIBLBias);
+
+ExpVar g_SunLightIntensity(	"App/Lighting/Sun Light Intensity", 0.9f,	-16.0f, 16.0f, 0.1f);
+ExpVar g_AmbientIntensity(	"App/Lighting/Ambient Intensity",	0.15f,	-16.0f, 16.0f, 0.1f);
 
 NumVar g_SunOrientation("App/Lighting/Sun Orientation", -0.5f, -100.0f, 100.0f, 0.1f);
 NumVar g_SunInclination("App/Lighting/Sun Inclination", 0.75f, 0.0f, 1.0f, 0.01f);
@@ -58,8 +65,17 @@ NumVar g_SunInclination("App/Lighting/Sun Inclination", 0.75f, 0.0f, 1.0f, 0.01f
 NumVar g_ModelScale("App/Raytracing/ModelScale", 100.0f, 1.0f, 1000.0f);
 
 NumVar g_CausticRaysPerPixel("App/Raytracing/Caustic/RaysPerPixel", 0.75f, 0.25f, 16, 0.25f);
-ExpVar g_CausticPowerScale("App/Raytracing/Caustic/PowerScale", 1/3.1415f, -16.0f, 16.0f, 0.1f);
+ExpVar g_CausticPowerScale("App/Raytracing/Caustic/PowerScale", 1, -16.0f, 16.0f, 0.1f);
 NumVar g_CausticMaxRayRecursion("App/Raytracing/Caustic/MaxRaRecursion", 3, 1, 16, 1);
+BoolVar g_RTUseExperimentalCheckerboard("App/Raytracing/Caustic/Checkerboard", false);
+
+BoolVar g_RTUseFeature1("App/Raytracing/Caustic/Feature1", false);
+BoolVar g_RTUseFeature2("App/Raytracing/Caustic/Feature2", false);
+BoolVar g_RTUseFeature3("App/Raytracing/Caustic/Feature3", false);
+BoolVar g_RTUseFeature4("App/Raytracing/Caustic/Feature4", false);
+
+
+BoolVar g_GlobalLight("App/Lighting/GlobalLight", true);
 
 void ChangeIBLSet(EngineVar::ActionType)
 {

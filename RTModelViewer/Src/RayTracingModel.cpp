@@ -6,12 +6,12 @@ void RTModelViewer::InitializeRTModel()
 	ThrowIfFailed(g_Device->QueryInterface(IID_PPV_ARGS(&g_pRaytracingDevice)), L"Couldn't get DirectX Raytracing interface for the device.\n");
 
 	g_pRaytracingDescriptorHeap = std::unique_ptr<DescriptorHeapStack>(
-		new DescriptorHeapStack(*g_Device, 200, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 0));
+		new DescriptorHeapStack(*g_Device, 2000, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, 0));
 
 	D3D12_FEATURE_DATA_D3D12_OPTIONS1 options1;
 	g_Device->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS1, &options1, sizeof(options1));
 
-	g_hitConstantBuffer.Create(L"Hit Constant Buffer", 1, sizeof(HitShaderConstants));
+	g_hitConstantBuffer.Create(L"Hit Constant Buffer", 1, sizeof(GlobalConstants));
 	g_dynamicConstantBuffer.Create(L"Dynamic Constant Buffer", 1, sizeof(DynamicCB));
 
 	InitializeRTMeshInfo();
@@ -28,23 +28,23 @@ void RTModelViewer::InitializeRTMeshInfo()
 	//
 	// Mesh info
 	//
-	std::vector<RayTraceMeshInfo>   meshInfoData(m_ModelInst.GetModel()->m_NumMeshes);
+	std::vector<MeshLayoutInfo>   meshInfoData(m_ModelInst.GetModel()->m_NumMeshes);
 	MeshIterator iterator = m_ModelInst.GetModel()->GetMeshIterator();
 	for (UINT i = 0; i < m_ModelInst.GetModel()->m_NumMeshes; ++i)
 	{
 		const Mesh* mesh = iterator.GetMesh(i);
 
-		meshInfoData[i].m_indexOffsetBytes = mesh->ibOffset;
-		meshInfoData[i].m_uvAttributeOffsetBytes = mesh->vbOffset + mesh->streamOffsets[glTF::Primitive::kTexcoord0];
-		meshInfoData[i].m_normalAttributeOffsetBytes = mesh->vbOffset + mesh->streamOffsets[glTF::Primitive::kNormal];
-		meshInfoData[i].m_positionAttributeOffsetBytes = mesh->vbOffset + mesh->streamOffsets[glTF::Primitive::kPosition];
-		meshInfoData[i].m_tangentAttributeOffsetBytes = mesh->vbOffset + mesh->streamOffsets[glTF::Primitive::kTangent];
-		meshInfoData[i].m_attributeStrideBytes = mesh->vbStride;
-		meshInfoData[i].m_materialInstanceId = mesh->materialCBV;
+		meshInfoData[i].m_indexOffsetBytes				= mesh->ibOffset;
+		meshInfoData[i].m_uvAttributeOffsetBytes		= mesh->vbOffset + mesh->streamOffsets[glTF::Primitive::kTexcoord0];
+		meshInfoData[i].m_normalAttributeOffsetBytes	= mesh->vbOffset + mesh->streamOffsets[glTF::Primitive::kNormal];
+		meshInfoData[i].m_positionAttributeOffsetBytes	= mesh->vbOffset + mesh->streamOffsets[glTF::Primitive::kPosition];
+		meshInfoData[i].m_tangentAttributeOffsetBytes	= mesh->vbOffset + mesh->streamOffsets[glTF::Primitive::kTangent];
+		meshInfoData[i].m_attributeStrideBytes			= mesh->vbStride;
+		meshInfoData[i].m_materialInstanceId			= mesh->materialCBV;
 		ASSERT(meshInfoData[i].m_materialInstanceId < MaxMaterials);
 	}
 
-	g_hitShaderMeshInfoBuffer.Create(L"RayTraceMeshInfo",
+	g_hitShaderMeshInfoBuffer.Create(L"MeshLayoutInfo",
 		(UINT)meshInfoData.size(),
 		sizeof(meshInfoData[0]),
 		meshInfoData.data());
@@ -136,25 +136,26 @@ void RTModelViewer::InitializeRTViews()
 
 	// Global : GBuffer
 	{
-		GeometryBuffer* GBuffers[] = { &g_SceneGBuffer, &Lighting::m_LightGBufferArray };
 
-		for (int i = 0; i < sizeof(GBuffers) / sizeof(GeometryBuffer*); ++i)
+		GeometryBuffer* GBuffers[GBT_Num] = { &g_SceneGBuffer,  &Lighting::m_LightGBufferArray };
+
+		for (int gBufInd = 0; gBufInd < GBT_Num; ++gBufInd)
 		{
-			GeometryBuffer* GBuffer = GBuffers[i];
+			GeometryBuffer* GBuffer = GBuffers[gBufInd];
 
 			D3D12_CPU_DESCRIPTOR_HANDLE srvHandle;
 			UINT srvDescriptorIndex;
-			// depth t19
+			// depth t20
 			g_pRaytracingDescriptorHeap->AllocateDescriptor(srvHandle, srvDescriptorIndex);
 			Graphics::g_Device->CopyDescriptorsSimple(1, srvHandle, GBuffer->GetDepthBuffer().GetDepthSRV(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-			GBuffer->SetRTHandle(g_pRaytracingDescriptorHeap->GetGpuHandle(srvDescriptorIndex));
-
+			g_GBufferSRV[gBufInd] = g_pRaytracingDescriptorHeap->GetGpuHandle(srvDescriptorIndex);
+			GBuffer->SetRTHandle(g_GBufferSRV[gBufInd]);
 
 			UINT unused;
-			for (uint32_t i = 0; i < uint32_t(GBTarget::NumTargets); ++i)
+			for (uint32_t targetInd = 0; targetInd < uint32_t(GBTarget::NumTargets); ++targetInd)
 			{
 				g_pRaytracingDescriptorHeap->AllocateDescriptor(srvHandle, unused);
-				Graphics::g_Device->CopyDescriptorsSimple(1, srvHandle, GBuffer->GetColorBuffer((GBTarget)i).GetSRV(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+				Graphics::g_Device->CopyDescriptorsSimple(1, srvHandle, GBuffer->GetColorBuffer((GBTarget)targetInd).GetSRV(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 			}
 		}
 	}

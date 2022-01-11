@@ -66,6 +66,11 @@ void ShadowBuffer::CreateArray(const std::wstring& Name, uint32_t Width, uint32_
 	m_Viewport.MinDepth = 0.0f;
 	m_Viewport.MaxDepth = 1.0f;
 
+	//m_Scissor.left = 0;
+	//m_Scissor.top = 0;
+	//m_Scissor.right = (LONG)Width;
+	//m_Scissor.bottom = (LONG)Height;
+
 	// Prevent drawing to the boundary pixels so that we don't have to worry about shadows stretching
 	m_Scissor.left = 1;
 	m_Scissor.top = 1;

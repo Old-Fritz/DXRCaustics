@@ -2,146 +2,51 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClInclude Include="Src\DXSampleHelper.h">
-      <Filter>Source Files</Filter>
+      <Filter>Helpers</Filter>
     </ClInclude>
-    <ClInclude Include="Src\RTModelViewer.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Shaders\Unpacking.hlsli">
-      <Filter>Shaders\Includes</Filter>
-    </ClInclude>
-    <ClInclude Include="Shaders\RayTracingInclude.hlsli">
-      <Filter>Shaders\Includes</Filter>
-    </ClInclude>
-    <ClInclude Include="Shaders\RayTracingHlslCompat.h">
-      <Filter>Shaders\Includes</Filter>
-    </ClInclude>
+    <ClInclude Include="Src\RTModelViewer.h" />
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="Shaders">
-      <UniqueIdentifier>{432e44b5-99f5-4002-a860-0999ed4e2328}</UniqueIdentifier>
+    <Filter Include="Viewer">
+      <UniqueIdentifier>{196ca46c-0094-44a5-bf6e-c6db8dfdd4d0}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Resources">
-      <UniqueIdentifier>{8be3895e-9f38-4b8d-bf48-b94d69970e47}</UniqueIdentifier>
+    <Filter Include="Helpers">
+      <UniqueIdentifier>{067abc12-7f7c-4833-a50e-8844533a1207}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4de42580-a799-4b4c-8d1a-5a0f5082caab}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\RayTracing">
+    <Filter Include="RayTracing">
       <UniqueIdentifier>{ea2fcbb5-f761-4408-a44b-61f541f9bd72}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Shaders\Includes">
-      <UniqueIdentifier>{41d87a61-e297-4bff-a678-654a6636f6a8}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Shaders\Caustic">
-      <UniqueIdentifier>{a3b51485-bdf1-4dce-b88e-16181a5e3189}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Shaders\Default">
-      <UniqueIdentifier>{0cc58318-49a4-4b67-8779-7bd8ba26b1e4}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Shaders\Backward">
-      <UniqueIdentifier>{0b1ecddc-4d7a-4b8e-8b2e-775cfdb03aa4}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Shaders\Diffuse">
-      <UniqueIdentifier>{4ec47634-0b2a-451a-b984-098892e6373f}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-    <None Include="..\readme.md" />
-    <None Include="Shaders\SceneRT.hlsli">
-      <Filter>Shaders\Includes</Filter>
+    <None Include="packages.config">
+      <Filter>Helpers</Filter>
     </None>
-    <None Include="Shaders\MaterialsRT.hlsli">
-      <Filter>Shaders\Includes</Filter>
-    </None>
-    <None Include="Shaders\LightingRT.hlsli">
-      <Filter>Shaders\Includes</Filter>
-    </None>
-    <None Include="Shaders\CausticRT.hlsli">
-      <Filter>Shaders\Includes</Filter>
-    </None>
-    <None Include="Shaders\RandomRT.hlsli">
-      <Filter>Shaders\Includes</Filter>
-    </None>
-    <None Include="Shaders\ReflectRT.hlsli">
-      <Filter>Shaders\Includes</Filter>
+    <None Include="..\readme.md">
+      <Filter>Helpers</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Shaders\AHS_Backward.hlsl">
-      <Filter>Shaders\Backward</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\CHS_Backward.hlsl">
-      <Filter>Shaders\Backward</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\MS_Backward.hlsl">
-      <Filter>Shaders\Backward</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\RGS_Backward.hlsl">
-      <Filter>Shaders\Backward</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\AHS_Caustic.hlsl">
-      <Filter>Shaders\Caustic</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\CHS_Caustic.hlsl">
-      <Filter>Shaders\Caustic</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\MS_Caustic.hlsl">
-      <Filter>Shaders\Caustic</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\RGS_Caustic.hlsl">
-      <Filter>Shaders\Caustic</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\AHS_Default.hlsl">
-      <Filter>Shaders\Default</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\CHS_Default.hlsl">
-      <Filter>Shaders\Default</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\MS_Default.hlsl">
-      <Filter>Shaders\Default</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\CHS_Diffuse.hlsl">
-      <Filter>Shaders\Diffuse</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\RGS_Diffuse.hlsl">
-      <Filter>Shaders\Diffuse</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\RGS_Shadows.hlsl">
-      <Filter>Shaders\Diffuse</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\MS_Shadows.hlsl">
-      <Filter>Shaders\Diffuse</Filter>
-    </FxCompile>
-    <FxCompile Include="Shaders\RGS_SSR.hlsl">
-      <Filter>Shaders\Diffuse</Filter>
-    </FxCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="Src\ViewerRender.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\RTModelViewer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\ViewerStartup.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Src\RayTracingRender.cpp">
-      <Filter>Source Files\RayTracing</Filter>
+      <Filter>RayTracing</Filter>
     </ClCompile>
     <ClCompile Include="Src\RayTracingPSO.cpp">
-      <Filter>Source Files\RayTracing</Filter>
+      <Filter>RayTracing</Filter>
     </ClCompile>
     <ClCompile Include="Src\RayTracingTLAS.cpp">
-      <Filter>Source Files\RayTracing</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\ViewerUpdate.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>RayTracing</Filter>
     </ClCompile>
     <ClCompile Include="Src\RayTracingModel.cpp">
-      <Filter>Source Files\RayTracing</Filter>
+      <Filter>RayTracing</Filter>
     </ClCompile>
+    <ClCompile Include="Src\ViewerUpdate.cpp">
+      <Filter>Viewer</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\ViewerRender.cpp">
+      <Filter>Viewer</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\ViewerStartup.cpp">
+      <Filter>Viewer</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\RTModelViewer.cpp" />
   </ItemGroup>
 </Project>

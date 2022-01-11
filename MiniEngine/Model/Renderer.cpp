@@ -628,7 +628,7 @@ void MeshSorter::RenderMeshes(
 
 	// Set common shader constants
 	globals.ViewProjMatrix = m_Camera->GetViewProjMatrix();
-	globals.CameraPos = Vector4(m_Camera->GetPosition(), 0.0f);
+	globals.ViewerPos = m_Camera->GetPosition();
 	globals.IBLRange = s_SpecularIBLRange - s_SpecularIBLBias;
 	globals.IBLBias = s_SpecularIBLBias;
 	context.SetDynamicConstantBufferView(kCommonCBV, sizeof(GlobalConstants), &globals);
@@ -656,9 +656,14 @@ void MeshSorter::RenderMeshes(
 			m_Viewport.MinDepth = 0.0f;
 
 			m_Scissor.left = 1;
-			m_Scissor.right = m_Viewport.Width - 2;
+			m_Scissor.right = (LONG)m_Viewport.Width - 2U;
 			m_Scissor.top = 1;
-			m_Scissor.bottom = m_Viewport.Height - 2;
+			m_Scissor.bottom = (LONG)m_Viewport.Height - 2U;
+
+			//m_Scissor.left = 0;
+			//m_Scissor.right = (LONG)m_Viewport.Width;
+			//m_Scissor.top = 0;
+			//m_Scissor.bottom = (LONG)m_Viewport.Height;
 		}
 	}
 	else
@@ -841,13 +846,13 @@ void Renderer::RenderDeferredLigting(GraphicsContext& context, GlobalConstants& 
 	{
 		Matrix4 m1;
 		Vector4 resolution;
-	} cb0 = { Transpose(Invert(camera.GetViewProjMatrix())), Vector4(g_SceneColorBuffer.GetWidth(), g_SceneColorBuffer.GetHeight(), 0,0) };
+	} cb0 = { Transpose(Invert(camera.GetViewProjMatrix())), Vector4((float)g_SceneColorBuffer.GetWidth(), (float)g_SceneColorBuffer.GetHeight(), 0.0f,0.0f) };
 
 	Context.SetDynamicConstantBufferView(0, sizeof(cb0), &cb0);
 
 	// Set common shader constants
 	globalConstants.ViewProjMatrix = camera.GetViewProjMatrix();
-	globalConstants.CameraPos = Vector4(camera.GetPosition(), 0.0f);
+	globalConstants.ViewerPos = camera.GetPosition();
 	globalConstants.IBLRange = s_SpecularIBLRange - s_SpecularIBLBias;
 	globalConstants.IBLBias = s_SpecularIBLBias;
 	//globalConstants.SunShadowMatrix = Transpose(globalConstants.SunShadowMatrix);

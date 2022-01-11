@@ -77,7 +77,7 @@ void Blas::AddGeometry(const Model* pModel, const Mesh* pMesh)
 void Blas::PrepareDesc()
 	{
 		m_desc.Inputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_BOTTOM_LEVEL;
-		m_desc.Inputs.NumDescs = m_geometry.size();
+		m_desc.Inputs.NumDescs = (UINT)m_geometry.size();
 		m_desc.Inputs.ppGeometryDescs = m_geometryDescPtrs.data();
 		m_desc.Inputs.Flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE;
 		m_desc.Inputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY_OF_POINTERS;
@@ -139,7 +139,7 @@ void Tlas::AddInstance(Blas& blas)
 void Tlas::PrepareDesc()
 {
 	m_desc.Inputs.Type = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_TYPE_TOP_LEVEL;
-	m_desc.Inputs.NumDescs = m_instanceDescs.size();
+	m_desc.Inputs.NumDescs = (UINT)m_instanceDescs.size();
 	m_desc.Inputs.Flags = D3D12_RAYTRACING_ACCELERATION_STRUCTURE_BUILD_FLAG_PREFER_FAST_TRACE;
 	m_desc.Inputs.pGeometryDescs = nullptr;
 	m_desc.Inputs.DescsLayout = D3D12_ELEMENTS_LAYOUT_ARRAY;
@@ -153,7 +153,7 @@ void Tlas::PrepareDesc()
 
 void Tlas::PrepareBuffers()
 {
-	m_instanceDataBuffer.Create(L"Instance Data Buffer", m_instanceDescs.size(), sizeof(D3D12_RAYTRACING_INSTANCE_DESC), m_instanceDescs.data());
+	m_instanceDataBuffer.Create(L"Instance Data Buffer", (UINT)m_instanceDescs.size(), sizeof(D3D12_RAYTRACING_INSTANCE_DESC), m_instanceDescs.data());
 	m_desc.Inputs.InstanceDescs = m_instanceDataBuffer->GetGPUVirtualAddress();
 
 	m_scratchBuffer.Create(L"Acceleration Structure Scratch Buffer", (UINT)m_scratchSize, 1);
@@ -186,8 +186,6 @@ D3D12_GPU_VIRTUAL_ADDRESS Tlas::GetGPUVirtualAddress()
 
 void RTModelViewer::CreateTLAS()
 {
-	const UINT numBottomLevels = 1;
-
 	auto iterator = m_ModelInst.GetModel()->GetMeshIterator();
 	for (UINT i = 0; i < m_ModelInst.GetModel()->m_NumMeshes; i++)
 	{

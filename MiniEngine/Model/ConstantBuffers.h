@@ -15,6 +15,7 @@
 
 #include "../Core/Math/Matrix3.h"
 #include "../Core/Math/Matrix4.h"
+#include "../../Shaders/Include/CommonConstantBuffers.h"
 #include <cstdint>
 
 __declspec(align(256)) struct MeshConstants
@@ -57,19 +58,19 @@ __declspec(align(256)) struct MaterialConstants
 	};
 };
 
-__declspec(align(256)) struct GlobalConstants
-{
-	Math::Matrix4 ViewProjMatrix;
-	Math::Matrix4 SunShadowMatrix;
-	Math::Vector4 CameraPos;
-	Math::Vector4 SunDirection;
-	Math::Vector4 SunIntensity;
-	Math::Vector4 AmbientIntensity;
-	Math::Vector4 ShadowTexelSize;
-	Math::Vector4 InvTileDim;
-	Math::UintVector4 TileCount;
-	Math::UintVector4 FirstLightIndex;
-	uint32_t FrameIndexMod2;
-	float IBLRange;
-	float IBLBias;
-};
+//__declspec(align(256)) struct GlobalConstants
+//{
+//	Math::Matrix4 ViewProjMatrix;
+//	Math::Matrix4 SunShadowMatrix;
+//	Math::Vector4 CameraPos;
+//	Math::Vector4 SunDirection;
+//	Math::Vector4 SunIntensity;
+//	Math::Vector4 AmbientIntensity;
+//	Math::Vector4 ShadowTexelSize;
+//	Math::Vector4 InvTileDim;
+//	Math::UintVector4 TileCount;
+//	Math::UintVector4 FirstLightIndex;
+//	uint32_t FrameIndexMod2;
+//	float IBLRange;
+//	float IBLBias;
+//};

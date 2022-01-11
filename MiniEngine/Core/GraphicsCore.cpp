@@ -31,6 +31,10 @@
 #include "GraphRenderer.h"
 #include "TemporalEffects.h"
 #include "Display.h"
+#include "pix3.h"
+#include <filesystem>
+#include <string>
+#include <shlobj.h>
 
 #pragma comment(lib, "d3d12.lib") 
 
@@ -66,6 +70,35 @@ namespace Graphics
 	static const uint32_t vendorID_Nvidia = 4318;
 	static const uint32_t vendorID_AMD = 4098;
 	static const uint32_t vendorID_Intel = 8086;
+
+	static std::wstring GetLatestWinPixGpuCapturerPath()
+	{
+		LPWSTR programFilesPath = nullptr;
+		SHGetKnownFolderPath(FOLDERID_ProgramFiles, KF_FLAG_DEFAULT, NULL, &programFilesPath);
+
+		std::filesystem::path pixInstallationPath = programFilesPath;
+		pixInstallationPath /= "Microsoft PIX";
+
+		std::wstring newestVersionFound;
+
+		for (auto const& directory_entry : std::filesystem::directory_iterator(pixInstallationPath))
+		{
+			if (directory_entry.is_directory())
+			{
+				if (newestVersionFound.empty() || newestVersionFound < directory_entry.path().filename().c_str())
+				{
+					newestVersionFound = directory_entry.path().filename().c_str();
+				}
+			}
+		}
+
+		if (newestVersionFound.empty())
+		{
+			// TODO: Error, no PIX installation found
+		}
+
+		return pixInstallationPath / newestVersionFound / L"WinPixGpuCapturer.dll";
+	}
 
 	uint32_t GetDesiredGPUVendor()
 	{
@@ -161,6 +194,7 @@ void Graphics::Initialize(void)
 	useDebugLayers = 1;
 #endif
 
+
 	DWORD dxgiFactoryFlags = 0;
 
 	if (useDebugLayers)
@@ -205,6 +239,19 @@ void Graphics::Initialize(void)
 			dxgiInfoQueue->AddStorageFilterEntries(DXGI_DEBUG_DXGI, &filter);
 		}
 #endif
+	}
+
+	uint32_t usePixCapture = 0;
+	CommandLineArgs::GetInteger(L"pixCapture", usePixCapture);
+	if (usePixCapture)
+	{
+		std::wstring newestVersionFound = GetLatestWinPixGpuCapturerPath();
+		// Check to see if a copy of WinPixGpuCapturer.dll has already been injected into the application.
+		// This may happen if the application is launched through the PIX UI. 
+		if (!newestVersionFound.empty() && GetModuleHandle(L"WinPixGpuCapturer.dll") == 0)
+		{
+			LoadLibrary(newestVersionFound.c_str());
+		}
 	}
 
 	// Obtain the DXGI factory

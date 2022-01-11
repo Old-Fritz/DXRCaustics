@@ -47,7 +47,7 @@ namespace Lighting
 	ByteAddressBuffer m_LightGridBitMask;
 	uint32_t m_FirstConeLight;
 	uint32_t m_FirstConeShadowedLight;
-	uint32_t m_LastLight = MaxLights - 1;
+	uint32_t m_LastLight = MaxLights;
 
 	enum {shadowDim = 512};
 #ifdef USE_LIGHT_GBUFFER
@@ -241,7 +241,7 @@ void Lighting::CreateRandomLights( const Vector3 minBound, const Vector3 maxBoun
 		}
 	}
 
-	m_LastLight = count - 1;
+	m_LastLight = count;
 
 	CommandContext::InitializeBuffer(m_LightBuffer, m_LightData, MaxLights * sizeof(LightData));
 }
@@ -258,6 +258,7 @@ void Lighting::UpdateLightData(uint32_t lightId, const Math::Vector3 pos, float 
 	m_LightData[lightId].pos[1] = pos.GetY();
 	m_LightData[lightId].pos[2] = pos.GetZ();
 	m_LightData[lightId].radiusSq = lightRadius * lightRadius;
+	m_LightData[lightId].radius = lightRadius;
 	m_LightData[lightId].color[0] = color.GetX();
 	m_LightData[lightId].color[1] = color.GetY();
 	m_LightData[lightId].color[2] = color.GetZ();
@@ -295,7 +296,7 @@ void Lighting::Shutdown(void)
 	m_LightShadowTempBuffer.Destroy();
 }
 
-void Lighting::FillLightGrid(GraphicsContext& gfxContext, const Camera& camera)
+void Lighting::FillLightGrid(GraphicsContext& gfxContext, const Camera& camera, uint32_t count)
 {
 	ScopedTimer _prof(L"FillLightGrid", gfxContext);
 
@@ -340,6 +341,7 @@ void Lighting::FillLightGrid(GraphicsContext& gfxContext, const Camera& camera)
 		float InvTileDim;
 		float RcpZMagic;
 		uint32_t TileCount;
+		uint32_t LightsCount;
 		Matrix4 ViewProjMatrix;
 	} csConstants;
 	// todo: assumes 1920x1080 resolution
@@ -348,6 +350,7 @@ void Lighting::FillLightGrid(GraphicsContext& gfxContext, const Camera& camera)
 	csConstants.InvTileDim = 1.0f / LightGridDim;
 	csConstants.RcpZMagic = RcpZMagic;
 	csConstants.TileCount = tileCountX;
+	csConstants.LightsCount = count;
 	csConstants.ViewProjMatrix = camera.GetViewProjMatrix();
 	Context.SetDynamicConstantBufferView(0, sizeof(CSConstants), &csConstants);
 

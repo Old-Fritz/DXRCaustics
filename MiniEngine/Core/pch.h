@@ -65,6 +65,7 @@
 #include <string>
 #include <cwctype>
 #include <exception>
+#include <cctype> //is digit
 
 #include <ppltasks.h>
 #include <functional>

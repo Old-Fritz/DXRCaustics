@@ -15,25 +15,27 @@ void RTModelViewer::Update(float deltaT)
 	else if (GameInput::IsFirstPressed(GameInput::kRShoulder))
 		DebugZoom.Increment();
 	else if (GameInput::IsFirstPressed(GameInput::kKey_1))
-		rayTracingMode = RTM_OFF;
+		rayTracingMode = RTM_NO_RT;
 	else if (GameInput::IsFirstPressed(GameInput::kKey_2))
-		rayTracingMode = RTM_OFF_WITH_CAUSTICS;
-	else if (GameInput::IsFirstPressed(GameInput::kKey_3))
-		rayTracingMode = RTM_BACKWARD_WITH_CAUSTICS;
-	else if (GameInput::IsFirstPressed(GameInput::kKey_4))
 		rayTracingMode = RTM_CAUSTIC;
+	else if (GameInput::IsFirstPressed(GameInput::kKey_3))
+		rayTracingMode = RTM_CAUSTIC_REFL;
+	else if (GameInput::IsFirstPressed(GameInput::kKey_4))
+		rayTracingMode = RTM_CAUSTIC_DEBUG;
 	else if (GameInput::IsFirstPressed(GameInput::kKey_5))
-		rayTracingMode = RTM_BACKWARD;
+		rayTracingMode = RTM_REFL;
 	else if (GameInput::IsFirstPressed(GameInput::kKey_6))
-		rayTracingMode = RTM_DIFFUSE_WITH_SHADOWMAPS;
+		rayTracingMode = RTM_DIFFUSE;
 	else if (GameInput::IsFirstPressed(GameInput::kKey_7))
-		rayTracingMode = RTM_REFLECTIONS;
+		rayTracingMode = RTM_REFL_MAX;
 	else if (GameInput::IsFirstPressed(GameInput::kKey_8))
-		rayTracingMode = RTM_SSR;
+		rayTracingMode = RTM_REFL_BARY;
 	else if (GameInput::IsFirstPressed(GameInput::kKey_9))
-		rayTracingMode = RTM_TRAVERSAL;
+		rayTracingMode = RTM_BARY_RAYS;
 	else if (GameInput::IsFirstPressed(GameInput::kKey_0))
-		rayTracingMode = RTM_DIFFUSE_WITH_SHADOWRAYS;
+		rayTracingMode = RTM_DIFFUSE_SHADOWS;
+	else if (GameInput::IsFirstPressed(GameInput::kKey_minus))
+		rayTracingMode = RTM_SHADOWS_DEBUG;
 
 
 	static bool freezeCamera = false;
@@ -42,6 +44,20 @@ void RTModelViewer::Update(float deltaT)
 	{
 		freezeCamera = !freezeCamera;
 	}
+
+	if (GameInput::IsFirstPressed(GameInput::kKey_t))
+	{
+		PostEffects::EnableAdaptation = !PostEffects::EnableAdaptation;
+	}
+
+
+	if (GameInput::IsFirstPressed(GameInput::kKey_y))
+	{
+		g_GlobalLight = !g_GlobalLight;
+	}
+
+	
+
 
 	if (GameInput::IsFirstPressed(GameInput::kKey_z))
 	{
@@ -128,12 +144,12 @@ LightSource g_LightSource[MAX_LIGHTS];
 
 void UpdateLightsCount(EngineVar::ActionType)
 {
-	Lighting::m_LastLight = g_LightsCount;
+	Lighting::m_LastLight = (UINT)g_LightsCount;
 }
 
 void UpdateNumVars(EngineVar::ActionType)
 {
-	uint32_t ind = g_SelectedLightSource;
+	uint32_t ind = (UINT)g_SelectedLightSource;
 
 	g_LightPosX = g_LightSource[ind].Pos.GetX();
 	g_LightPosY = g_LightSource[ind].Pos.GetY();
@@ -157,7 +173,7 @@ void UpdateNumVars(EngineVar::ActionType)
 
 void RTModelViewer::UpdateLight()
 {
-	uint32_t ind = g_SelectedLightSource;
+	uint32_t ind = (UINT)g_SelectedLightSource;
 	//UpdateNumVars(ind);
 
 	if (GameInput::IsFirstPressed(GameInput::kKey_k))
@@ -248,11 +264,10 @@ void RTModelViewer::LoadLightsFromFile()
 	std::ifstream file("../Data/Lights.lll");
 
 	std::string temp;
-	float posX, posY, posZ, coneX, coneY, coneZ, colX, colY, colZ, inten, inn, out, rad;
+	float posX, posY, posZ, coneX, coneY, coneZ, colX, colY, colZ;
 
 	for (int ind = 0; ind < MAX_LIGHTS; ++ind)
 	{
-		float posX, posY, posZ, coneX, coneY, coneZ, colX, colY, colZ, inten, inn, out, rad;
 		file >> temp;
 		file	>>	temp	>>	posX	>>	temp	>>	posY	>>	temp	>>	posZ
 				>>	temp	>>	coneX	>>	temp	>>	coneY	>>	temp	>>	coneZ

@@ -94,36 +94,58 @@ void RTModelViewer::InitializeRaytracingStateObjects()
 	}
 }
 
+constexpr UINT cBaseColorSamplerRegister			= 0;
+constexpr UINT cMetallicRoughnessSamplerRegister	= 1;
+constexpr UINT cOcclusionSamplerRegister			= 2;
+constexpr UINT cEmissiveSamplerRegster				= 3;
+constexpr UINT cNormalSamplerRegister				= 4;
+
+constexpr UINT cDefaultSamplerRegister				= 10;
+constexpr UINT cShadowSamplerRegister				= 11;
+constexpr UINT cCubeMapSamplerRegister				= 12;
+constexpr UINT cNumSamplers							= 8;
+
+
 void RTModelViewer::InitStaticSamplers(D3D12_STATIC_SAMPLER_DESC* descs)
 {
-	D3D12_STATIC_SAMPLER_DESC& defaultSampler = descs[0];
-	defaultSampler.Filter = D3D12_FILTER_ANISOTROPIC;
-	defaultSampler.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-	defaultSampler.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-	defaultSampler.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-	defaultSampler.MipLODBias = 0.0f;
-	defaultSampler.MaxAnisotropy = 16;
-	defaultSampler.ComparisonFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
-	defaultSampler.MinLOD = 0.0f;
-	defaultSampler.MaxLOD = D3D12_FLOAT32_MAX;
-	defaultSampler.MaxAnisotropy = 8;
-	defaultSampler.BorderColor = D3D12_STATIC_BORDER_COLOR_OPAQUE_BLACK;
-	defaultSampler.ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-	defaultSampler.ShaderRegister = 0;
+	SamplerDesc defaultSamplerDesc;
+	defaultSamplerDesc.MaxAnisotropy = 8;
 
-	D3D12_STATIC_SAMPLER_DESC& shadowSampler = descs[1];
-	shadowSampler = descs[0];
-	shadowSampler.Filter = D3D12_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT;
-	shadowSampler.ComparisonFunc = D3D12_COMPARISON_FUNC_GREATER_EQUAL;
-	shadowSampler.AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
-	shadowSampler.AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
-	shadowSampler.AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
-	shadowSampler.ShaderRegister = 1;
+	SamplerDesc cubeMapSamplerDesc = defaultSamplerDesc;
+
+
+	auto fillStaticSamplerDesc = [](const SamplerDesc& srcDesc, D3D12_STATIC_SAMPLER_DESC& destDesc, UINT shaderReg)
+	{
+		destDesc.Filter				= srcDesc.Filter;
+		destDesc.AddressU			= srcDesc.AddressU;
+		destDesc.AddressV			= srcDesc.AddressV;
+		destDesc.AddressW			= srcDesc.AddressW;
+		destDesc.MipLODBias			= srcDesc.MipLODBias;
+		destDesc.MaxAnisotropy		= srcDesc.MaxAnisotropy;
+		destDesc.ComparisonFunc		= srcDesc.ComparisonFunc;
+		destDesc.BorderColor		= D3D12_STATIC_BORDER_COLOR_OPAQUE_WHITE;
+		destDesc.MinLOD				= srcDesc.MinLOD;
+		destDesc.MaxLOD				= srcDesc.MaxLOD;
+		destDesc.ShaderRegister		= shaderReg;
+		destDesc.RegisterSpace		= 0;
+		destDesc.ShaderVisibility	= D3D12_SHADER_VISIBILITY_ALL;
+	};
+
+	UINT sInd = 0;
+	fillStaticSamplerDesc(defaultSamplerDesc,	descs[sInd++], cDefaultSamplerRegister);
+	fillStaticSamplerDesc(SamplerShadowDesc,	descs[sInd++], cShadowSamplerRegister);
+	fillStaticSamplerDesc(cubeMapSamplerDesc,	descs[sInd++], cCubeMapSamplerRegister);
+
+	fillStaticSamplerDesc(defaultSamplerDesc, descs[sInd++], cBaseColorSamplerRegister);
+	fillStaticSamplerDesc(defaultSamplerDesc, descs[sInd++], cMetallicRoughnessSamplerRegister);
+	fillStaticSamplerDesc(defaultSamplerDesc, descs[sInd++], cOcclusionSamplerRegister);
+	fillStaticSamplerDesc(defaultSamplerDesc, descs[sInd++], cEmissiveSamplerRegster);
+	fillStaticSamplerDesc(defaultSamplerDesc, descs[sInd++], cNormalSamplerRegister);
 }
 
 void RTModelViewer::InitGlobalRootSignature()
 {
-	D3D12_STATIC_SAMPLER_DESC staticSamplerDescs[2] = {};
+	D3D12_STATIC_SAMPLER_DESC staticSamplerDescs[cNumSamplers] = {};
 	InitStaticSamplers(staticSamplerDescs);
 
 	// scene srv
@@ -143,7 +165,7 @@ void RTModelViewer::InitGlobalRootSignature()
 	// gbuffer
 	D3D12_DESCRIPTOR_RANGE1 GBufferDescriptorRange = {};
 	GBufferDescriptorRange.BaseShaderRegister = 20;
-	GBufferDescriptorRange.NumDescriptors = (uint32_t)GBTarget::NumTargets + 1;
+	GBufferDescriptorRange.NumDescriptors = ((uint32_t)GBTarget::NumTargets + 1) * 2; // gbuffer and array gbuffer 
 	GBufferDescriptorRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
 	GBufferDescriptorRange.Flags = D3D12_DESCRIPTOR_RANGE_FLAG_NONE;
 
@@ -299,6 +321,7 @@ void RTModelViewer::InitRayTraceInputs(std::function<void(ComPtr<ID3D12StateObje
 		*exports[SEN_RayGen].pSubObject = CreateDxilLibrary(exports[SEN_RayGen].exportName, g_pRGS_SSR, sizeof(g_pRGS_SSR), exports[SEN_RayGen].dxilLibDesc, exports[SEN_RayGen].exportDesc);
 		ComPtr<ID3D12StateObject> pReflectionbarycentricPSO;
 		HRESULT res = g_pRaytracingDevice->CreateStateObject(&stateObject, IID_PPV_ARGS_(pReflectionbarycentricPSO));
+		ThrowIfFailed(res);
 		GetShaderTable(pReflectionbarycentricPSO, pHitShaderTable.data());
 		g_RaytracingInputs[Reflectionbarycentric] = RaytracingDispatchRayInputs(*g_pRaytracingDevice.Get(), pReflectionbarycentricPSO, pHitShaderTable.data(), shaderRecordSizeInBytes, (UINT)pHitShaderTable.size(), exports[SEN_RayGen].exportName, exports[SEN_Miss].exportName);
 	}
@@ -309,6 +332,7 @@ void RTModelViewer::InitRayTraceInputs(std::function<void(ComPtr<ID3D12StateObje
 
 		ComPtr<ID3D12StateObject> pShadowsPSO;
 		HRESULT res = g_pRaytracingDevice->CreateStateObject(&stateObject, IID_PPV_ARGS_(pShadowsPSO));
+		ThrowIfFailed(res);
 		GetShaderTable(pShadowsPSO, pHitShaderTable.data());
 		g_RaytracingInputs[Shadows] = RaytracingDispatchRayInputs(*(g_pRaytracingDevice).Get(), pShadowsPSO, pHitShaderTable.data(), shaderRecordSizeInBytes, (UINT)pHitShaderTable.size(), exports[SEN_RayGen].exportName, exports[SEN_Miss].exportName);
 	}
@@ -321,6 +345,7 @@ void RTModelViewer::InitRayTraceInputs(std::function<void(ComPtr<ID3D12StateObje
 
 		ComPtr<ID3D12StateObject> pDiffusePSO;
 		HRESULT res = g_pRaytracingDevice->CreateStateObject(&stateObject, IID_PPV_ARGS_(pDiffusePSO));
+		ThrowIfFailed(res);
 		GetShaderTable(pDiffusePSO, pHitShaderTable.data());
 		g_RaytracingInputs[DiffuseHitShader] = RaytracingDispatchRayInputs(*g_pRaytracingDevice.Get(), pDiffusePSO, pHitShaderTable.data(), shaderRecordSizeInBytes, (UINT)pHitShaderTable.size(), exports[SEN_RayGen].exportName, exports[SEN_Miss].exportName);
 	}
@@ -333,6 +358,7 @@ void RTModelViewer::InitRayTraceInputs(std::function<void(ComPtr<ID3D12StateObje
 
 		ComPtr<ID3D12StateObject> pReflectionPSO;
 		HRESULT res = g_pRaytracingDevice->CreateStateObject(&stateObject, IID_PPV_ARGS_(pReflectionPSO));
+		ThrowIfFailed(res);
 		GetShaderTable(pReflectionPSO, pHitShaderTable.data());
 		g_RaytracingInputs[Reflection] = RaytracingDispatchRayInputs(*g_pRaytracingDevice.Get(), pReflectionPSO, pHitShaderTable.data(), shaderRecordSizeInBytes, (UINT)pHitShaderTable.size(), exports[SEN_RayGen].exportName, exports[SEN_Miss].exportName);
 	}
@@ -345,6 +371,7 @@ void RTModelViewer::InitRayTraceInputs(std::function<void(ComPtr<ID3D12StateObje
 
 		ComPtr<ID3D12StateObject> pBackwardPSO;
 		HRESULT res = g_pRaytracingDevice->CreateStateObject(&stateObject, IID_PPV_ARGS_(pBackwardPSO));
+		ThrowIfFailed(res);
 		GetShaderTable(pBackwardPSO, pHitShaderTable.data());
 		g_RaytracingInputs[Backward] = RaytracingDispatchRayInputs(*g_pRaytracingDevice.Get(), pBackwardPSO, pHitShaderTable.data(), shaderRecordSizeInBytes, (UINT)pHitShaderTable.size(), exports[SEN_RayGen].exportName, exports[SEN_Miss].exportName);
 	}
@@ -357,6 +384,7 @@ void RTModelViewer::InitRayTraceInputs(std::function<void(ComPtr<ID3D12StateObje
 
 		ComPtr<ID3D12StateObject> pCausticPSO;
 		HRESULT res = g_pRaytracingDevice->CreateStateObject(&stateObject, IID_PPV_ARGS_(pCausticPSO));
+		ThrowIfFailed(res);
 		GetShaderTable(pCausticPSO, pHitShaderTable.data());
 		g_RaytracingInputs[Caustic] = RaytracingDispatchRayInputs(*g_pRaytracingDevice.Get(), pCausticPSO, pHitShaderTable.data(), shaderRecordSizeInBytes, (UINT)pHitShaderTable.size(), exports[SEN_RayGen].exportName, exports[SEN_Miss].exportName);
 	}

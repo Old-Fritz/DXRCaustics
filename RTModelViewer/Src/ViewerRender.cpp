@@ -17,21 +17,21 @@ void RTModelViewer::UpdateGlobalConstants(GlobalConstants& globals)
 	m_SunShadowCamera.SetIntersectAll(true);
 
 
-	globals.ViewProjMatrix = m_Camera.GetViewProjMatrix();
-	globals.SunShadowMatrix = m_SunShadowCamera.GetShadowMatrix();
-	globals.CameraPos = Vector4(m_Camera.GetPosition(), 0.0f);
-	globals.SunDirection = Vector4(SunDirection, 0.0f);
-	globals.SunIntensity = Vector4(Vector3(Scalar(g_SunLightIntensity)), 0.0f);
-	globals.AmbientIntensity = Vector4(1.0f, 1.0f, 1.0f, 0.0f) * g_AmbientIntensity;
-	globals.ShadowTexelSize = Vector4(1.0f / g_ShadowBuffer.GetWidth(), 0.0f, 0.0f, 0.0f);
-	globals.InvTileDim = Vector4(1.0f / Lighting::LightGridDim, 1.0f / Lighting::LightGridDim, 0.0f, 0.0f);
-	globals.TileCount.x = Math::DivideByMultiple(g_SceneColorBuffer.GetWidth(), Lighting::LightGridDim);
-	globals.TileCount.y = Math::DivideByMultiple(g_SceneColorBuffer.GetHeight(), Lighting::LightGridDim);
-	globals.FirstLightIndex.x = Lighting::m_FirstConeLight;
-	globals.FirstLightIndex.y = Lighting::m_FirstConeShadowedLight;
-	globals.FirstLightIndex.z = Lighting::m_LastLight;
-	globals.FirstLightIndex.w = g_LightsCount;
-	globals.FrameIndexMod2 = TemporalEffects::GetFrameIndexMod2();
+	globals.ViewProjMatrix		= m_Camera.GetViewProjMatrix();
+	globals.SunShadowMatrix		= m_SunShadowCamera.GetShadowMatrix();
+	globals.ViewerPos			= m_Camera.GetPosition();
+	globals.SunDirection		= SunDirection;
+	globals.SunIntensity		= !g_GlobalLight ? Vector3(0.0f,0.0f,0.0f) : Vector3(Scalar(g_SunLightIntensity));
+	globals.AmbientIntensity	= !g_GlobalLight ? Vector3(0.0f,0.0f,0.0f) : Vector3(Scalar(g_AmbientIntensity));
+	globals.ShadowTexelSize		= Vector4(1.0f / g_ShadowBuffer.GetWidth(), 0.0f, 0.0f, 0.0f);
+	globals.InvTileDim			= Vector4(1.0f / Lighting::LightGridDim, 1.0f / Lighting::LightGridDim, 0.0f, 0.0f);
+	globals.TileCount.x			= Math::DivideByMultiple(g_SceneColorBuffer.GetWidth(), Lighting::LightGridDim);
+	globals.TileCount.y			= Math::DivideByMultiple(g_SceneColorBuffer.GetHeight(), Lighting::LightGridDim);
+	globals.FirstLightIndex.x	= Lighting::m_FirstConeLight;
+	globals.FirstLightIndex.y	= Lighting::m_FirstConeShadowedLight;
+	globals.FirstLightIndex.z	= Lighting::m_LastLight;
+	globals.FirstLightIndex.w	= (UINT)g_LightsCount;
+	globals.FrameIndexMod2		= TemporalEffects::GetFrameIndexMod2();
 }
 
 void RTModelViewer::RenderLightShadows(GraphicsContext& gfxContext, GlobalConstants& globals)
@@ -70,7 +70,7 @@ void RTModelViewer::RenderCausticMaps(GraphicsContext& gfxContext, GlobalConstan
 
 	ScopedTimer _prof(L"RenderLightShadows", gfxContext);
 
-	for (int i = 0; i <= g_LightsCount; i++)
+	for (int i = 0; i < g_LightsCount; i++)
 	{
 		wchar_t str[1024];
 		wsprintf(str, L"RenderCausticMaps: %d", i);
@@ -201,30 +201,30 @@ void RTModelViewer::RenderPostProces(GraphicsContext& gfxContext)
 void RTModelViewer::RenderScene(void)
 {
 	const bool skipDiffusePass =
-		rayTracingMode == RTM_DIFFUSE_WITH_SHADOWMAPS ||
-		rayTracingMode == RTM_DIFFUSE_WITH_SHADOWRAYS ||
-		rayTracingMode == RTM_TRAVERSAL
-		//|| rayTracingMode == RTM_CAUSTIC
+		rayTracingMode == RTM_DIFFUSE ||
+		rayTracingMode == RTM_DIFFUSE_SHADOWS ||
+		rayTracingMode == RTM_BARY_RAYS
+		//|| rayTracingMode == RTM_CAUSTIC_DEBUG
 		;
 
 	const bool skipShadowMap =
-		rayTracingMode == RTM_DIFFUSE_WITH_SHADOWRAYS ||
-		rayTracingMode == RTM_TRAVERSAL ||
-		rayTracingMode == RTM_SSR;
+		rayTracingMode == RTM_DIFFUSE_SHADOWS ||
+		rayTracingMode == RTM_BARY_RAYS ||
+		rayTracingMode == RTM_REFL_BARY;
 
 	const bool renderGBuffer = true;
 	const bool renderDeferred =
 		!skipDiffusePass &&
-		!(rayTracingMode == RTM_BACKWARD) &&
-		!(rayTracingMode == RTM_BACKWARD_WITH_CAUSTICS)
-		&& !(rayTracingMode == RTM_CAUSTIC)
+		!(rayTracingMode == RTM_REFL) &&
+		!(rayTracingMode == RTM_CAUSTIC_REFL)
+		&& !(rayTracingMode == RTM_CAUSTIC_DEBUG)
 		;
 
 
 	const bool renderCaustic =
+		rayTracingMode == RTM_CAUSTIC_DEBUG ||
 		rayTracingMode == RTM_CAUSTIC ||
-		rayTracingMode == RTM_OFF_WITH_CAUSTICS ||
-		rayTracingMode == RTM_BACKWARD_WITH_CAUSTICS
+		rayTracingMode == RTM_CAUSTIC_REFL
 		;
 
 	GraphicsContext& gfxContext = GraphicsContext::Begin(L"Scene Render");
@@ -254,7 +254,7 @@ void RTModelViewer::RenderScene(void)
 			RenderCausticMaps(gfxContext, globals);
 		}
 
-		Lighting::FillLightGrid(gfxContext, m_Camera);
+		Lighting::FillLightGrid(gfxContext, m_Camera, g_LightsCount);
 
 		if (!skipDiffusePass)
 		{
@@ -305,6 +305,6 @@ void RTModelViewer::RenderUI(class GraphicsContext& gfxContext)
 	float primaryRaysPerSec = g_SceneColorBuffer.GetWidth() * g_SceneColorBuffer.GetHeight() * rollingAverageFrameRate / (1000000.0f);
 	TextContext text(gfxContext);
 	text.Begin();
-	//text.DrawFormattedString("\nMillion Primary Rays/s: %7.3f", primaryRaysPerSec);
+	text.DrawFormattedString("\nMillion Primary Rays/s: %7.3f", primaryRaysPerSec);
 	text.End();
 }

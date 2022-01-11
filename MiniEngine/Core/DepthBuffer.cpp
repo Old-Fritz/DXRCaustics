@@ -61,12 +61,12 @@ void DepthBuffer::CreateDerivedViews( ID3D12Device* Device, DXGI_FORMAT Format, 
 {
 	ID3D12Resource* Resource = m_pResource.Get();
 
-	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc;
+	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
 	dsvDesc.Format = GetDSVFormat(Format);
 	DXGI_FORMAT stencilReadFormat = GetStencilFormat(Format);
 	m_hDSVs.resize(ArraySize);
 
-	for (int i = 0; i < ArraySize; ++i)
+	for (UINT i = 0; i < ArraySize; ++i)
 	{
 		m_hDSVs[i][0].ptr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN;
 		m_hDSVs[i][1].ptr = D3D12_GPU_VIRTUAL_ADDRESS_UNKNOWN;

@@ -1,0 +1,1000 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Core">
+      <UniqueIdentifier>{138d8769-4f89-4f7d-ba5c-c2925cbeb0fa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Particles">
+      <UniqueIdentifier>{0bb0a581-9adc-4288-b623-8e966f173fce}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Particles\TileRender">
+      <UniqueIdentifier>{ff00872c-3801-406a-acbe-f92692502087}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Particles\TileRender2">
+      <UniqueIdentifier>{f7ddb6a1-56ca-4ca7-a623-23e04bc3ae19}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Particles\Spawn">
+      <UniqueIdentifier>{594cc9e7-8c87-4f5d-a97d-0056a23726d2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Particles\TileCulling">
+      <UniqueIdentifier>{c14f22ba-3adf-4fb7-9c1a-3deac77772da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Particles\Render">
+      <UniqueIdentifier>{53563825-d67b-4877-9bc8-1afcf0ae1d65}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Common">
+      <UniqueIdentifier>{c06925cc-255a-4a8f-9ec0-dbae9aaa229e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Common\PixelPacking">
+      <UniqueIdentifier>{cc00891e-bd09-43ed-a124-67d071d5ac7c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Common\Root Signatures">
+      <UniqueIdentifier>{ec118eca-0e1f-4f4e-b6ac-1e4b0c5834f6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Text">
+      <UniqueIdentifier>{0a26fef4-82c7-486f-80aa-379fd97f4b8c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Display">
+      <UniqueIdentifier>{320e42b3-60f1-4b5b-8bf6-92c62886cab4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Display\Present">
+      <UniqueIdentifier>{a6cbb437-0693-4f8b-a319-d6e6b7de8184}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Display\SDR">
+      <UniqueIdentifier>{46583236-775b-46ce-b4b9-90f66b5b8ac7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Display\HDR">
+      <UniqueIdentifier>{59ddebb4-8925-4fad-aba0-2a678164cb9c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\PostFX">
+      <UniqueIdentifier>{6597e200-dc70-4c5c-a48c-8d515632df27}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\PostFX\ToneMap">
+      <UniqueIdentifier>{177c5dab-dc60-4adb-b4a1-0c078007f56e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\PostFX\Debug">
+      <UniqueIdentifier>{76ea9115-2610-456f-af42-856d90b79b60}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\PostFX\Bloom">
+      <UniqueIdentifier>{c7081e5a-8dcd-41d0-a423-8fea9d310654}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\PostFX\FXAA">
+      <UniqueIdentifier>{a778da79-9d3f-419f-97b2-adc8238a075e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\PostFX\FXAA\TypedUAV">
+      <UniqueIdentifier>{c9b8cb17-5377-4df3-86ae-cd26fe462acd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\PostFX\FXAA\Simple">
+      <UniqueIdentifier>{4fbeb492-f284-41b2-972e-b8afa5f2c41d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\PostFX\DoF">
+      <UniqueIdentifier>{383113ff-2eda-4b93-9ee2-b8ea0d0091ce}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\PostFX\DoF\Debug">
+      <UniqueIdentifier>{e93671b5-2458-4b1d-8589-952ccbac89cf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\PostFX\DoF\PreFilter">
+      <UniqueIdentifier>{5c0c8bd0-f457-4277-80a5-3479e6652868}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\PostFX\DoF\MedianFilter">
+      <UniqueIdentifier>{b024e405-d6d5-4d00-9a7b-b529cd9c7fb7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\PostFX\DoF\Combine">
+      <UniqueIdentifier>{2ca6d6db-35e1-40f5-8feb-ac54cffb110d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\PostFX\DoF\TilePass">
+      <UniqueIdentifier>{25bb9eb0-f16d-422d-a3ee-b618f980669d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\PostFX\DoF\Pass1">
+      <UniqueIdentifier>{f40d85e0-c6a1-4f23-a7b1-27100ff5d5ae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\PostFX\DoF\Pass2">
+      <UniqueIdentifier>{b4a777b9-f3da-4550-bf20-8502a5405121}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\PostFX\AO">
+      <UniqueIdentifier>{d9dc5d79-4895-4e88-a4d0-e3007519813e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\PostFX\AO\BlurUpsample">
+      <UniqueIdentifier>{80fc8ecc-c8c2-4820-a2c1-032d15907399}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\PostFX\AO\PrepareDepthBuffers">
+      <UniqueIdentifier>{3440b898-f55c-4427-ac6c-f7b6a4f35bdb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\PostFX\AO\Render">
+      <UniqueIdentifier>{8260472c-25d6-4a1a-9554-2db478f0ab14}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\PostFX\MotionBlur">
+      <UniqueIdentifier>{5542798a-0bc3-4afd-8c39-7f90165a2ae8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\PostFX\Temporal">
+      <UniqueIdentifier>{0ca47d02-19b2-413c-8cc7-9cf1fc7234d6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Utility">
+      <UniqueIdentifier>{bba22916-b5bc-4426-a662-4e38f96430f5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Utility\ImageScaling">
+      <UniqueIdentifier>{f03d195e-121d-4138-87b7-51141ff5d477}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Utility\ImageScaling\Bicubic">
+      <UniqueIdentifier>{d9644e02-a3ce-4ab9-9e76-b8c5a31daa71}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Utility\ImageScaling\Lanczos">
+      <UniqueIdentifier>{9b92fc51-89ad-4f65-bb0b-90cbd21dc3ad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Utility\GenerateMips">
+      <UniqueIdentifier>{ef3f884f-c706-40e1-bd9d-1be7f676443a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Utility\GenerateMips\Gamma">
+      <UniqueIdentifier>{8f6c49a2-0809-4b34-b3b6-d5c694cd6cd2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Utility\GenerateMips\Linear">
+      <UniqueIdentifier>{29004296-2344-42d4-a6b0-147f5b9078d2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Utility\Bitonic">
+      <UniqueIdentifier>{9d939ea4-c212-44c8-ba0a-bad8009302f1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Core\Utility\PerfGraph">
+      <UniqueIdentifier>{e3e4fabd-9b66-42f2-b176-6a47f7eb18cf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Model">
+      <UniqueIdentifier>{7213d9a0-1f63-49a9-80f8-2948ec6e03f6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Model\Lighting">
+      <UniqueIdentifier>{4963f191-b87c-4b4e-b07a-4b650c848ea6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Model\Lighting\FillLightGrid">
+      <UniqueIdentifier>{f401ff34-174d-47f5-96fd-4af46722e7f7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Model\Render">
+      <UniqueIdentifier>{c789f12e-077c-4bfc-b78c-4222a4ed8052}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Model\Render\Default">
+      <UniqueIdentifier>{6a17ae7f-b35b-4e58-8854-ee12c5c38333}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Model\Render\Default\Variations">
+      <UniqueIdentifier>{0b0867da-98bf-4697-973e-b0985150ae32}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Model\Render\Depth">
+      <UniqueIdentifier>{a73ce2b2-8e9c-4ba5-a5b8-73e2a30c1a1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Model\Render\Depth\Variations">
+      <UniqueIdentifier>{8f80c915-4ebf-479e-9f96-0c93412af13a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Model\Render\Skybox">
+      <UniqueIdentifier>{a4e81fd8-70f0-44d4-a13b-b6ec777fc90b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Model\Render\ModelViewer">
+      <UniqueIdentifier>{4e2c60d1-0bc1-49bb-a541-e2f2bc4df0bd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RT">
+      <UniqueIdentifier>{6af05999-9e59-4e21-8eaa-b9f453ecdc3f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{d71908c1-b7bc-4d80-afff-0191cbbe3886}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Utils">
+      <UniqueIdentifier>{00574953-5e9a-43a9-a03c-cb327fe9ffd1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Common">
+      <UniqueIdentifier>{4388778f-ca2a-4127-8126-d3caa0b6a573}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RT\AHS">
+      <UniqueIdentifier>{9a44eb66-55a0-44ab-ac75-c18ba4d837eb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RT\CHS">
+      <UniqueIdentifier>{5f3c8455-b3ab-4dfb-bb25-3969788f8341}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RT\RGS">
+      <UniqueIdentifier>{48702b56-98f1-47a9-bbf4-526472f0687d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="RT\MS">
+      <UniqueIdentifier>{9fb16667-80b4-4e68-864a-c2aca10df2d7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Common\Stages">
+      <UniqueIdentifier>{f43f8e5e-d82c-4e8f-a153-82a97f939c5c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Common\Components">
+      <UniqueIdentifier>{b8d2ef0e-6973-4569-8360-d46f47efce5f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Utils\Math">
+      <UniqueIdentifier>{4dbf6dfa-fcb9-414c-9dbf-fb827597d2f1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Utils\RT">
+      <UniqueIdentifier>{786e8183-1ff3-44e7-8fb8-f070c555d492}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Resources">
+      <UniqueIdentifier>{0bb73fae-0c46-4dec-9b75-3a3860c2b4ba}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Resources\Stages">
+      <UniqueIdentifier>{4587e3c4-6f8a-4f86-8b04-7875a5202b41}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Resources\Msterials">
+      <UniqueIdentifier>{dd48a15f-efc8-4e62-873b-453d8c280c83}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Resources\Lighting">
+      <UniqueIdentifier>{cb2120d5-77c4-4122-9461-8ebe86ac5089}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Lighting">
+      <UniqueIdentifier>{1d2f0166-830f-4f5d-99ec-6f2d5c33aa0e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Utils\Data">
+      <UniqueIdentifier>{867fe718-57d7-45d9-abda-2d18fc090772}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Core\ParticleUpdateCommon.hlsli">
+      <Filter>Core\Particles</Filter>
+    </None>
+    <None Include="Core\ParticleUtility.hlsli">
+      <Filter>Core\Particles</Filter>
+    </None>
+    <None Include="Core\PixelPacking_R11G11B10.hlsli">
+      <Filter>Core\Common\PixelPacking</Filter>
+    </None>
+    <None Include="Core\PixelPacking_RGBE.hlsli">
+      <Filter>Core\Common\PixelPacking</Filter>
+    </None>
+    <None Include="Core\PixelPacking_RGBM.hlsli">
+      <Filter>Core\Common\PixelPacking</Filter>
+    </None>
+    <None Include="Core\PixelPacking_Velocity.hlsli">
+      <Filter>Core\Common\PixelPacking</Filter>
+    </None>
+    <None Include="Core\PixelPacking.hlsli">
+      <Filter>Core\Common\PixelPacking</Filter>
+    </None>
+    <None Include="Core\CommonRS.hlsli">
+      <Filter>Core\Common\Root Signatures</Filter>
+    </None>
+    <None Include="Core\DoFRS.hlsli">
+      <Filter>Core\Common\Root Signatures</Filter>
+    </None>
+    <None Include="Core\FXAARootSignature.hlsli">
+      <Filter>Core\Common\Root Signatures</Filter>
+    </None>
+    <None Include="Core\MotionBlurRS.hlsli">
+      <Filter>Core\Common\Root Signatures</Filter>
+    </None>
+    <None Include="Core\ParticleRS.hlsli">
+      <Filter>Core\Common\Root Signatures</Filter>
+    </None>
+    <None Include="Core\PerfGraphRS.hlsli">
+      <Filter>Core\Common\Root Signatures</Filter>
+    </None>
+    <None Include="Core\PostEffectsRS.hlsli">
+      <Filter>Core\Common\Root Signatures</Filter>
+    </None>
+    <None Include="Core\PresentRS.hlsli">
+      <Filter>Core\Common\Root Signatures</Filter>
+    </None>
+    <None Include="Core\SSAORS.hlsli">
+      <Filter>Core\Common\Root Signatures</Filter>
+    </None>
+    <None Include="Core\TextRS.hlsli">
+      <Filter>Core\Common\Root Signatures</Filter>
+    </None>
+    <None Include="Core\ToneMappingUtility.hlsli">
+      <Filter>Core\PostFX\ToneMap</Filter>
+    </None>
+    <None Include="Core\FXAAPass1CS.hlsli">
+      <Filter>Core\PostFX\FXAA</Filter>
+    </None>
+    <None Include="Core\FXAAPass2CS.hlsli">
+      <Filter>Core\PostFX\FXAA</Filter>
+    </None>
+    <None Include="Core\DoFCommon.hlsli">
+      <Filter>Core\PostFX\DoF</Filter>
+    </None>
+    <None Include="Core\AoBlurAndUpsampleCS.hlsli">
+      <Filter>Core\PostFX\AO\BlurUpsample</Filter>
+    </None>
+    <None Include="Core\AoRenderCS.hlsli">
+      <Filter>Core\PostFX\AO\Render</Filter>
+    </None>
+    <None Include="Core\ColorSpaceUtility.hlsli">
+      <Filter>Core\Utility</Filter>
+    </None>
+    <None Include="Core\ShaderUtility.hlsli">
+      <Filter>Core\Utility</Filter>
+    </None>
+    <None Include="Core\BicubicFilterFunctions.hlsli">
+      <Filter>Core\Utility\ImageScaling\Bicubic</Filter>
+    </None>
+    <None Include="Core\LanczosFunctions.hlsli">
+      <Filter>Core\Utility\ImageScaling\Lanczos</Filter>
+    </None>
+    <None Include="Core\GenerateMipsCS.hlsli">
+      <Filter>Core\Utility\GenerateMips</Filter>
+    </None>
+    <None Include="Core\BitonicSortCommon.hlsli">
+      <Filter>Core\Utility\Bitonic</Filter>
+    </None>
+    <None Include="Include\Light_PBR.hlsli">
+      <Filter>Include\Lighting</Filter>
+    </None>
+    <None Include="Include\Light_Materials.hlsli">
+      <Filter>Include\Lighting</Filter>
+    </None>
+    <None Include="Include\Light_Accumulate.hlsli">
+      <Filter>Include\Lighting</Filter>
+    </None>
+    <None Include="Include\Common.hlsli">
+      <Filter>Include\Common</Filter>
+    </None>
+    <None Include="Include\FillLightGridCS.hlsli">
+      <Filter>Model\Lighting</Filter>
+    </None>
+    <None Include="Include\Utils_Waves.hlsli">
+      <Filter>Include\Utils</Filter>
+    </None>
+    <None Include="packages.config" />
+    <None Include="Include\Common_Defines.hlsli">
+      <Filter>Include\Common</Filter>
+    </None>
+    <None Include="Include\CommonConstantBuffers.h">
+      <Filter>Include\Common</Filter>
+    </None>
+    <None Include="Include\Common_CS.hlsli">
+      <Filter>Include\Common\Stages</Filter>
+    </None>
+    <None Include="Include\Common_PS.hlsli">
+      <Filter>Include\Common\Stages</Filter>
+    </None>
+    <None Include="Include\Common_RT.hlsli">
+      <Filter>Include\Common\Stages</Filter>
+    </None>
+    <None Include="Include\Common_Helpers.hlsli">
+      <Filter>Include\Common</Filter>
+    </None>
+    <None Include="Include\Res_Global.hlsli">
+      <Filter>Include\Resources</Filter>
+    </None>
+    <None Include="Include\Common_Resources.hlsli">
+      <Filter>Include\Common\Components</Filter>
+    </None>
+    <None Include="Include\Common_Lighting.hlsli">
+      <Filter>Include\Common\Components</Filter>
+    </None>
+    <None Include="Include\Common_Utils.hlsli">
+      <Filter>Include\Common\Components</Filter>
+    </None>
+    <None Include="Include\Common_RayTracing.hlsli">
+      <Filter>Include\Common\Components</Filter>
+    </None>
+    <None Include="Include\Light_Shadows.hlsli">
+      <Filter>Include\Lighting</Filter>
+    </None>
+    <None Include="Include\Res_RayTracing.hlsli">
+      <Filter>Include\Resources\Stages</Filter>
+    </None>
+    <None Include="Include\Res_Compute.hlsli">
+      <Filter>Include\Resources\Stages</Filter>
+    </None>
+    <None Include="Include\Res_Pixel.hlsli">
+      <Filter>Include\Resources\Stages</Filter>
+    </None>
+    <None Include="Include\Res_ArrayGBuffer.hlsli">
+      <Filter>Include\Resources\Msterials</Filter>
+    </None>
+    <None Include="Include\Res_GBuffer.hlsli">
+      <Filter>Include\Resources\Msterials</Filter>
+    </None>
+    <None Include="Include\Res_MaterialTextures.hlsli">
+      <Filter>Include\Resources\Msterials</Filter>
+    </None>
+    <None Include="Include\Res_Lighting.hlsli">
+      <Filter>Include\Resources\Lighting</Filter>
+    </None>
+    <None Include="Include\Res_LightGrid.hlsli">
+      <Filter>Include\Resources\Lighting</Filter>
+    </None>
+    <None Include="Include\Utils_Screen.hlsli">
+      <Filter>Include\Utils\Math</Filter>
+    </None>
+    <None Include="Include\Utils_Reflection.hlsli">
+      <Filter>Include\Utils\Math</Filter>
+    </None>
+    <None Include="Include\Utils_Unpacking.hlsli">
+      <Filter>Include\Utils\Data</Filter>
+    </None>
+    <None Include="Include\Utils_Output.hlsli">
+      <Filter>Include\Utils\Data</Filter>
+    </None>
+    <None Include="Include\Utils_RayTracing.hlsli">
+      <Filter>Include\Utils\RT</Filter>
+    </None>
+    <None Include="Include\Utils_Caustic.hlsli">
+      <Filter>Include\Utils\RT</Filter>
+    </None>
+    <None Include="Include\Utils_Vertices.hlsli">
+      <Filter>Include\Utils\Data</Filter>
+    </None>
+    <None Include="Include\Utils_Random.hlsli">
+      <Filter>Include\Utils\Math</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="Core\ParticleTileRenderCS.hlsl">
+      <Filter>Core\Particles\TileRender</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\ParticleTileRenderFastCS.hlsl">
+      <Filter>Core\Particles\TileRender</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\ParticleTileRenderFastDynamicCS.hlsl">
+      <Filter>Core\Particles\TileRender</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\ParticleTileRenderFastLowResCS.hlsl">
+      <Filter>Core\Particles\TileRender</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\ParticleTileRenderSlowDynamicCS.hlsl">
+      <Filter>Core\Particles\TileRender</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\ParticleTileRenderSlowLowResCS.hlsl">
+      <Filter>Core\Particles\TileRender</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\ParticleTileRender2CS.hlsl">
+      <Filter>Core\Particles\TileRender2</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\ParticleTileRenderFast2CS.hlsl">
+      <Filter>Core\Particles\TileRender2</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\ParticleTileRenderFastDynamic2CS.hlsl">
+      <Filter>Core\Particles\TileRender2</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\ParticleTileRenderFastLowRes2CS.hlsl">
+      <Filter>Core\Particles\TileRender2</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\ParticleTileRenderSlowDynamic2CS.hlsl">
+      <Filter>Core\Particles\TileRender2</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\ParticleTileRenderSlowLowRes2CS.hlsl">
+      <Filter>Core\Particles\TileRender2</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\ParticleBinCullingCS.hlsl">
+      <Filter>Core\Particles\Spawn</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\ParticleDispatchIndirectArgsCS.hlsl">
+      <Filter>Core\Particles\Spawn</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\ParticleFinalDispatchIndirectArgsCS.hlsl">
+      <Filter>Core\Particles\Spawn</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\ParticleLargeBinCullingCS.hlsl">
+      <Filter>Core\Particles\Spawn</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\ParticleSpawnCS.hlsl">
+      <Filter>Core\Particles\Spawn</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\ParticleUpdateCS.hlsl">
+      <Filter>Core\Particles\Spawn</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\ParticleDepthBoundsCS.hlsl">
+      <Filter>Core\Particles\TileCulling</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\ParticleTileCullingCS.hlsl">
+      <Filter>Core\Particles\TileCulling</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\ParticleNoSortVS.hlsl">
+      <Filter>Core\Particles\Render</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\ParticlePreSortCS.hlsl">
+      <Filter>Core\Particles\Render</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\ParticlePS.hlsl">
+      <Filter>Core\Particles\Render</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\ParticleSortIndirectArgsCS.hlsl">
+      <Filter>Core\Particles\Render</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\ParticleVS.hlsl">
+      <Filter>Core\Particles\Render</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\DownsampleDepthPS.hlsl">
+      <Filter>Core\Common</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\ScreenQuadCommonVS.hlsl">
+      <Filter>Core\Common</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\ScreenQuadPresentVS.hlsl">
+      <Filter>Core\Common</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\TextAntialiasPS.hlsl">
+      <Filter>Core\Text</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\TextShadowPS.hlsl">
+      <Filter>Core\Text</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\TextVS.hlsl">
+      <Filter>Core\Text</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\BufferCopyPS.hlsl">
+      <Filter>Core\Display</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\MagnifyPixelsPS.hlsl">
+      <Filter>Core\Display</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\CompositeSDRPS.hlsl">
+      <Filter>Core\Display\SDR</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\PresentSDRPS.hlsl">
+      <Filter>Core\Display\SDR</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\ScaleAndCompositeSDRPS.hlsl">
+      <Filter>Core\Display\SDR</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\BlendUIHDRPS.hlsl">
+      <Filter>Core\Display\HDR</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\CompositeHDRPS.hlsl">
+      <Filter>Core\Display\HDR</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\PresentHDRPS.hlsl">
+      <Filter>Core\Display\HDR</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\ScaleAndCompositeHDRPS.hlsl">
+      <Filter>Core\Display\HDR</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\BlurCS.hlsl">
+      <Filter>Core\PostFX</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\CopyBackPostBufferCS.hlsl">
+      <Filter>Core\PostFX</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\ExtractLumaCS.hlsl">
+      <Filter>Core\PostFX</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\UpsampleAndBlurCS.hlsl">
+      <Filter>Core\PostFX</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\AdaptExposureCS.hlsl">
+      <Filter>Core\PostFX\ToneMap</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\AverageLumaCS.hlsl">
+      <Filter>Core\PostFX\ToneMap</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\ToneMapHDR2CS.hlsl">
+      <Filter>Core\PostFX\ToneMap</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\ToneMapHDRCS.hlsl">
+      <Filter>Core\PostFX\ToneMap</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\ToneMap2CS.hlsl">
+      <Filter>Core\PostFX\ToneMap</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\ToneMapCS.hlsl">
+      <Filter>Core\PostFX\ToneMap</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\DebugDrawHistogramCS.hlsl">
+      <Filter>Core\PostFX\Debug</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\DebugLuminanceHdr2CS.hlsl">
+      <Filter>Core\PostFX\Debug</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\DebugLuminanceHdrCS.hlsl">
+      <Filter>Core\PostFX\Debug</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\DebugLuminanceLdr2CS.hlsl">
+      <Filter>Core\PostFX\Debug</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\DebugLuminanceLdrCS.hlsl">
+      <Filter>Core\PostFX\Debug</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\ApplyBloom2CS.hlsl">
+      <Filter>Core\PostFX\Bloom</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\ApplyBloomCS.hlsl">
+      <Filter>Core\PostFX\Bloom</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\BloomExtractAndDownsampleHdrCS.hlsl">
+      <Filter>Core\PostFX\Bloom</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\BloomExtractAndDownsampleLdrCS.hlsl">
+      <Filter>Core\PostFX\Bloom</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\DownsampleBloomAllCS.hlsl">
+      <Filter>Core\PostFX\Bloom</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\DownsampleBloomCS.hlsl">
+      <Filter>Core\PostFX\Bloom</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\FXAAResolveWorkQueueCS.hlsl">
+      <Filter>Core\PostFX\FXAA</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\FXAAPass1_Luma2_CS.hlsl">
+      <Filter>Core\PostFX\FXAA\TypedUAV</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\FXAAPass1_RGB2_CS.hlsl">
+      <Filter>Core\PostFX\FXAA\TypedUAV</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\FXAAPass2H2CS.hlsl">
+      <Filter>Core\PostFX\FXAA\TypedUAV</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\FXAAPass2HDebug2CS.hlsl">
+      <Filter>Core\PostFX\FXAA\TypedUAV</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\FXAAPass2V2CS.hlsl">
+      <Filter>Core\PostFX\FXAA\TypedUAV</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\FXAAPass2VDebug2CS.hlsl">
+      <Filter>Core\PostFX\FXAA\TypedUAV</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\FXAAPass1_Luma_CS.hlsl">
+      <Filter>Core\PostFX\FXAA\Simple</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\FXAAPass1_RGB_CS.hlsl">
+      <Filter>Core\PostFX\FXAA\Simple</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\FXAAPass2HDebugCS.hlsl">
+      <Filter>Core\PostFX\FXAA\Simple</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\FXAAPass2VDebugCS.hlsl">
+      <Filter>Core\PostFX\FXAA\Simple</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\FXAAPass2HCS.hlsl">
+      <Filter>Core\PostFX\FXAA\Simple</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\FXAAPass2VCS.hlsl">
+      <Filter>Core\PostFX\FXAA\Simple</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\DoFDebugBlueCS.hlsl">
+      <Filter>Core\PostFX\DoF\Debug</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\DoFDebugGreenCS.hlsl">
+      <Filter>Core\PostFX\DoF\Debug</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\DoFDebugRedCS.hlsl">
+      <Filter>Core\PostFX\DoF\Debug</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\DoFPass2DebugCS.hlsl">
+      <Filter>Core\PostFX\DoF\Debug</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\DoFPreFilterCS.hlsl">
+      <Filter>Core\PostFX\DoF\PreFilter</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\DoFPreFilterFastCS.hlsl">
+      <Filter>Core\PostFX\DoF\PreFilter</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\DoFPreFilterFixupCS.hlsl">
+      <Filter>Core\PostFX\DoF\PreFilter</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\DoFMedianFilterCS.hlsl">
+      <Filter>Core\PostFX\DoF\MedianFilter</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\DoFMedianFilterFixupCS.hlsl">
+      <Filter>Core\PostFX\DoF\MedianFilter</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\DoFMedianFilterSepAlphaCS.hlsl">
+      <Filter>Core\PostFX\DoF\MedianFilter</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\DoFCombine2CS.hlsl">
+      <Filter>Core\PostFX\DoF\Combine</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\DoFCombineCS.hlsl">
+      <Filter>Core\PostFX\DoF\Combine</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\DoFCombineFast2CS.hlsl">
+      <Filter>Core\PostFX\DoF\Combine</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\DoFCombineFastCS.hlsl">
+      <Filter>Core\PostFX\DoF\Combine</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\DoFTilePassCS.hlsl">
+      <Filter>Core\PostFX\DoF\TilePass</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\DoFTilePassFixupCS.hlsl">
+      <Filter>Core\PostFX\DoF\TilePass</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\DoFPass1CS.hlsl">
+      <Filter>Core\PostFX\DoF\Pass1</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\DoFPass2CS.hlsl">
+      <Filter>Core\PostFX\DoF\Pass2</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\DoFPass2FastCS.hlsl">
+      <Filter>Core\PostFX\DoF\Pass2</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\DoFPass2FixupCS.hlsl">
+      <Filter>Core\PostFX\DoF\Pass2</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\DebugSSAOCS.hlsl">
+      <Filter>Core\PostFX\AO</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\LinearizeDepthCS.hlsl">
+      <Filter>Core\PostFX\AO</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\AoBlurUpsampleBlendOutCS.hlsl">
+      <Filter>Core\PostFX\AO\BlurUpsample</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\AoBlurUpsampleCS.hlsl">
+      <Filter>Core\PostFX\AO\BlurUpsample</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\AoBlurUpsamplePreMinBlendOutCS.hlsl">
+      <Filter>Core\PostFX\AO\BlurUpsample</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\AoBlurUpsamplePreMinCS.hlsl">
+      <Filter>Core\PostFX\AO\BlurUpsample</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\AoPrepareDepthBuffers1CS.hlsl">
+      <Filter>Core\PostFX\AO\PrepareDepthBuffers</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\AoPrepareDepthBuffers2CS.hlsl">
+      <Filter>Core\PostFX\AO\PrepareDepthBuffers</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\AoRender1CS.hlsl">
+      <Filter>Core\PostFX\AO\Render</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\AoRender2CS.hlsl">
+      <Filter>Core\PostFX\AO\Render</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\CameraMotionBlurPrePassCS.hlsl">
+      <Filter>Core\PostFX\MotionBlur</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\CameraMotionBlurPrePassLinearZCS.hlsl">
+      <Filter>Core\PostFX\MotionBlur</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\CameraVelocityCS.hlsl">
+      <Filter>Core\PostFX\MotionBlur</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\MotionBlurFinalPassCS.hlsl">
+      <Filter>Core\PostFX\MotionBlur</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\MotionBlurFinalPassPS.hlsl">
+      <Filter>Core\PostFX\MotionBlur</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\MotionBlurPrePassCS.hlsl">
+      <Filter>Core\PostFX\MotionBlur</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\BoundNeighborhoodCS.hlsl">
+      <Filter>Core\PostFX\Temporal</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\ResolveTAACS.hlsl">
+      <Filter>Core\PostFX\Temporal</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\SharpenTAACS.hlsl">
+      <Filter>Core\PostFX\Temporal</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\TemporalBlendCS.hlsl">
+      <Filter>Core\PostFX\Temporal</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\BicubicHorizontalUpsamplePS.hlsl">
+      <Filter>Core\Utility\ImageScaling\Bicubic</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\BicubicUpsampleCS.hlsl">
+      <Filter>Core\Utility\ImageScaling\Bicubic</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\BicubicUpsampleFast16CS.hlsl">
+      <Filter>Core\Utility\ImageScaling\Bicubic</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\BicubicUpsampleFast24CS.hlsl">
+      <Filter>Core\Utility\ImageScaling\Bicubic</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\BicubicUpsampleFast32CS.hlsl">
+      <Filter>Core\Utility\ImageScaling\Bicubic</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\BicubicUpsampleGammaPS.hlsl">
+      <Filter>Core\Utility\ImageScaling\Bicubic</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\BicubicUpsamplePS.hlsl">
+      <Filter>Core\Utility\ImageScaling\Bicubic</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\BicubicVerticalUpsamplePS.hlsl">
+      <Filter>Core\Utility\ImageScaling\Bicubic</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\BilinearUpsamplePS.hlsl">
+      <Filter>Core\Utility\ImageScaling\Bicubic</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\SharpeningUpsampleGammaPS.hlsl">
+      <Filter>Core\Utility\ImageScaling\Bicubic</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\SharpeningUpsamplePS.hlsl">
+      <Filter>Core\Utility\ImageScaling\Bicubic</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\LanczosCS.hlsl">
+      <Filter>Core\Utility\ImageScaling\Lanczos</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\LanczosFast16CS.hlsl">
+      <Filter>Core\Utility\ImageScaling\Lanczos</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\LanczosFast24CS.hlsl">
+      <Filter>Core\Utility\ImageScaling\Lanczos</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\LanczosFast32CS.hlsl">
+      <Filter>Core\Utility\ImageScaling\Lanczos</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\LanczosHorizontalPS.hlsl">
+      <Filter>Core\Utility\ImageScaling\Lanczos</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\LanczosVerticalPS.hlsl">
+      <Filter>Core\Utility\ImageScaling\Lanczos</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\GenerateHistogramCS.hlsl">
+      <Filter>Core\Utility\GenerateMips</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\GenerateMipsGammaCS.hlsl">
+      <Filter>Core\Utility\GenerateMips\Gamma</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\GenerateMipsGammaOddCS.hlsl">
+      <Filter>Core\Utility\GenerateMips\Gamma</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\GenerateMipsGammaOddXCS.hlsl">
+      <Filter>Core\Utility\GenerateMips\Gamma</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\GenerateMipsGammaOddYCS.hlsl">
+      <Filter>Core\Utility\GenerateMips\Gamma</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\GenerateMipsLinearCS.hlsl">
+      <Filter>Core\Utility\GenerateMips\Linear</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\GenerateMipsLinearOddCS.hlsl">
+      <Filter>Core\Utility\GenerateMips\Linear</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\GenerateMipsLinearOddXCS.hlsl">
+      <Filter>Core\Utility\GenerateMips\Linear</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\GenerateMipsLinearOddYCS.hlsl">
+      <Filter>Core\Utility\GenerateMips\Linear</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\Bitonic32InnerSortCS.hlsl">
+      <Filter>Core\Utility\Bitonic</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\Bitonic32OuterSortCS.hlsl">
+      <Filter>Core\Utility\Bitonic</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\Bitonic32PreSortCS.hlsl">
+      <Filter>Core\Utility\Bitonic</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\Bitonic64InnerSortCS.hlsl">
+      <Filter>Core\Utility\Bitonic</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\Bitonic64OuterSortCS.hlsl">
+      <Filter>Core\Utility\Bitonic</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\Bitonic64PreSortCS.hlsl">
+      <Filter>Core\Utility\Bitonic</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\BitonicIndirectArgsCS.hlsl">
+      <Filter>Core\Utility\Bitonic</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\PerfGraphBackgroundVS.hlsl">
+      <Filter>Core\Utility\PerfGraph</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\PerfGraphPS.hlsl">
+      <Filter>Core\Utility\PerfGraph</Filter>
+    </FxCompile>
+    <FxCompile Include="Core\PerfGraphVS.hlsl">
+      <Filter>Core\Utility\PerfGraph</Filter>
+    </FxCompile>
+    <FxCompile Include="Model\DeferredLightingCS.hlsl">
+      <Filter>Model</Filter>
+    </FxCompile>
+    <FxCompile Include="Model\FillLightGridCS_16.hlsl">
+      <Filter>Model\Lighting\FillLightGrid</Filter>
+    </FxCompile>
+    <FxCompile Include="Model\FillLightGridCS_24.hlsl">
+      <Filter>Model\Lighting\FillLightGrid</Filter>
+    </FxCompile>
+    <FxCompile Include="Model\FillLightGridCS_32.hlsl">
+      <Filter>Model\Lighting\FillLightGrid</Filter>
+    </FxCompile>
+    <FxCompile Include="Model\FillLightGridCS_8.hlsl">
+      <Filter>Model\Lighting\FillLightGrid</Filter>
+    </FxCompile>
+    <FxCompile Include="Model\DefaultNoTangentNoUV1PS.hlsl">
+      <Filter>Model\Render\Default\Variations</Filter>
+    </FxCompile>
+    <FxCompile Include="Model\DefaultNoTangentNoUV1SkinVS.hlsl">
+      <Filter>Model\Render\Default\Variations</Filter>
+    </FxCompile>
+    <FxCompile Include="Model\DefaultNoTangentNoUV1VS.hlsl">
+      <Filter>Model\Render\Default\Variations</Filter>
+    </FxCompile>
+    <FxCompile Include="Model\DefaultNoTangentPS.hlsl">
+      <Filter>Model\Render\Default\Variations</Filter>
+    </FxCompile>
+    <FxCompile Include="Model\DefaultNoTangentSkinVS.hlsl">
+      <Filter>Model\Render\Default\Variations</Filter>
+    </FxCompile>
+    <FxCompile Include="Model\DefaultNoTangentVS.hlsl">
+      <Filter>Model\Render\Default\Variations</Filter>
+    </FxCompile>
+    <FxCompile Include="Model\DefaultNoUV1PS.hlsl">
+      <Filter>Model\Render\Default\Variations</Filter>
+    </FxCompile>
+    <FxCompile Include="Model\DefaultNoUV1SkinVS.hlsl">
+      <Filter>Model\Render\Default\Variations</Filter>
+    </FxCompile>
+    <FxCompile Include="Model\DefaultNoUV1VS.hlsl">
+      <Filter>Model\Render\Default\Variations</Filter>
+    </FxCompile>
+    <FxCompile Include="Model\DefaultSkinVS.hlsl">
+      <Filter>Model\Render\Default\Variations</Filter>
+    </FxCompile>
+    <FxCompile Include="Model\CutoutDepthPS.hlsl">
+      <Filter>Model\Render\Depth</Filter>
+    </FxCompile>
+    <FxCompile Include="Model\DepthOnlyVS.hlsl">
+      <Filter>Model\Render\Depth</Filter>
+    </FxCompile>
+    <FxCompile Include="Model\DepthViewerPS.hlsl">
+      <Filter>Model\Render\Depth</Filter>
+    </FxCompile>
+    <FxCompile Include="Model\DepthViewerVS.hlsl">
+      <Filter>Model\Render\Depth</Filter>
+    </FxCompile>
+    <FxCompile Include="Model\CutoutDepthSkinVS.hlsl">
+      <Filter>Model\Render\Depth\Variations</Filter>
+    </FxCompile>
+    <FxCompile Include="Model\CutoutDepthVS.hlsl">
+      <Filter>Model\Render\Depth\Variations</Filter>
+    </FxCompile>
+    <FxCompile Include="Model\DepthOnlySkinVS.hlsl">
+      <Filter>Model\Render\Depth\Variations</Filter>
+    </FxCompile>
+    <FxCompile Include="Model\SkyboxPS.hlsl">
+      <Filter>Model\Render\Skybox</Filter>
+    </FxCompile>
+    <FxCompile Include="Model\SkyboxVS.hlsl">
+      <Filter>Model\Render\Skybox</Filter>
+    </FxCompile>
+    <FxCompile Include="Model\ModelViewerPS.hlsl">
+      <Filter>Model\Render\ModelViewer</Filter>
+    </FxCompile>
+    <FxCompile Include="Model\ModelViewerVS.hlsl">
+      <Filter>Model\Render\ModelViewer</Filter>
+    </FxCompile>
+    <FxCompile Include="Model\DefaultPS.hlsl">
+      <Filter>Model</Filter>
+    </FxCompile>
+    <FxCompile Include="Model\DefaultVS.hlsl">
+      <Filter>Model</Filter>
+    </FxCompile>
+    <FxCompile Include="RT\RGS_Diffuse.hlsl">
+      <Filter>RT\RGS</Filter>
+    </FxCompile>
+    <FxCompile Include="RT\RGS_Shadows.hlsl">
+      <Filter>RT\RGS</Filter>
+    </FxCompile>
+    <FxCompile Include="RT\RGS_SSR.hlsl">
+      <Filter>RT\RGS</Filter>
+    </FxCompile>
+    <FxCompile Include="RT\MS_Shadows.hlsl">
+      <Filter>RT\MS</Filter>
+    </FxCompile>
+    <FxCompile Include="RT\CHS_Diffuse.hlsl">
+      <Filter>RT\CHS</Filter>
+    </FxCompile>
+    <FxCompile Include="RT\MS_Default.hlsl">
+      <Filter>RT\MS</Filter>
+    </FxCompile>
+    <FxCompile Include="RT\AHS_Default.hlsl">
+      <Filter>RT\AHS</Filter>
+    </FxCompile>
+    <FxCompile Include="RT\CHS_Default.hlsl">
+      <Filter>RT\CHS</Filter>
+    </FxCompile>
+    <FxCompile Include="RT\RGS_Caustic.hlsl">
+      <Filter>RT\RGS</Filter>
+    </FxCompile>
+    <FxCompile Include="RT\MS_Caustic.hlsl">
+      <Filter>RT\MS</Filter>
+    </FxCompile>
+    <FxCompile Include="RT\CHS_Caustic.hlsl">
+      <Filter>RT\CHS</Filter>
+    </FxCompile>
+    <FxCompile Include="RT\AHS_Caustic.hlsl">
+      <Filter>RT\AHS</Filter>
+    </FxCompile>
+    <FxCompile Include="RT\RGS_Backward.hlsl">
+      <Filter>RT\RGS</Filter>
+    </FxCompile>
+    <FxCompile Include="RT\MS_Backward.hlsl">
+      <Filter>RT\MS</Filter>
+    </FxCompile>
+    <FxCompile Include="RT\CHS_Backward.hlsl">
+      <Filter>RT\CHS</Filter>
+    </FxCompile>
+    <FxCompile Include="RT\AHS_Backward.hlsl">
+      <Filter>RT\AHS</Filter>
+    </FxCompile>
+  </ItemGroup>
+</Project>

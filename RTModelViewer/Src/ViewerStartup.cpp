@@ -53,8 +53,28 @@ void RTModelViewer::Startup(void)
 	TemporalEffects::EnableTAA = true;
 	FXAA::Enable = true;
 	PostEffects::EnableHDR = true;
-	PostEffects::EnableAdaptation = true;
+	PostEffects::EnableAdaptation = false;
 	SSAO::Enable = true;
+
+	uint32_t disableAdaptationValue;
+	if (CommandLineArgs::GetInteger(L"disableAdaptation", disableAdaptationValue))
+	{
+		if (disableAdaptationValue)
+		{
+			PostEffects::EnableAdaptation = false;
+		}
+	}
+
+	uint32_t disableGlobalLightValue;
+	if (CommandLineArgs::GetInteger(L"disableGlobalLight", disableGlobalLightValue))
+	{
+		if(disableGlobalLightValue)
+		{
+			g_GlobalLight = false;
+		}
+	}
+
+
 
 	Renderer::Initialize();
 

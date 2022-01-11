@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\Packages\Microsoft.Direct3D.D3D12.1.700.10-preview\build\native\Microsoft.Direct3D.D3D12.props" Condition="Exists('..\Packages\Microsoft.Direct3D.D3D12.1.700.10-preview\build\native\Microsoft.Direct3D.D3D12.props')" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>
     </LinkIncremental>
@@ -49,7 +50,7 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
@@ -62,7 +63,7 @@
   <PropertyGroup Label="UserMacros" />
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>.;..\;..\MiniEngine\Core;..\MiniEngine\Model;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\;..\MiniEngine\Core;..\MiniEngine\Model;..\Shaders\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link Condition="'$(Configuration)'=='Debug'">
       <AdditionalOptions>/nodefaultlib:MSVCRT %(AdditionalOptions)</AdditionalOptions>
@@ -77,36 +78,8 @@
   <ItemGroup>
     <None Include="..\readme.md" />
     <None Include="packages.config" />
-    <None Include="Shaders\LightingRT.hlsli" />
-    <None Include="Shaders\MaterialsRT.hlsli" />
-    <None Include="Shaders\ReflectRT.hlsli" />
-    <None Include="Shaders\SceneRT.hlsli" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="Shaders\AHS_Backward.hlsl" />
-    <FxCompile Include="Shaders\AHS_Caustic.hlsl" />
-    <FxCompile Include="Shaders\AHS_Default.hlsl" />
-    <FxCompile Include="Shaders\CHS_Caustic.hlsl" />
-    <FxCompile Include="Shaders\MS_Caustic.hlsl" />
-    <FxCompile Include="Shaders\RGS_Backward.hlsl" />
-    <FxCompile Include="Shaders\RGS_Caustic.hlsl" />
-    <None Include="Shaders\RandomRT.hlsli">
-      <FileType>Document</FileType>
-    </None>
-    <FxCompile Include="Shaders\CHS_Backward.hlsl" />
-    <FxCompile Include="Shaders\CHS_Diffuse.hlsl" />
-    <FxCompile Include="Shaders\CHS_Default.hlsl" />
-    <FxCompile Include="Shaders\MS_Default.hlsl" />
-    <FxCompile Include="Shaders\MS_Shadows.hlsl" />
-    <FxCompile Include="Shaders\MS_Backward.hlsl" />
-    <FxCompile Include="Shaders\RGS_Diffuse.hlsl" />
-    <FxCompile Include="Shaders\RGS_SSR.hlsl" />
-    <FxCompile Include="Shaders\RGS_Shadows.hlsl" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Shaders\RayTracingInclude.hlsli" />
-    <ClInclude Include="Shaders\RayTracingHlslCompat.h" />
-    <ClInclude Include="Shaders\Unpacking.hlsli" />
     <ClInclude Include="Src\DXSampleHelper.h" />
     <ClInclude Include="Src\RTModelViewer.h" />
   </ItemGroup>
@@ -116,6 +89,9 @@
     </ProjectReference>
     <ProjectReference Include="..\MiniEngine\Model\Model.vcxproj">
       <Project>{5d3aeefb-8789-48e5-9bd9-09c667052d09}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\Shaders\Shaders.vcxproj">
+      <Project>{056786EE-1B17-458C-A485-116D802BC056}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -149,16 +125,20 @@
     </ClCompile>
     <FxCompile>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">../MiniEngine/Model/Shaders;../MiniEngine/Core/Shaders</AdditionalIncludeDirectories>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">6.5</ShaderModel>
     </FxCompile>
     <FxCompile>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">../MiniEngine/Model/Shaders;../MiniEngine/Core/Shaders</AdditionalIncludeDirectories>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Profile|x64'">6.5</ShaderModel>
     </FxCompile>
     <FxCompile>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">../MiniEngine/Model/Shaders;../MiniEngine/Core/Shaders</AdditionalIncludeDirectories>
+      <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">6.5</ShaderModel>
     </FxCompile>
   </ItemDefinitionGroup>
   <ImportGroup Label="ExtensionTargets">
     <Import Project="..\Packages\zlib-msvc-x64.1.2.11.8900\build\native\zlib-msvc-x64.targets" Condition="Exists('..\Packages\zlib-msvc-x64.1.2.11.8900\build\native\zlib-msvc-x64.targets')" />
+    <Import Project="..\Packages\Microsoft.Direct3D.D3D12.1.700.10-preview\build\native\Microsoft.Direct3D.D3D12.targets" Condition="Exists('..\Packages\Microsoft.Direct3D.D3D12.1.700.10-preview\build\native\Microsoft.Direct3D.D3D12.targets')" />
     <Import Project="..\Packages\directxtex_desktop_win10.2021.1.10.2\build\native\directxtex_desktop_win10.targets" Condition="Exists('..\Packages\directxtex_desktop_win10.2021.1.10.2\build\native\directxtex_desktop_win10.targets')" />
     <Import Project="..\Packages\directxmesh_desktop_win10.2021.1.10.1\build\native\directxmesh_desktop_win10.targets" Condition="Exists('..\Packages\directxmesh_desktop_win10.2021.1.10.1\build\native\directxmesh_desktop_win10.targets')" />
     <Import Project="..\Packages\WinPixEventRuntime.1.0.210209001\build\WinPixEventRuntime.targets" Condition="Exists('..\Packages\WinPixEventRuntime.1.0.210209001\build\WinPixEventRuntime.targets')" />
@@ -168,6 +148,8 @@
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
     <Error Condition="!Exists('..\Packages\zlib-msvc-x64.1.2.11.8900\build\native\zlib-msvc-x64.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\Packages\zlib-msvc-x64.1.2.11.8900\build\native\zlib-msvc-x64.targets'))" />
+    <Error Condition="!Exists('..\Packages\Microsoft.Direct3D.D3D12.1.700.10-preview\build\native\Microsoft.Direct3D.D3D12.props')" Text="$([System.String]::Format('$(ErrorText)', '..\Packages\Microsoft.Direct3D.D3D12.1.700.10-preview\build\native\Microsoft.Direct3D.D3D12.props'))" />
+    <Error Condition="!Exists('..\Packages\Microsoft.Direct3D.D3D12.1.700.10-preview\build\native\Microsoft.Direct3D.D3D12.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\Packages\Microsoft.Direct3D.D3D12.1.700.10-preview\build\native\Microsoft.Direct3D.D3D12.targets'))" />
     <Error Condition="!Exists('..\Packages\directxtex_desktop_win10.2021.1.10.2\build\native\directxtex_desktop_win10.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\Packages\directxtex_desktop_win10.2021.1.10.2\build\native\directxtex_desktop_win10.targets'))" />
     <Error Condition="!Exists('..\Packages\directxmesh_desktop_win10.2021.1.10.1\build\native\directxmesh_desktop_win10.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\Packages\directxmesh_desktop_win10.2021.1.10.1\build\native\directxmesh_desktop_win10.targets'))" />
     <Error Condition="!Exists('..\Packages\WinPixEventRuntime.1.0.210209001\build\WinPixEventRuntime.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\Packages\WinPixEventRuntime.1.0.210209001\build\WinPixEventRuntime.targets'))" />
